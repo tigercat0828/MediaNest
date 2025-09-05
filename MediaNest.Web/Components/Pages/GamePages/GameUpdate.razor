@@ -1,0 +1,60 @@
+﻿@page "/game/update/{id:int}"
+
+
+<EditForm Model="targetGame" OnValidSubmit="HandleUpdateGame">
+    <div class="container">
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <label>Title</label>
+                <InputText class="form-control" @bind-Value="targetGame.Title" />
+                <ValidationMessage For="() => targetGame.Title" />
+            </div>
+            <div class="col-md-6">
+                <label>Developer</label>
+                <InputText class="form-control" @bind-Value="targetGame.Developer" />
+                <ValidationMessage For="() => targetGame.Developer" />
+            </div>
+            <div class="col-md-6">
+                <label>Genre</label>
+                <InputText class="form-control" @bind-Value="targetGame.Genre" />
+                <ValidationMessage For="() => targetGame.Genre" />
+            </div>
+            <div class="col-md-6">
+                <label>Year</label>
+                <InputNumber class="form-control" @bind-Value="targetGame.Year" />
+                <ValidationMessage For="() => targetGame.Year" />
+            </div>
+        </div>
+        <button class="btn btn-primary" type="submit">Save</button>
+
+    </div>
+</EditForm>
+
+
+@code {
+    [Parameter]
+    public int id { get; set; }
+    public Game targetGame { get; set; } = new();
+
+    [Inject]
+    private ApiClient ApiClient { get; set; }
+    [Inject]
+    private NavigationManager Navigation { get; set; }
+    [Inject]
+    private IToastService Toast { get; set; }
+
+    protected override async Task OnInitializedAsync() {
+        var result = await ApiClient.GetFromJsonAsync<BaseResponse<Game>>($"/api/game/{id}");
+        if (result != null && result.IsSuccess) {
+            targetGame = result.Data;
+        }
+    }
+
+    private async Task HandleUpdateGame() {
+        var result = await ApiClient.PutAsync<BaseResponse<Game>, Game>($"/api/game/{id}", targetGame);
+        if(result != null && result.IsSuccess) {
+            Toast.ShowSuccess("Game updated successfully");
+            Navigation.NavigateTo("/game");
+        }
+    }
+}
