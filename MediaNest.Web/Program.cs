@@ -1,6 +1,8 @@
 using Blazored.Toast;
 using MediaNest.Web;
+using MediaNest.Web.AuthStateProvider;
 using MediaNest.Web.Components;
+using Microsoft.AspNetCore.Components.Authorization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,9 +11,15 @@ builder.AddServiceDefaults();
 
 // Add services to the container.
 builder.Services.AddRazorComponents().AddInteractiveServerComponents();
+builder.Services.AddBlazoredToast();
+
+// Authentication & Authorization
+builder.Services.AddAuthentication();
+builder.Services.AddCascadingAuthenticationState();
+
+builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthStateProvider>();
 
 builder.Services.AddOutputCache();
-builder.Services.AddBlazoredToast();
 
 
 builder.Services.AddHttpClient<ApiClient>(client => {
@@ -31,6 +39,10 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.UseAntiforgery();
+
+// Authentication & Authorization
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.UseOutputCache();
 

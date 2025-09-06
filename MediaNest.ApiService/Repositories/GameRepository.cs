@@ -1,4 +1,4 @@
-﻿using MediaNest.Shared;
+﻿using MediaNest.Shared.Entities;
 using MediaNest.Web.Database;
 using Microsoft.EntityFrameworkCore;
 

@@ -1,5 +1,5 @@
 ﻿using MediaNest.ApiService.Repositories;
-using MediaNest.Shared;
+using MediaNest.Shared.Entities;
 
 namespace MediaNest.ApiService.Services;
 

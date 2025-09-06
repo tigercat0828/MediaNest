@@ -1,4 +1,6 @@
 ﻿@page "/game"
+@using MediaNest.Shared.Dtos
+@using MediaNest.Shared.Entities
 @using MediaNest.Web.Components.BaseComponents
 @rendermode InteractiveServer
 
@@ -60,10 +62,10 @@ else
     [Inject]
     public ApiClient apiClient { get; set; }
 
-    public List<Game> Games { get; set; }
+    private List<Game> Games { get; set; }
 
-    public Modal Modal { get; set; }
-    public int DeleteId { get; set; }
+    private Modal Modal { get; set; }
+    private int DeleteId { get; set; }
 
     protected override async Task OnInitializedAsync() {
         await base.OnInitializedAsync();
