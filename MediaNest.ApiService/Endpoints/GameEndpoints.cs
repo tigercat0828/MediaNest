@@ -9,7 +9,7 @@ using System.Runtime.CompilerServices;
 namespace MediaNest.ApiService.Endpoints;
 public static class GameEndpoints {
     public static void MapGameEndpoints(this IEndpointRouteBuilder routes) {
-        var group = routes.MapGroup("/api/game").WithTags("Game");
+        var group = routes.MapGroup("/api/game").WithTags("Game").RequireAuthorization();
         // [HttpGet]
         group.MapGet("/", GetAllGames);
         group.MapGet("/{id:int}", GetGameById);

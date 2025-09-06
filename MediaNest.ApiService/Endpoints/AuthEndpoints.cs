@@ -17,17 +17,21 @@ public static class AuthEndpoints {
     public static async Task<IResult> Login(
         AuthRequest request,
         IConfiguration configuration) {
-     
-        // use fake data for now
-        if (request.Username == "admin" && request.Password == "admin") {
+
+        // TODO : use fake data for now
+        if (request.Username == "admin" && request.Password == "admin" ||
+            request.Username == "user" && request.Password == "user"
+
+            ) {
             var token = GenerateJwtToken(configuration, request.Username);
             return TypedResults.Ok(
-                new AuthResponse { 
+                new AuthResponse {
                     Token = token,
                     Expiration = DateTime.Now.AddHours(1)
                 });
         }
-        return TypedResults.Unauthorized();
+     
+            return TypedResults.Unauthorized();
     }
 
     private static string GenerateJwtToken(
@@ -35,7 +39,7 @@ public static class AuthEndpoints {
         string username) {
         List<Claim> claims = [
             new Claim(ClaimTypes.Name, username),
-            new Claim(ClaimTypes.Role, "Admin")
+            new Claim(ClaimTypes.Role, username == "admin" ? "Admin": "User")
         ];
         string secret = configuration["Jwt:Key"];
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret));

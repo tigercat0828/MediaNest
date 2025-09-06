@@ -1,0 +1,16 @@
+﻿@page "/account/logout"
+@using MediaNest.Web.AuthStateProvider
+@using Microsoft.AspNetCore.Components.Authorization
+
+<h3>LogoutPage</h3>
+
+@code {
+    [Inject] public AuthenticationStateProvider AuthStateProvider { get; set; }
+    [Inject] public NavigationManager Navigation { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await ((CustomAuthStateProvider)AuthStateProvider).MarkUserAsLoggerdOut();
+        Navigation.NavigateTo("/account/login");
+    }
+}

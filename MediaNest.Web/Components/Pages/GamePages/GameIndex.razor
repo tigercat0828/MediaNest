@@ -2,6 +2,7 @@
 @using MediaNest.Shared.Dtos
 @using MediaNest.Shared.Entities
 @using MediaNest.Web.Components.BaseComponents
+
 @rendermode InteractiveServer
 
 <div class="d-flex justify-content-between align-items-center">
@@ -35,10 +36,11 @@ else
                     <td>@game.Year</td>
                     <td>
                         <a class="btn btn-secondary" href="/game/update/@game.Id">Update</a>
-                        <button class="btn btn-danger" 
-                                @onclick="() => { DeleteId = game.Id; Modal.Open(); }">
-                            Delete
-                        </button>
+                        <AuthorizeView Roles="Admin">
+                            <Authorized>
+                                <button class="btn btn-danger" @onclick="() => { DeleteId = game.Id; Modal.Open(); }">Delete</button>
+                            </Authorized>
+                        </AuthorizeView>
                     </td>
                 </tr>
             }
