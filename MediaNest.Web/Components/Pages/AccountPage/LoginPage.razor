@@ -31,7 +31,7 @@
         if (result != null && result.Token != null) {
 
             // Use CustomAuthenticationStateProvider to set the authentication state
-            await ((CustomAuthStateProvider)AuthStateProvider).MarkUserAsAuthenticated(result.Token);
+            await ((CustomAuthStateProvider)AuthStateProvider).MarkUserAsAuthenticated(result);
             Navigation.NavigateTo("/");
         }
     }

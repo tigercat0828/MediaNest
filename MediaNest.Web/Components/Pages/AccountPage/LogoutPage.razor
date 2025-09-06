@@ -10,7 +10,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        await ((CustomAuthStateProvider)AuthStateProvider).MarkUserAsLoggerdOut();
+        await ((CustomAuthStateProvider)AuthStateProvider).MarkUserAsLoggedOut();
         Navigation.NavigateTo("/account/login");
     }
 }

@@ -1,12 +1,31 @@
-﻿using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
+﻿using MediaNest.Shared.Dtos;
+using MediaNest.Web.AuthStateProvider;
+using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
+using MongoDB.Driver.Linq;
 using Newtonsoft.Json;
 using System.Net.Http.Headers;
 namespace MediaNest.Web; 
-public class ApiClient (HttpClient client, ProtectedLocalStorage localStorage){
+public class ApiClient (HttpClient client, ProtectedLocalStorage localStorage, AuthenticationStateProvider authStateProvider){
     public async Task SetAuthorizeHeader() {
-        var token = (await localStorage.GetAsync<string>("authToken")).Value;
-        if(token != null) {
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        var session = (await localStorage.GetAsync<AuthResponse>("sessionState")).Value;
+        if(session != null && !string.IsNullOrEmpty(session.Token)) {
+            if (session.Expiration < DateTime.UtcNow) {
+                await ((CustomAuthStateProvider)authStateProvider).MarkUserAsLoggedOut();
+            }
+            else if (session.Expiration < DateTime.UtcNow.AddMinutes(10)) {
+                var result = await client.GetFromJsonAsync<AuthResponse>($"/api/account/refreshLogin?refreshToken={session.RefreshToken}");
+                if (result != null) {
+                    await ((CustomAuthStateProvider)authStateProvider).MarkUserAsAuthenticated(result);
+                    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", result.Token);
+                }
+                else {
+                    await ((CustomAuthStateProvider) authStateProvider).MarkUserAsLoggedOut();
+                }
+            }
+            else {
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", session.Token);
+            }
         }
     }
     public async Task<T> GetFromJsonAsync<T>(string path) {
