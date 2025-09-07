@@ -14,10 +14,14 @@
         </div>
         <div class="form-group mt-2">
             <label for="password">Password</label>
-            <InputText id="password" class="form-control" @bind-Value="authRequest.Password" />
+            <InputText id="password" type="password" class="form-control" @bind-Value="authRequest.Password" />
         </div>
-        <button type="submit" class="btn btn-primary mt-2">Login</button>
+        <button type="submit" class="btn btn-primary mt-3">Login</button>
+        <a href="/account/register" class="btn btn-secondary ms-2 mt-3">Register</a>
     </EditForm>
+    <div class="alert alert-danger mt-2" role="alert">
+        @Message
+    </div>
 </div>
 
 @code {
@@ -25,7 +29,8 @@
 
     [Inject] public ApiClient ApiClient { get; set; }
     [Inject] public NavigationManager Navigation { get; set; }
-    [Inject] public AuthenticationStateProvider AuthStateProvider { get; set; } 
+    [Inject] public AuthenticationStateProvider AuthStateProvider { get; set; }
+    private string Message;
     private async Task HandleLogin() {
         var result = await ApiClient.PostAsync<AuthResponse, AuthRequest>("api/account/login", authRequest);
         if (result != null && result.Token != null) {
@@ -33,6 +38,10 @@
             // Use CustomAuthenticationStateProvider to set the authentication state
             await ((CustomAuthStateProvider)AuthStateProvider).MarkUserAsAuthenticated(result);
             Navigation.NavigateTo("/");
+        }
+        else
+        {
+            Message = "Username and Password not matched.";
         }
     }
 }

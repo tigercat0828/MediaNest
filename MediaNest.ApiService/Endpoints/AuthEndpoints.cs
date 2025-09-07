@@ -1,51 +1,61 @@
 ﻿
 using MediaNest.Shared.Dtos;
+using MediaNest.Shared.Entities;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Validations;
+using MongoDB.Driver;
+using MongoDB.Driver.Linq;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 
 namespace MediaNest.ApiService.Endpoints; 
 public static class AuthEndpoints {
+    // TODO : refresh token store with DB 
+    // TODO : change password
     public static void MapAuthEndpoints(this IEndpointRouteBuilder builder) { 
         var group = builder.MapGroup("/api/account").WithTags("Account");
-        // group.MapPost("/register", RegisterAccount);
         group.MapPost("/login", Login);
+        group.MapPost("/register", Register);
         group.MapGet("/refreshLogin", RefreshLogin);
     }
 
     public static async Task<IResult> Login(
         IConfiguration configuration,
+        IMongoCollection<Account> accounts,
         AuthRequest request
         ) {
 
-        // TODO : use fake data for now
-        if (request.Username == "admin" && request.Password == "admin" ||
-            request.Username == "user" && request.Password == "user"
-
-            ) {
-            var token = GenerateJwtToken(configuration, request.Username, isRefreshToken: false);
-            var refreshToken = GenerateJwtToken(configuration, request.Password, isRefreshToken: true);
-            return TypedResults.Ok(new AuthResponse {
-                Token = token,
-                RefreshToken = refreshToken,
-                Expiration = DateTime.UtcNow.AddHours(1)
-            });
+        
+        var user = await accounts.Find(u => u.Username == request.Username).FirstOrDefaultAsync();
+        if(user is null) {
+            return TypedResults.Unauthorized();
         }
-        return TypedResults.Unauthorized();
+        var res = new PasswordHasher<Account>().VerifyHashedPassword(user, user.HashedPassword, request.Password);
+        if (res == PasswordVerificationResult.Failed) {
+            return TypedResults.Unauthorized();
+        }
+        var token = GenerateJwtToken(configuration, user, isRefreshToken: false);
+        var refreshToken = GenerateJwtToken(configuration, user, isRefreshToken: true);
+        return TypedResults.Ok(new AuthResponse {
+            Token = token,
+            RefreshToken = refreshToken,
+            Expiration = DateTime.UtcNow.AddHours(1)
+        });
+        return TypedResults.Unauthorized(); // how to deal with it ?
     }
 
     private static string GenerateJwtToken(
         IConfiguration configuration,
-        string username,
+        Account user,
         bool isRefreshToken
         ) {
 
         List<Claim> claims = [
-            new Claim(ClaimTypes.Name, username),
-            new Claim(ClaimTypes.Role, username == "admin" ? "Admin": "User")
+            new Claim(ClaimTypes.Name, user.Username),
+            new Claim(ClaimTypes.Role, user.Role)
         ];
         string secret = configuration[isRefreshToken ? "Jwt:RefreshKey" : "Jwt:Key" ];
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret));
@@ -54,7 +64,7 @@ public static class AuthEndpoints {
             issuer: configuration["Jwt:Issuer"],
             audience: configuration["Jwt:Audience"],
             claims: claims,
-            expires: DateTime.Now.AddHours(isRefreshToken ? 24 : 1),
+            expires: DateTime.UtcNow.AddHours(isRefreshToken ? 24 : 1),
             signingCredentials: creds
         );
         return new JwtSecurityTokenHandler().WriteToken(token);
@@ -66,9 +76,15 @@ public static class AuthEndpoints {
         if (claimsPrincipal == null) {
             return TypedResults.Unauthorized();
         }
+
         var username = claimsPrincipal.FindFirstValue(ClaimTypes.Name);
-        var newToken = GenerateJwtToken(configuration, username, isRefreshToken: false);
-        var newRefreshToken = GenerateJwtToken(configuration, username, isRefreshToken: true);
+        var role = claimsPrincipal.FindFirstValue(ClaimTypes.Role);
+        var fakeUser = new Account {
+            Username = username,
+            Role = role
+        };
+        var newToken = GenerateJwtToken(configuration, fakeUser, isRefreshToken: false);
+        var newRefreshToken = GenerateJwtToken(configuration, fakeUser, isRefreshToken: true);
 
         return TypedResults.Ok(new AuthResponse {
             Token = newToken,
@@ -76,6 +92,36 @@ public static class AuthEndpoints {
             Expiration = DateTime.UtcNow.AddHours(1)
         });
     }
+    private static async Task<IResult> Register(
+        IConfiguration configuration,
+        IMongoCollection<Account> accounts,
+        AuthRequest request) 
+    {
+        var exists = await accounts.Find(u => u.Username == request.Username).FirstOrDefaultAsync();
+        if (exists != null) {
+            return TypedResults.BadRequest(new AuthResponse {
+                Message = "Username exists"
+            });
+        }
+        var user = new Account();
+        var hashedPassed = new PasswordHasher<Account>().HashPassword(user, request.Password);
+        user.Username = request.Username;
+        user.HashedPassword = hashedPassed;
+        user.Role = "User";
+        await accounts.InsertOneAsync(user);
+
+        string token = GenerateJwtToken(configuration, user, isRefreshToken: false);
+        string refreshToken = GenerateJwtToken(configuration, user, isRefreshToken: true);
+
+        return TypedResults.Ok(new AuthResponse { 
+            Token = token,
+            RefreshToken = refreshToken,
+            Expiration= DateTime.UtcNow.AddHours(1)
+        });
+    }
+    /// <summary>
+    /// Who am I ? 
+    /// </summary>
     private static ClaimsPrincipal GetClaimsPrincipalFromToken(string token, string secret) {
         var tokenHandler = new JwtSecurityTokenHandler();
         var key = Encoding.UTF8.GetBytes(secret); // ASCII ? 
@@ -90,7 +136,7 @@ public static class AuthEndpoints {
                 ValidateIssuerSigningKey = true,
                 IssuerSigningKey = new SymmetricSecurityKey(key)
             }, out var validatedToken);
-            return principal;
+            return principal; 
         }
         catch {
             return null;

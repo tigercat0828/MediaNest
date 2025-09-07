@@ -47,7 +47,7 @@ builder.Services.AddScoped<IGameService, GameService>();
 // ========================================================
 builder.Services.Configure<MongoDbConfig>(builder.Configuration.GetSection("MongoDB"));
 builder.Services.AddMongoClient();
-builder.Services.AddMongoCollection<Account>("Account");
+builder.Services.AddMongoCollection<Account>("Accounts");
 // ========================================================
 
 

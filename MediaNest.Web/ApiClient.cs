@@ -2,8 +2,6 @@
 using MediaNest.Web.AuthStateProvider;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
-using MongoDB.Driver.Linq;
-using Newtonsoft.Json;
 using System.Net.Http.Headers;
 namespace MediaNest.Web; 
 public class ApiClient (HttpClient client, ProtectedLocalStorage localStorage, AuthenticationStateProvider authStateProvider){
@@ -37,7 +35,8 @@ public class ApiClient (HttpClient client, ProtectedLocalStorage localStorage, A
 
         var result = await client.PostAsJsonAsync(path, item);
         if(result != null && result.IsSuccessStatusCode) {
-            return JsonConvert.DeserializeObject<T1>(await result.Content.ReadAsStringAsync());
+            // return JsonConvert.DeserializeObject<T1>(await result.Content.ReadAsStringAsync()); // newtonsoft
+            return await result.Content.ReadFromJsonAsync<T1>();
         }
         return default;
     }
@@ -47,7 +46,8 @@ public class ApiClient (HttpClient client, ProtectedLocalStorage localStorage, A
 
         var result = await client.PutAsJsonAsync(path, item);
         if(result != null && result.IsSuccessStatusCode) {
-            return JsonConvert.DeserializeObject<T1>(await result.Content.ReadAsStringAsync());
+            // return JsonConvert.DeserializeObject<T1>(await result.Content.ReadAsStringAsync());  // newtonsoft
+            return await result.Content.ReadFromJsonAsync<T1>();
         }
         return default;
     }
