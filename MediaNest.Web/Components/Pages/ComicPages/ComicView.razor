@@ -4,90 +4,101 @@
 
 @* @inject ClipboardService ClipboardService *@
 
-@if (currentComic != null) {
-    <div class="container">
 
-        <div class="row mt-3">
-            <div class="col-10">
-                <nav aria-label="breadcrumb">
-                    <ol class="breadcrumb">
-                        <li class="breadcrumb-item"><a href="/">Home</a></li>
-                        <li class="breadcrumb-item"><a href="/comic">Comics</a></li>
-                        <li class="breadcrumb-item active" aria-current="page">@currentComic.Code</li>
-                    </ol>
-                </nav>
-            </div>
-            <div class="col-2 d-flex justify-content-end">
-                <button  class="btn btn-outline-dark me-1" onclick="navigator.clipboard.writeText('@resourceUrl')">
-                    <i class="bi bi-link-45deg"></i>
-                </button>
 
-                <a class="btn btn-primary me-1" href="/comic/edit/@currentComic.Id">編輯</a>
-                <button class="btn btn-danger me-1" @onclick="ShowDeleteButton">刪除</button>
-                @if (doShowDeleteButton)
-                {
-                    <button class="btn btn-outline-danger" @onclick="DeleteComic">確認</button>
-                }
-            </div>
+<AuthorizeView Roles="Admin,User">
+    <NotAuthorized>
+        <div class="alert alert-info mt-2">
+            Please <a href="/account/login">Login</a> first!
         </div>
+    </NotAuthorized>
+        <Authorized>
+        @if (currentComic != null) {
+            <div class="container">
 
-        <div class="row">
-            <h3>@currentComic.Title</h3>
-        </div>
-        @*tag*@
-        <div class="row mb-4">
-            <div class="col-12">
-                <span class="badge bg-dark">@currentComic.Code</span>
-                <a href= "/comic/search/@currentComic.Series"    class="badge bg-primary me-1">@currentComic.Series</a>
-                <a href= "/comic/search/@currentComic.Author"    class="badge bg-warning me-1">@currentComic.Author</a>
-                @foreach (var chara in currentComic.Characters) {
-                    <a href="/comic/search/@chara" class="badge bg-success me-1">@chara</a>
-                }
-                @foreach (var tag in currentComic.Tags) {
-                    <a href="/comic/search/@tag" class="badge bg-secondary me-1">@tag</a>
-                }
+                <div class="row mt-3">
+                    <div class="col-10">
+                        <nav aria-label="breadcrumb">
+                            <ol class="breadcrumb">
+                                <li class="breadcrumb-item"><a href="/">Home</a></li>
+                                <li class="breadcrumb-item"><a href="/comic">Comics</a></li>
+                                <li class="breadcrumb-item active" aria-current="page">@currentComic.Code</li>
+                            </ol>
+                        </nav>
+                    </div>
+                    <div class="col-2 d-flex justify-content-end">
+                        <button  class="btn btn-outline-dark me-1" onclick="navigator.clipboard.writeText('@resourceUrl')">
+                            <i class="bi bi-link-45deg"></i>
+                        </button>
+
+                        <a class="btn btn-primary me-1" href="/comic/edit/@currentComic.Id">編輯</a>
+                        <button class="btn btn-danger me-1" @onclick="ShowDeleteButton">刪除</button>
+                        @if (doShowDeleteButton)
+                        {
+                            <button class="btn btn-outline-danger" @onclick="DeleteComic">確認</button>
+                        }
+                    </div>
+                </div>
+
+                <div class="row">
+                    <h3>@currentComic.Title</h3>
+                </div>
+                @*tag*@
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <span class="badge bg-dark">@currentComic.Code</span>
+                        <a href= "/comic/search/@currentComic.Series"    class="badge bg-primary me-1">@currentComic.Series</a>
+                        <a href= "/comic/search/@currentComic.Author"    class="badge bg-warning me-1">@currentComic.Author</a>
+                        @foreach (var chara in currentComic.Characters) {
+                            <a href="/comic/search/@chara" class="badge bg-success me-1">@chara</a>
+                        }
+                        @foreach (var tag in currentComic.Tags) {
+                            <a href="/comic/search/@tag" class="badge bg-secondary me-1">@tag</a>
+                        }
+                    </div>
+                </div>
+                <div class="row">
+                    <PageTitle>@currentComic.Title</PageTitle>
+                    @foreach (var image in images) {
+                        <img class="img-fluid mb-2" src="/Assets/Comics/@currentComic.FolderName/@image" alt="@image" />
+                    }
+                </div>
+
             </div>
-        </div>
-        <div class="row">
-            <PageTitle>@currentComic.Title</PageTitle>
-            @foreach (var image in images) {
-                <img class="img-fluid mb-2" src="/Assets/Comics/@currentComic.FolderName/@image" alt="@image" />
+            @if (doShowEditPanel) {
+                <div class="floating-panel">
+                    <div class="input-group mb-3">
+                        <span class="input-group-text">系列</span>
+                        <input type="text" class="form-control" @bind-value="currentComic.Series" >
+                    </div>
+                    <div class="input-group mb-3">
+                        <span class="input-group-text">系列</span>
+                        <input type="text" class="form-control" @bind-value="charaStr" >
+                    </div>
+                    <div class="input-group mb-3">
+                        <span class="input-group-text">Tag</span>
+                        <input type="text" class="form-control" @bind-value="tagStr" >
+                    </div>
+                    <button id="submitButton" class="btn btn-outline-success" @onclick="OnSubmit"><i class="bi bi-check2-circle"></i></button>
+                </div>
             }
-        </div>
+        }
+        else {
+            <Spinner />
+        }
+        <button id="EditTagBtn" class="btn btn-success" @onclick="ToggleEditPanel" >
+            <i class="bi bi-info-circle"></i>
+        </button>
+        <button id="scrollToTopBtn" class="btn btn-primary" @onclick="ScrollToTop" >
+            <i class="bi bi-chevron-bar-up"></i>
+        </button>
 
-    </div>
-    @if (doShowEditPanel) {
-        <div class="floating-panel">
-            <div class="input-group mb-3">
-                <span class="input-group-text">系列</span>
-                <input type="text" class="form-control" @bind-value="currentComic.Series" >
-            </div>
-            <div class="input-group mb-3">
-                <span class="input-group-text">系列</span>
-                <input type="text" class="form-control" @bind-value="charaStr" >
-            </div>
-            <div class="input-group mb-3">
-                <span class="input-group-text">Tag</span>
-                <input type="text" class="form-control" @bind-value="tagStr" >
-            </div>
-            <button id="submitButton" class="btn btn-outline-success" @onclick="OnSubmit"><i class="bi bi-check2-circle"></i></button>
-        </div>
-    }
-}
-else {
-    <Spinner />
-}
-<button id="EditTagBtn" class="btn btn-success" @onclick="ToggleEditPanel" >
-    <i class="bi bi-info-circle"></i>
-</button>
-<button id="scrollToTopBtn" class="btn btn-primary" @onclick="ScrollToTop" >
-    <i class="bi bi-chevron-bar-up"></i>
-</button>
-
+    </Authorized>
+</AuthorizeView>
 
 
 @code {
-
+    [Inject] public AuthenticationStateProvider authProvider { get; set; }
     [Inject] public IJSRuntime JSRuntime { get; set; }
     [Inject] public ApiClient ApiClient { get; set; }
     [Parameter] public string id { get; set; }
@@ -101,13 +112,17 @@ else {
     string folderName;
     protected override async Task OnInitializedAsync() {
 
-        currentComic = await ApiClient.GetAsync<Comic>($"/api/comic/{id}");
-        charaStr = string.Join(',', currentComic.Characters);
-        tagStr = string.Join(',', currentComic.Tags);
-        resourceUrl = Path.Combine(AppState.AssetsFolder, currentComic.FolderName);
-        folderName = Path.Combine(AppState.AssetsFolder, "Comics" ,currentComic.FolderName);
-        foreach (var path in Directory.GetFiles(folderName)) {
-            images.Add(Path.GetFileName(path));
+        var authState = await authProvider.GetAuthenticationStateAsync();
+        if (authState.User.Identity?.IsAuthenticated ?? false) {
+
+            currentComic = await ApiClient.GetAsync<Comic>($"/api/comic/{id}");
+            charaStr = string.Join(',', currentComic.Characters);
+            tagStr = string.Join(',', currentComic.Tags);
+            resourceUrl = Path.Combine(AppState.AssetsFolder, currentComic.FolderName);
+            folderName = Path.Combine(AppState.AssetsFolder, "Comics", currentComic.FolderName);
+            foreach (var path in Directory.GetFiles(folderName)) {
+                images.Add(Path.GetFileName(path));
+            }
         }
 
     }

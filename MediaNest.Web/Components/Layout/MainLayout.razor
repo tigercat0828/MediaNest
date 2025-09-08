@@ -1,30 +1,14 @@
 ﻿@inherits LayoutComponentBase
 @using Blazored.Toast.Configuration
 @using Microsoft.AspNetCore.Components.Authorization
-<div class="page">
-    <div class="sidebar">
-        <NavMenu />
-    </div>
 
-    <main>
-        <div class="top-row px-4">
-            <AuthorizeView>
-                <Authorized>
-                    <div>Hello, @context.User.Identity?.Name!</div>
-                    <a href="/account/logout" class="me-1">Logout</a>
-                </Authorized>
-                <NotAuthorized>
-                    <a href="/account/login" class="me-1">Login</a>
-                    <a href="/account/register" class="me-1">Register</a>
-                </NotAuthorized>
-            </AuthorizeView>
-        </div>
 
-        <article class="content px-4">
-            @Body
-        </article>
-    </main>
+<NavMenu />
+
+<div class="p-1">
+    @Body
 </div>
+
 
 <BlazoredToasts Position="ToastPosition.TopRight"
                 Timeout="10"
@@ -33,8 +17,3 @@
                 SuccessIcon="fa fa-thumbs-up"
                 ErrorIcon="fa fa-bug" />
 
-<div id="blazor-error-ui">
-    An unhandled error has occurred.
-    <a href="" class="reload">Reload</a>
-    <a class="dismiss">🗙</a>
-</div>

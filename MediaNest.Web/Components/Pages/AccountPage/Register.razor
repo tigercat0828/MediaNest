@@ -3,7 +3,7 @@
 @using MediaNest.Web.AuthStateProvider
 @using MediaNest.Web.Components.Layout
 @using Microsoft.AspNetCore.Components.Authorization
-@layout EmptyLayout
+@* @layout EmptyLayout *@
 
 <div class="container mt-3 p-5">
     <EditForm Model="authRequest" FormName="Register" OnValidSubmit="HandleRegister">
@@ -29,14 +29,14 @@
     [Inject] public AuthenticationStateProvider AuthStateProvider { get; set; }
     private string Message = "";
     private async Task HandleRegister() {
+        
         var result = await ApiClient.PostAsync<AuthResponse, AuthRequest>("api/account/register", authRequest);
         if (result != null && result.Token != null) {
             // Use CustomAuthenticationStateProvider to set the authentication state
             await ((CustomAuthStateProvider)AuthStateProvider).MarkUserAsAuthenticated(result);
             Navigation.NavigateTo("/");
         }
-        else
-        {
+        else {
             Message = result.Message;
         }
     }

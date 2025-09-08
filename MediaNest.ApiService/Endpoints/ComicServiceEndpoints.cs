@@ -1,12 +1,18 @@
 ﻿using MediaNest.ApiService.Services;
 using MediaNest.Shared.Entities;
+using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 
 
 namespace MediaNest.ApiService.Endpoints; 
 public static class ComicServiceEndpoints {
     public const int DEFAULT_COUNT = 5;
     public static void MapComicServiceEndpoints(this IEndpointRouteBuilder builder) {
-        var group = builder.MapGroup("/api/comic").WithTags("Comic");
+        var group = builder
+            .MapGroup("/api/comic")
+            .RequireAuthorization(new AuthorizeAttribute { Roles = "Admin,User" })
+            .WithTags("Comic");
+
         // [HttpGet]
         group.MapGet("/", GetComics);   // random, search, paging
         group.MapGet("/count", GetCount);
@@ -46,7 +52,9 @@ public static class ComicServiceEndpoints {
     private static async Task<IResult> GetCount(ComicService service) {
         return Results.Ok(await service.GetCount());
     }
-    private static async Task<IResult> CreateComic(ComicService service, Comic comic) {
+    private static async Task<IResult> CreateComic(ComicService service, ClaimsPrincipal user, Comic comic) {
+        
+        comic.Uploader = user.Identity?.Name ?? "Unknown";
         await service.CreateComic(comic);
         return Results.Created($"/api/comic/{comic.Id}", comic); // 回傳 Comic 本身
     }

@@ -2,10 +2,12 @@
 @page "/comic/search/{searchText}"
 
 
-<AuthorizeView>
+<AuthorizeView Roles="Admin,User">
     <NotAuthorized>
-        <div class="alert alert-info mt-2">
-            Please <a href="/account/login">Login</a> first!
+        <div class="container">
+            <div class="alert alert-info mt-2">
+                Please <a href="/account/login">Login</a> first!
+            </div>
         </div>
     </NotAuthorized>
     <Authorized>

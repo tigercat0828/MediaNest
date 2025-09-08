@@ -2,7 +2,7 @@
 @using MediaNest.Web.AuthStateProvider
 @using MediaNest.Web.Components.Layout
 @using Microsoft.AspNetCore.Components.Authorization
-@layout EmptyLayout
+@* @layout EmptyLayout *@
 
 <div class="container mt-3 p-5">
     <EditForm Model="authRequest" FormName="Login" OnValidSubmit="HandleLogin">
@@ -42,10 +42,14 @@
             await ((CustomAuthStateProvider)AuthStateProvider).MarkUserAsAuthenticated(result);
             Navigation.NavigateTo("/");
         }
-        else
-        {
+        else {
             isFailed = true;
-            Message = "Username and Password not matched.";
+            if (!string.IsNullOrEmpty(result?.Message)) {
+                Message = result.Message; // e.g. "Account not approved yet."
+            }
+            else {
+                Message = "Username and Password not matched.";
+            }
         }
     }
 }

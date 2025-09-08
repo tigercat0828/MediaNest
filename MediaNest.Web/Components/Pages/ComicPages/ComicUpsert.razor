@@ -1,53 +1,66 @@
 ﻿@page "/comic/create"
 @page "/comic/edit/{id}"
-<EditForm Model="_currentComic" FormName="ComicForm">
-    <DataAnnotationsValidator />
-    <div class="container">
-        <div class="input-group mb-3">
-            <span class="input-group-text">標題</span>
-            <InputText class="form-control" id="Title" @bind-value="_currentComic.Title" />
+
+<AuthorizeView Roles="Admin,User">
+    <NotAuthorized>
+        <div class="alert alert-info mt-2">
+            Please <a href="/account/login">Login</a> first!
         </div>
-        <div class="input-group mb-3">
-            <span class="input-group-text">副標</span>
-            <InputText class="form-control" id="SubTitle" @bind-value="_currentComic.SubTitle" />
-        </div>
-        <div class="input-group mb-3">
-            <span class="input-group-text">系列</span>
-            <InputText class="form-control" id="Series" @bind-value="_currentComic.Series" />
-        </div>
-        <div class="input-group mb-3">
-            <span class="input-group-text">作者</span>
-            <InputText class="form-control" id="Author" @bind-value="_currentComic.Author" />
-        </div>
-        <div class="input-group mb-3">
-            <span class="input-group-text">簡介</span>
-            <InputText class="form-control" id="Description" @bind-value="_currentComic.Description" />
-        </div>
-        <div class="input-group mb-3">
-            <span class="input-group-text">標籤</span>
-            <InputText class="form-control" id="Tags" @bind-value="_tagStr" />
-        </div>
-        <div class="input-group mb-3">
-            <span class="input-group-text">角色</span>
-            <InputText class="form-control" id="Tags" @bind-value="_characterStr" />
-        </div>
-        @if (!_isEditMode) {
-            <div class="mb-3">
-                <ComicFileUploader SaveDirectory="@directory" SaveSubFolder="@_currentComic.FolderName" OnUploadButtonPressed="HandleUploadButtonPressed" />
+    </NotAuthorized>
+
+    <Authorized Context="auth">
+
+        <EditForm Model="_currentComic" FormName="ComicForm">
+            <DataAnnotationsValidator />
+            <div class="container">
+                <div class="input-group mb-3">
+                    <span class="input-group-text">標題</span>
+                    <InputText class="form-control" id="Title" @bind-value="_currentComic.Title" />
+                </div>
+                <div class="input-group mb-3">
+                    <span class="input-group-text">副標</span>
+                    <InputText class="form-control" id="SubTitle" @bind-value="_currentComic.SubTitle" />
+                </div>
+                <div class="input-group mb-3">
+                    <span class="input-group-text">系列</span>
+                    <InputText class="form-control" id="Series" @bind-value="_currentComic.Series" />
+                </div>
+                <div class="input-group mb-3">
+                    <span class="input-group-text">作者</span>
+                    <InputText class="form-control" id="Author" @bind-value="_currentComic.Author" />
+                </div>
+                <div class="input-group mb-3">
+                    <span class="input-group-text">簡介</span>
+                    <InputText class="form-control" id="Description" @bind-value="_currentComic.Description" />
+                </div>
+                <div class="input-group mb-3">
+                    <span class="input-group-text">標籤</span>
+                    <InputText class="form-control" id="Tags" @bind-value="_tagStr" />
+                </div>
+                <div class="input-group mb-3">
+                    <span class="input-group-text">角色</span>
+                    <InputText class="form-control" id="Tags" @bind-value="_characterStr" />
+                </div>
+                @if (!_isEditMode) {
+                    <div class="mb-3">
+                        <ComicFileUploader SaveDirectory="@directory" SaveSubFolder="@_currentComic.FolderName" OnUploadButtonPressed="HandleUploadButtonPressed" />
+                    </div>
+                }
+                <div>
+                    @if (_isUploadButtonPressed || _isEditMode) {
+                        <button class="btn btn-success" @onclick="HandleUpsertGame">完成</button>
+                    }
+                </div>
             </div>
-        }
-        <div>
-            @if (_isUploadButtonPressed || _isEditMode) {
-                <button class="btn btn-success" @onclick="HandleUpsertGame">完成</button>
-            }
-        </div>
-    </div>
-</EditForm>
+        </EditForm>
+    </Authorized>
+</AuthorizeView>
 
 @code {
     // TODO : uploader with authentication
     [Inject] public ApiClient ApiClient { get; set; }
     [Inject] public NavigationManager Navigation { get; set; }
+    [Inject] public AuthenticationStateProvider AuthProvider { get; set; }
     [Parameter] public string id { get; set; }
 
     private string directory = Path.Combine(AppState.AssetsFolder, "Comics");
@@ -61,13 +74,17 @@
 
     protected override async Task OnInitializedAsync() {
 
-        _currentComic.Code = Utility.GenerateSixDigitCode();
-        if (id != null) {
-            _isEditMode = true;
-            _currentComic = await ApiClient.GetAsync<Comic>($"/api/comic/{id}");
-            _tagStr = string.Join(",", _currentComic.Tags);
-            _characterStr = string.Join(",", _currentComic.Characters);
-            oldTitle = _currentComic.Title;
+        var authState = await AuthProvider.GetAuthenticationStateAsync();
+        if (authState.User.Identity?.IsAuthenticated ?? false) {
+
+            _currentComic.Code = Utility.GenerateSixDigitCode();
+            if (id != null) {
+                _isEditMode = true;
+                _currentComic = await ApiClient.GetAsync<Comic>($"/api/comic/{id}");
+                _tagStr = string.Join(",", _currentComic.Tags);
+                _characterStr = string.Join(",", _currentComic.Characters);
+                oldTitle = _currentComic.Title;
+            }
         }
     }
 

@@ -42,7 +42,15 @@ public class ApiClient (HttpClient client, ProtectedLocalStorage localStorage, A
         if(response != null && response.IsSuccessStatusCode) {
             return await response.Content.ReadFromJsonAsync<T1>();
         }
-        return default;
+        else {
+            try {
+                var error = await response.Content.ReadFromJsonAsync<T1>();
+                return error;
+            }
+            catch {
+                return default;
+            }
+        }
     }
     public async Task<T1> PutAsync<T1, T2>(string path, T2 item) {
 

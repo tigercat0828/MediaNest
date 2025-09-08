@@ -36,12 +36,20 @@ public static class AuthServiceEndpoints {
         if (res == PasswordVerificationResult.Failed) {
             return Results.Unauthorized();
         }
+
+        if (user.Role == "Pending") {
+            return TypedResults.BadRequest(new AuthResponse {
+                Message = "Account not approved yet."
+            });
+        }
+
         var token = GenerateJwtToken(configuration, user, isRefreshToken: false);
         var refreshToken = GenerateJwtToken(configuration, user, isRefreshToken: true);
         return Results.Ok(new AuthResponse {
             Token = token,
             RefreshToken = refreshToken,
-            Expiration = DateTime.UtcNow.AddHours(1)
+            Expiration = DateTime.UtcNow.AddHours(1),
+            Message = "Login successful!"
         });
     }
 
@@ -105,7 +113,7 @@ public static class AuthServiceEndpoints {
         var hashedPassed = new PasswordHasher<Account>().HashPassword(user, request.Password);
         user.Username = request.Username;
         user.HashedPassword = hashedPassed;
-        user.Role = "User";
+        user.Role = "Pending";
         await accounts.InsertOneAsync(user);
 
         string token = GenerateJwtToken(configuration, user, isRefreshToken: false);

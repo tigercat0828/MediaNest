@@ -8,68 +8,72 @@
 
 <AuthorizeView>
     <NotAuthorized>
-        <div class="alert alert-info mt-2">
-            Please <a href="/account/login">Login</a> first!
+        <div class="container">
+            <div class="alert alert-info mt-2">
+                Please <a href="/account/login">Login</a> first!
+            </div>
         </div>
     </NotAuthorized>
 
     <Authorized>
-        @if (Games == null) {
-            <Spinner />
-        }
-        else {
-            <div class="d-flex justify-content-between align-items-center">
-                <h3 class="mb-0">Game</h3>
-                <a class="btn btn-primary" href="/game/create">Create</a>
-            </div>
+        <div class="container">
+            @if (Games == null) {
+                <Spinner />
+            }
+            else {
+                <div class="d-flex justify-content-between align-items-center">
+                    <h3 class="mb-0">Game</h3>
+                    <a class="btn btn-primary" href="/game/create">Create</a>
+                </div>
 
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>Title</th>
-                        <th>Genre</th>
-                        <th>Developer</th>
-                        <th>Year</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var game in Games){
+                <table class="table">
+                    <thead>
                         <tr>
-                            <td>@game.Title</td>
-                            <td>@game.Genre</td>
-                            <td>@game.Developer</td>
-                            <td>@game.Year</td>
-                            <td>
-                                <a class="btn btn-secondary" href="/game/update/@game.Id">Update</a>
-                                <AuthorizeView Roles="Admin">
-                                    <Authorized Context="adminContext">
-                                        <button class="btn btn-danger" @onclick="() => { DeleteId = game.Id; Modal.Open(); }">Delete</button>
-                                    </Authorized>
-                                </AuthorizeView>
-                            </td>
+                            <th>Title</th>
+                            <th>Genre</th>
+                            <th>Developer</th>
+                            <th>Year</th>
+                            <th>Action</th>
                         </tr>
-                    }
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        @foreach (var game in Games){
+                            <tr>
+                                <td>@game.Title</td>
+                                <td>@game.Genre</td>
+                                <td>@game.Developer</td>
+                                <td>@game.Year</td>
+                                <td>
+                                    <a class="btn btn-secondary" href="/game/update/@game.Id">Update</a>
+                                    <AuthorizeView Roles="Admin">
+                                        <Authorized Context="adminContext">
+                                            <button class="btn btn-danger" @onclick="() => { DeleteId = game.Id; Modal.Open(); }">Delete</button>
+                                        </Authorized>
+                                    </AuthorizeView>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
 
-            <Modal @ref="Modal">
-                <Title>Check</Title>
-                <Body>
-                    Do you want to delete this game?
-                </Body>
-                <Footer>
-                    <button class="btn btn-danger" @onclick=HandleDelete>Delete</button>
-                    <button class="btn btn-secondary" @onclick="() => Modal.Close()">Cancel</button>
-                </Footer>
-            </Modal>
-        }
+                <Modal @ref="Modal">
+                    <Title>Check</Title>
+                    <Body>
+                        Do you want to delete this game?
+                    </Body>
+                    <Footer>
+                        <button class="btn btn-danger" @onclick=HandleDelete>Delete</button>
+                        <button class="btn btn-secondary" @onclick="() => Modal.Close()">Cancel</button>
+                    </Footer>
+                </Modal>
+            }
+        </div>
     </Authorized>
 </AuthorizeView>
 
 @code {
-    [Inject] public ApiClient apiClient { get; set; }
-    [Inject] public AuthenticationStateProvider authProvider { get; set; }
+    [Inject] public ApiClient ApiClient { get; set; }
+    [Inject] public AuthenticationStateProvider AuthProvider { get; set; }
 
     private List<Game>? Games { get; set; }
     private Modal Modal { get; set; }
@@ -77,17 +81,17 @@
 
     protected override async Task OnInitializedAsync() {
 
-        var authState = await authProvider.GetAuthenticationStateAsync();
+        var authState = await AuthProvider.GetAuthenticationStateAsync();
         if (authState.User.Identity?.IsAuthenticated ?? false) {
-            Games = await apiClient.GetAsync<List<Game>>("/api/game");
+            Games = await ApiClient.GetAsync<List<Game>>("/api/game");
         }
     }
 
     private async Task HandleDelete() {
 
-        var result = await apiClient.DeleteAsync<BaseResponse<Game>>($"/api/game/{DeleteId}");
+        var result = await ApiClient.DeleteAsync<BaseResponse<Game>>($"/api/game/{DeleteId}");
         if (result != null && result.IsSuccess) {
-            Games = await apiClient.GetAsync<List<Game>>("/api/game");
+            Games = await ApiClient.GetAsync<List<Game>>("/api/game");
             Modal.Close();
             StateHasChanged();
         }
