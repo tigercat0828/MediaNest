@@ -3,6 +3,8 @@ using MediaNest.Web;
 using MediaNest.Web.AuthStateProvider;
 using MediaNest.Web.Components;
 using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.Extensions.FileProviders;
+using System.Net.NetworkInformation;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -37,6 +39,16 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseStaticFiles();
+app.UseStaticFiles(new StaticFileOptions {  // for .vtt subtitle
+    ServeUnknownFileTypes = true,
+    DefaultContentType = "text/vtt"
+});
+AppState.AssetsFolder = builder.Configuration["AssetsFolder"];
+app.UseStaticFiles(new StaticFileOptions {
+    FileProvider = new PhysicalFileProvider(AppState.AssetsFolder),
+    RequestPath = new PathString("/Assets"),
+});
 
 app.UseAntiforgery();
 
@@ -48,9 +60,9 @@ app.UseOutputCache();
 
 app.MapStaticAssets();
 
-app.MapRazorComponents<App>()
-    .AddInteractiveServerRenderMode();
+app.MapRazorComponents<App>().AddInteractiveServerRenderMode();
 
 app.MapDefaultEndpoints();
 
 app.Run();
+

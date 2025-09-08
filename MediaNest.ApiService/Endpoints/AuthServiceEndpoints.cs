@@ -12,7 +12,7 @@ using System.Security.Claims;
 using System.Text;
 
 namespace MediaNest.ApiService.Endpoints; 
-public static class AuthEndpoints {
+public static class AuthServiceEndpoints {
     // TODO : refresh token store with DB 
     // TODO : change password
     public static void MapAuthEndpoints(this IEndpointRouteBuilder builder) { 
@@ -27,24 +27,22 @@ public static class AuthEndpoints {
         IMongoCollection<Account> accounts,
         AuthRequest request
         ) {
-
         
         var user = await accounts.Find(u => u.Username == request.Username).FirstOrDefaultAsync();
         if(user is null) {
-            return TypedResults.Unauthorized();
+            return Results.Unauthorized();
         }
         var res = new PasswordHasher<Account>().VerifyHashedPassword(user, user.HashedPassword, request.Password);
         if (res == PasswordVerificationResult.Failed) {
-            return TypedResults.Unauthorized();
+            return Results.Unauthorized();
         }
         var token = GenerateJwtToken(configuration, user, isRefreshToken: false);
         var refreshToken = GenerateJwtToken(configuration, user, isRefreshToken: true);
-        return TypedResults.Ok(new AuthResponse {
+        return Results.Ok(new AuthResponse {
             Token = token,
             RefreshToken = refreshToken,
             Expiration = DateTime.UtcNow.AddHours(1)
         });
-        return TypedResults.Unauthorized(); // how to deal with it ?
     }
 
     private static string GenerateJwtToken(

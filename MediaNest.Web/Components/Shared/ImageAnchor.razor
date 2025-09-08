@@ -1,0 +1,45 @@
+﻿<div class="card" style="width:20rem; padding: 0;">
+    <div class="card-body" style="padding: 0;">
+        <a href="@href" style="position: relative; display: block;">
+            <img class="rounded-top" src="@coverSrc" alt="@title" style="width:100%; height:100%; object-fit: cover;" />
+            <div class="card-title-overlay">
+                <p class="card-title text-center">@title</p>
+            </div>
+        </a>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public string href { get; set; }
+    [Parameter]
+    public string coverSrc { get; set; }
+    [Parameter]
+    public string title { get; set; }
+}
+
+<style>
+    .card-title {
+        font-size: 1rem;            /* 預設字體大小 */
+        white-space: nowrap;        /* 不換行 */
+        overflow: hidden;           /* 隱藏超出部分 */
+        text-overflow: ellipsis;    /* 使用省略號 */
+        display: block;             /* 使元素為塊級元素 */
+        max-width: 100%;            /* 限制最大寬度 */
+    }
+
+    .card-title-overlay {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background-color: rgba(0, 0, 0, 0.5); /* 半透明黑色背景 */
+        color: white;
+        text-align: center;
+        padding: 1px;                           /* 上下填充 */
+        margin: 0;                              /* 移除外邊距 */
+        display: flex;                          /* 使用 Flexbox */
+        align-items: center;                    /* 垂直置中 */
+        justify-content: center;                /* 水平置中 */
+    }
+</style>

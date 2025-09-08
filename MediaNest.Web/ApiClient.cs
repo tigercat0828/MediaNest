@@ -2,6 +2,7 @@
 using MediaNest.Web.AuthStateProvider;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
+using System.Net;
 using System.Net.Http.Headers;
 namespace MediaNest.Web; 
 public class ApiClient (HttpClient client, ProtectedLocalStorage localStorage, AuthenticationStateProvider authStateProvider){
@@ -26,17 +27,20 @@ public class ApiClient (HttpClient client, ProtectedLocalStorage localStorage, A
             }
         }
     }
-    public async Task<T> GetFromJsonAsync<T>(string path) {
+    public async Task<T> GetAsync<T>(string path) {
         await SetAuthorizeHeader();
-        return await client.GetFromJsonAsync<T>(path);
+        var response = await client.GetAsync(path);
+        if (response != null && response.IsSuccessStatusCode) {
+            return await response.Content.ReadFromJsonAsync<T>();
+        }
+        return default;
     }
     public async Task<T1> PostAsync<T1, T2>(string path, T2 item) {
         await SetAuthorizeHeader();
 
-        var result = await client.PostAsJsonAsync(path, item);
-        if(result != null && result.IsSuccessStatusCode) {
-            // return JsonConvert.DeserializeObject<T1>(await result.Content.ReadAsStringAsync()); // newtonsoft
-            return await result.Content.ReadFromJsonAsync<T1>();
+        var response = await client.PostAsJsonAsync(path, item);
+        if(response != null && response.IsSuccessStatusCode) {
+            return await response.Content.ReadFromJsonAsync<T1>();
         }
         return default;
     }
@@ -44,15 +48,23 @@ public class ApiClient (HttpClient client, ProtectedLocalStorage localStorage, A
 
         await SetAuthorizeHeader();
 
-        var result = await client.PutAsJsonAsync(path, item);
-        if(result != null && result.IsSuccessStatusCode) {
-            // return JsonConvert.DeserializeObject<T1>(await result.Content.ReadAsStringAsync());  // newtonsoft
-            return await result.Content.ReadFromJsonAsync<T1>();
+        var response = await client.PutAsJsonAsync(path, item);
+        if(response != null && response.IsSuccessStatusCode) {
+            return await response.Content.ReadFromJsonAsync<T1>();
         }
         return default;
     }
     public async Task<T> DeleteAsync<T>(string path) {
         await SetAuthorizeHeader();
-        return await client.DeleteFromJsonAsync<T>(path);
+
+        var response = await client.DeleteAsync(path);
+        if (response.StatusCode == HttpStatusCode.NoContent) {
+            return default; 
+        }
+
+        if (response.IsSuccessStatusCode) {
+            return await response.Content.ReadFromJsonAsync<T>();
+        }
+        return default;
     }
 }

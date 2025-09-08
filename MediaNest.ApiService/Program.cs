@@ -19,7 +19,6 @@ builder.Services.AddOpenApi();          // Learn more about configuring OpenAPI 
 // ========================================================
 // Jwt Authentication
 // ========================================================
-
 var secret = builder.Configuration["Jwt:Key"];
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options => {
     options.TokenValidationParameters = new TokenValidationParameters {
@@ -48,6 +47,8 @@ builder.Services.AddScoped<IGameService, GameService>();
 builder.Services.Configure<MongoDbConfig>(builder.Configuration.GetSection("MongoDB"));
 builder.Services.AddMongoClient();
 builder.Services.AddMongoCollection<Account>("Accounts");
+builder.Services.AddMongoCollection<Comic>("Comics");
+builder.Services.AddScoped<ComicService>();
 // ========================================================
 
 
@@ -64,7 +65,7 @@ if (!app.Environment.IsDevelopment()) {
 // 2. HTTPS / Static Files / Routing
 // ========================================================
 app.UseHttpsRedirection();
-app.UseStaticFiles();
+// app.UseStaticFiles();
 app.UseRouting();
 // ========================================================
 // 3. Authentication & Authorization
@@ -77,11 +78,11 @@ app.UseAuthorization();
 app.MapGet("/", () => "Halo");
 app.MapAuthEndpoints();
 app.MapGameEndpoints();
-
+app.MapComicServiceEndpoints();
 
 app.MapDefaultEndpoints();
 // ========================================================
-// 5. Swagger / OpenAPI
+// 5. Scalar / OpenAPI
 // ========================================================
 if (app.Environment.IsDevelopment()) {
     app.MapOpenApi();

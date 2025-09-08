@@ -46,7 +46,7 @@
     private IToastService Toast { get; set; }
 
     protected override async Task OnInitializedAsync() {
-        var result = await ApiClient.GetFromJsonAsync<BaseResponse<Game>>($"/api/game/{id}");
+        var result = await ApiClient.GetAsync<BaseResponse<Game>>($"/api/game/{id}");
         if (result != null && result.IsSuccess) {
             targetGame = result.Data;
         }

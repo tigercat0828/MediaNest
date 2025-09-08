@@ -1,5 +1,4 @@
 ﻿@page "/account/login"
-
 @using MediaNest.Web.AuthStateProvider
 @using MediaNest.Web.Components.Layout
 @using Microsoft.AspNetCore.Components.Authorization
@@ -19,9 +18,12 @@
         <button type="submit" class="btn btn-primary mt-3">Login</button>
         <a href="/account/register" class="btn btn-secondary ms-2 mt-3">Register</a>
     </EditForm>
-    <div class="alert alert-danger mt-2" role="alert">
-        @Message
-    </div>
+    @if (isFailed)
+    {
+        <div class="alert alert-danger mt-2" role="alert">
+            @Message
+        </div>
+    }
 </div>
 
 @code {
@@ -31,6 +33,7 @@
     [Inject] public NavigationManager Navigation { get; set; }
     [Inject] public AuthenticationStateProvider AuthStateProvider { get; set; }
     private string Message;
+    private bool isFailed = false;
     private async Task HandleLogin() {
         var result = await ApiClient.PostAsync<AuthResponse, AuthRequest>("api/account/login", authRequest);
         if (result != null && result.Token != null) {
@@ -41,6 +44,7 @@
         }
         else
         {
+            isFailed = true;
             Message = "Username and Password not matched.";
         }
     }

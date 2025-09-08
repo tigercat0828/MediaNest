@@ -1,9 +1,10 @@
 ﻿@page "/game"
 @using MediaNest.Shared.Dtos
 @using MediaNest.Shared.Entities
-@using MediaNest.Web.Components.BaseComponents
 
 @rendermode InteractiveServer
+
+@* for SQL CRUD test *@
 
 <AuthorizeView>
     <NotAuthorized>
@@ -13,12 +14,10 @@
     </NotAuthorized>
 
     <Authorized>
-        @if (Games == null)
-        {
+        @if (Games == null) {
             <Spinner />
         }
-        else
-        {
+        else {
             <div class="d-flex justify-content-between align-items-center">
                 <h3 class="mb-0">Game</h3>
                 <a class="btn btn-primary" href="/game/create">Create</a>
@@ -35,8 +34,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (var game in Games)
-                    {
+                    @foreach (var game in Games){
                         <tr>
                             <td>@game.Title</td>
                             <td>@game.Genre</td>
@@ -77,21 +75,19 @@
     private Modal Modal { get; set; }
     private int DeleteId { get; set; }
 
-    protected override async Task OnInitializedAsync()
-    {
+    protected override async Task OnInitializedAsync() {
+
         var authState = await authProvider.GetAuthenticationStateAsync();
-        if (authState.User.Identity?.IsAuthenticated ?? false)
-        {
-            Games = await apiClient.GetFromJsonAsync<List<Game>>("/api/game");
+        if (authState.User.Identity?.IsAuthenticated ?? false) {
+            Games = await apiClient.GetAsync<List<Game>>("/api/game");
         }
     }
 
-    private async Task HandleDelete()
-    {
+    private async Task HandleDelete() {
+
         var result = await apiClient.DeleteAsync<BaseResponse<Game>>($"/api/game/{DeleteId}");
-        if (result != null && result.IsSuccess)
-        {
-            Games = await apiClient.GetFromJsonAsync<List<Game>>("/api/game");
+        if (result != null && result.IsSuccess) {
+            Games = await apiClient.GetAsync<List<Game>>("/api/game");
             Modal.Close();
             StateHasChanged();
         }
