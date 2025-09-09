@@ -35,6 +35,10 @@
                     <AuthorizeView>
                         <Authorized Context="auth">
                             <span class="navbar-text me-2">Hello, @auth.User.Identity?.Name!</span>
+
+                            <AuthorizeView Roles="Admin">
+                                <a href="/settings" class="btn btn-outline-light btn-sm me-2">Settings</a>
+                            </AuthorizeView>
                             <a href="/account/logout" class="btn btn-outline-light btn-sm">Logout</a>
                         </Authorized>
                         <NotAuthorized>

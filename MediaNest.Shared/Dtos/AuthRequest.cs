@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.ComponentModel.DataAnnotations;
 
-namespace MediaNest.Shared.Dtos; 
+namespace MediaNest.Shared.Dtos;
 public class AuthRequest {
     [Required] public string Username { get; set; }
     [Required] public string Password { get; set; }

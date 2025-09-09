@@ -1,16 +1,15 @@
 ﻿using Microsoft.Extensions.Options;
 using MongoDB.Driver;
-using System.Runtime.CompilerServices;
 
-namespace MediaNest.ApiService.Database; 
+namespace MediaNest.ApiService.Database;
 public static class MongoDbServiceExtensions {
 
     /// <summary>
     /// call after builder.Services.Configure<MongoDbConfig>(...)
     /// </summary>
     public static IServiceCollection AddMongoClient(this IServiceCollection services) {
-        
-        services.AddSingleton<IMongoClient>(sp => { 
+
+        services.AddSingleton<IMongoClient>(sp => {
             var config = sp.GetRequiredService<IOptions<MongoDbConfig>>().Value;
             return new MongoClient(config.ConnectionString);
         });

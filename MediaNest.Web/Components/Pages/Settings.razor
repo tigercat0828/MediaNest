@@ -1,0 +1,81 @@
+﻿@page "/settings"
+@rendermode InteractiveServer
+
+<PageTitle>Admin Panel</PageTitle>
+
+<AuthorizeView Roles="Admin">
+    <Authorized>
+        <div class="container">
+            <h3>Account Manager</h3>
+            @if (_users == null){
+                <Spinner />
+            }
+            else {
+                 <table class="table">
+                <thead>
+                    <tr>
+                        <th>Username</th>
+                        <th>Role</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var user in _users) {
+                        <tr>
+                            <td>@user.Username</td>
+                            <td>
+                                <select class="form-select form-select-sm"
+                                        @bind="user.Role">
+                                    <option value="Pending">Pending</option>
+                                    <option value="User">User</option>
+                                    <option value="Admin">Admin</option>
+                                </select>
+                            </td>
+                            <td>
+                                <button class="btn btn-sm btn-primary"
+                                        @onclick="() => UpdateRole(user)">
+                                    Save
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+            }
+        </div>
+           
+    </Authorized>
+    <NotAuthorized>
+        <div class="container">
+            <div class="alert alert-info mt-2">
+                You have no authorization.
+            </div>
+        </div>
+    </NotAuthorized>
+</AuthorizeView>
+
+
+@code {
+    [Inject] public ApiClient ApiClient { get; set; }
+    [Inject] public AuthenticationStateProvider AuthProvider { get; set; }
+
+    private List<Account> _users;
+
+    protected override async Task OnInitializedAsync() {
+        var authState = await AuthProvider.GetAuthenticationStateAsync();
+        if (authState.User.Identity?.IsAuthenticated ?? false
+            && authState.User.IsInRole("Admin")) {
+            _users = await ApiClient.GetAsync<List<Account>>("/api/account/users");
+        }
+    }
+
+    private async Task UpdateRole(Account user) {
+        var request = new AccountUpdateRequest {
+            Username = user.Username,
+            Role = user.Role
+        };
+
+        await ApiClient.PutAsync<string, AccountUpdateRequest>($"/api/account/users/updateRole", request);
+        _users = await ApiClient.GetAsync<List<Account>>("/api/account/users");
+    }
+}

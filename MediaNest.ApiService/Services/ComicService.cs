@@ -1,7 +1,6 @@
 ﻿using MediaNest.Shared.Entities;
 using MongoDB.Bson;
 using MongoDB.Driver;
-using System.Net.NetworkInformation;
 
 namespace MediaNest.ApiService.Services {
     public class ComicService(IMongoCollection<Comic> collection) {

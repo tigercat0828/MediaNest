@@ -2,8 +2,8 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 
-namespace MediaNest.Web.Components.Pages.ComicPages; 
-public partial class ComicIndex : ComponentBase{
+namespace MediaNest.Web.Components.Pages.ComicPages;
+public partial class ComicIndex : ComponentBase {
     [Inject] public ApiClient ApiClient { get; set; }
     [Inject] public AuthenticationStateProvider AuthProvider { get; set; }  // TODO : Authorization
     [Parameter] public string searchText { get; set; }
@@ -44,7 +44,7 @@ public partial class ComicIndex : ComponentBase{
         await GetComicsByPage(_currentPage);
 
     }
-    private async Task NextPage() { 
+    private async Task NextPage() {
         _currentPage++;
         await GetComicsByPage(_currentPage);
     }
@@ -72,5 +72,5 @@ public partial class ComicIndex : ComponentBase{
             _comics = await ApiClient.GetAsync<List<Comic>>($"api/comic?term={searchText}");
         }
     }
-    
+
 }

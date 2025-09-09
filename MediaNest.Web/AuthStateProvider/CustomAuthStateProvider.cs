@@ -7,22 +7,22 @@ using System.Security.Claims;
 namespace MediaNest.Web.AuthStateProvider;
 public class CustomAuthStateProvider(ProtectedLocalStorage localStorage) : AuthenticationStateProvider {
     public override async Task<AuthenticationState> GetAuthenticationStateAsync() {
-        
+
         var session = (await localStorage.GetAsync<AuthResponse>("sessionState")).Value;
         var identity = session == null ? new ClaimsIdentity() : GetClaimsIdentity(session.Token);
         var user = new ClaimsPrincipal(identity);
         return new AuthenticationState(user);
     }
 
-    public async Task MarkUserAsAuthenticated(AuthResponse response) { 
-        
+    public async Task MarkUserAsAuthenticated(AuthResponse response) {
+
         await localStorage.SetAsync("sessionState", response);
         var identity = GetClaimsIdentity(response.Token);
         var user = new ClaimsPrincipal(identity);
         NotifyAuthenticationStateChanged(Task.FromResult(new AuthenticationState(user)));
     }
     public async Task MarkUserAsLoggedOut() {
-        
+
         await localStorage.DeleteAsync("sessionState");    // TODO : authToken
         var identity = new ClaimsIdentity();
         var user = new ClaimsPrincipal(identity);

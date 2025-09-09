@@ -4,11 +4,11 @@ using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
 using System.Net;
 using System.Net.Http.Headers;
-namespace MediaNest.Web; 
-public class ApiClient (HttpClient client, ProtectedLocalStorage localStorage, AuthenticationStateProvider authStateProvider){
+namespace MediaNest.Web;
+public class ApiClient(HttpClient client, ProtectedLocalStorage localStorage, AuthenticationStateProvider authStateProvider) {
     public async Task SetAuthorizeHeader() {
         var session = (await localStorage.GetAsync<AuthResponse>("sessionState")).Value;
-        if(session != null && !string.IsNullOrEmpty(session.Token)) {
+        if (session != null && !string.IsNullOrEmpty(session.Token)) {
             if (session.Expiration < DateTime.UtcNow) {
                 await ((CustomAuthStateProvider)authStateProvider).MarkUserAsLoggedOut();
             }
@@ -19,7 +19,7 @@ public class ApiClient (HttpClient client, ProtectedLocalStorage localStorage, A
                     client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", result.Token);
                 }
                 else {
-                    await ((CustomAuthStateProvider) authStateProvider).MarkUserAsLoggedOut();
+                    await ((CustomAuthStateProvider)authStateProvider).MarkUserAsLoggedOut();
                 }
             }
             else {
@@ -39,7 +39,7 @@ public class ApiClient (HttpClient client, ProtectedLocalStorage localStorage, A
         await SetAuthorizeHeader();
 
         var response = await client.PostAsJsonAsync(path, item);
-        if(response != null && response.IsSuccessStatusCode) {
+        if (response != null && response.IsSuccessStatusCode) {
             return await response.Content.ReadFromJsonAsync<T1>();
         }
         else {
@@ -57,7 +57,7 @@ public class ApiClient (HttpClient client, ProtectedLocalStorage localStorage, A
         await SetAuthorizeHeader();
 
         var response = await client.PutAsJsonAsync(path, item);
-        if(response != null && response.IsSuccessStatusCode) {
+        if (response != null && response.IsSuccessStatusCode) {
             return await response.Content.ReadFromJsonAsync<T1>();
         }
         return default;
@@ -67,7 +67,7 @@ public class ApiClient (HttpClient client, ProtectedLocalStorage localStorage, A
 
         var response = await client.DeleteAsync(path);
         if (response.StatusCode == HttpStatusCode.NoContent) {
-            return default; 
+            return default;
         }
 
         if (response.IsSuccessStatusCode) {

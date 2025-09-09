@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
 
 
-namespace MediaNest.ApiService.Endpoints; 
+namespace MediaNest.ApiService.Endpoints;
 public static class ComicServiceEndpoints {
     public const int DEFAULT_COUNT = 5;
     public static void MapComicServiceEndpoints(this IEndpointRouteBuilder builder) {
@@ -26,18 +26,18 @@ public static class ComicServiceEndpoints {
     }
     private static async Task<IResult> GetComicById(ComicService service, string id) {
         var comic = await service.GetComicById(id);
-        if (comic == null) 
+        if (comic == null)
             return Results.NotFound();
-        else 
+        else
             return Results.Ok(comic);
     }
-    private static async Task<IResult> GetComics(ComicService service, string? search, int? page, int? count, bool? random) {
+    private static async Task<IResult> GetComics(ComicService service, string? term, int? page, int? count, bool? random) {
         List<Comic> comics;
-        if (!string.IsNullOrEmpty(search)) {
-            comics = await service.SearchComic(search);
+        if (!string.IsNullOrEmpty(term)) {
+            comics = await service.SearchComic(term);
         }
         else if (random == true) {
-            int cnt = count.HasValue ? Math.Min(count.Value, DEFAULT_COUNT) : DEFAULT_COUNT; 
+            int cnt = count.HasValue ? Math.Min(count.Value, DEFAULT_COUNT) : DEFAULT_COUNT;
             comics = await service.GetRandomComics(cnt);
         }
         else if (page.HasValue) {
@@ -53,23 +53,23 @@ public static class ComicServiceEndpoints {
         return Results.Ok(await service.GetCount());
     }
     private static async Task<IResult> CreateComic(ComicService service, ClaimsPrincipal user, Comic comic) {
-        
+
         comic.Uploader = user.Identity?.Name ?? "Unknown";
         await service.CreateComic(comic);
         return Results.Created($"/api/comic/{comic.Id}", comic); // 回傳 Comic 本身
     }
     private static async Task<IResult> DeleteComic(ComicService service, string id) {
         bool exist = await service.CheckExists(id);
-        if (exist) { 
+        if (exist) {
             await service.DeleteComic(id);  // TODO : delete the folder and its content
             return Results.Ok("success");
         }
-        else 
+        else
             return Results.NotFound();
     }
     private static async Task<IResult> UpdateComic(ComicService service, string id, Comic updatedComic) {
         bool exists = await service.CheckExists(id);
-        if (exists) { 
+        if (exists) {
             await service.UpdateComic(id, updatedComic);    // TODO : change folder name
             return Results.Ok(updatedComic);
         }

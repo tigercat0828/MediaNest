@@ -1,13 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace MediaNest.Shared.Dtos; 
+﻿namespace MediaNest.Shared.Dtos;
 public class AuthResponse {
-    public string Token { get; set; }  
+    public string Token { get; set; }
     public string RefreshToken { get; set; }
     public DateTime Expiration { get; set; }
-    public string Message {  get; set; }
+    public string Message { get; set; }
 }

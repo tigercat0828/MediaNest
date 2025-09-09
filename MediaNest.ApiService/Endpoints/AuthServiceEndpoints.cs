@@ -1,6 +1,7 @@
 ﻿
 using MediaNest.Shared.Dtos;
 using MediaNest.Shared.Entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
@@ -8,6 +9,7 @@ using Microsoft.OpenApi.Validations;
 using MongoDB.Driver;
 using MongoDB.Driver.Linq;
 using System.IdentityModel.Tokens.Jwt;
+using System.Linq.Expressions;
 using System.Security.Claims;
 using System.Text;
 
@@ -15,13 +17,20 @@ namespace MediaNest.ApiService.Endpoints;
 public static class AuthServiceEndpoints {
     // TODO : refresh token store with DB 
     // TODO : change password
+    // TODO : extract to AuthService
     public static void MapAuthEndpoints(this IEndpointRouteBuilder builder) { 
         var group = builder.MapGroup("/api/account").WithTags("Account");
         group.MapPost("/login", Login);
         group.MapPost("/register", Register);
         group.MapGet("/refreshLogin", RefreshLogin);
+        group.MapGet("/users", GetAllUsers).RequireAuthorization(new AuthorizeAttribute { Roles = "Admin" });
+        group.MapPut("/users/updateRole", ToggleUserRole).RequireAuthorization(new AuthorizeAttribute { Roles = "Admin" });
     }
 
+    public static async Task<IResult> GetAllUsers(IMongoCollection<Account> accounts) {
+        var users = await accounts.Find(_ => true).ToListAsync();
+        return Results.Ok(users);
+    }
     public static async Task<IResult> Login(
         IConfiguration configuration,
         IMongoCollection<Account> accounts,
@@ -148,5 +157,10 @@ public static class AuthServiceEndpoints {
             return null;
         }
 
+    }
+    private static async Task<IResult> ToggleUserRole(IMongoCollection<Account> accounts, AccountUpdateRequest request ) {
+        var update = Builders<Account>.Update.Set(u => u.Role, request.Role);
+        await accounts.UpdateOneAsync(u => u.Username == request.Username, update);
+        return Results.Ok("success");
     }
 }

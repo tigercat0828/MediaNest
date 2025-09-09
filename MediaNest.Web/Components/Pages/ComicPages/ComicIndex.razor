@@ -46,7 +46,7 @@
                         @foreach (var comic in _comics) {
                             // TODO : or fix it to P001.jpg
                             string coverSrc = $"/Assets/Comics/{comic.FolderName}/001.jpg";
-                            string href = $"/comic/{comic.Id}";
+                            string href = $"/comic/view/{comic.Id}";
                             <ImageAnchor href="@href" coverSrc="@coverSrc" title="@comic.Title" />
                         }
                     </div>

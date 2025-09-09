@@ -1,12 +1,7 @@
 ﻿using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace MediaNest.Shared.Entities; 
+namespace MediaNest.Shared.Entities;
 public class Comic {
     [BsonId]
     [BsonRepresentation(BsonType.ObjectId)]

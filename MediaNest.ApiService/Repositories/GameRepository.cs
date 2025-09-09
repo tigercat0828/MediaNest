@@ -30,7 +30,7 @@ public class GameRepository(AppDbContext dbContext) : IGameRepository {
         return dbContext.SaveChangesAsync();
     }
     public Task<bool> CheckExist(int id) {
-        return dbContext.Games.AnyAsync(g => g.Id== id);
+        return dbContext.Games.AnyAsync(g => g.Id == id);
     }
 
     public async Task DeleteGame(int id) {

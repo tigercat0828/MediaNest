@@ -36,7 +36,7 @@ builder.Services.AddAuthorization();
 // SQL Server
 // ========================================================
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-builder.Services.AddDbContext<AppDbContext>(options => { 
+builder.Services.AddDbContext<AppDbContext>(options => {
     options.UseSqlServer(connectionString);
 });
 builder.Services.AddScoped<IGameRepository, GameRepository>();
