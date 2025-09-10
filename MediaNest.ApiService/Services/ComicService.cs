@@ -2,7 +2,7 @@
 using MongoDB.Bson;
 using MongoDB.Driver;
 
-namespace MediaNest.ApiService.Services {
+namespace MediaNest.Web.Services {
     public class ComicService(IMongoCollection<Comic> collection) {
         public async Task<int> GetCount() {
             return (int)await collection.CountDocumentsAsync(_ => true);

@@ -1,8 +1,8 @@
-﻿using MediaNest.ApiService.Services;
+﻿using MediaNest.Web.Services;
 using MediaNest.Shared.Dtos;
 using MediaNest.Shared.Entities;
 
-namespace MediaNest.ApiService.Endpoints;
+namespace MediaNest.Web.Endpoints;
 public static class GameEndpoints {
     public static void MapGameEndpoints(this IEndpointRouteBuilder routes) {
         var group = routes.MapGroup("/api/game").WithTags("Game").RequireAuthorization();

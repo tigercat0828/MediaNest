@@ -1,0 +1,118 @@
+﻿@inject IWebHostEnvironment WebEnv
+@inject NavigationManager NavigationManager
+
+@if (_comic != null) {
+    <div class="container-fluid mb-3 border border-secondary rounded p-4">
+        <div class="row">
+            <div class="col-auto mb-1 mt-1" >
+                <img src="/Assets/Comics/@(_comic.FolderName)/001.jpg" style="width: 15rem;"  alt="@_comic.Title">
+            </div>
+
+            <div class="col-8">
+                <h3 class="mb-3">@_comic.Title<i class="bi bi-bookmark-plus btn-outline-secondary disabled"></i></h3>
+                
+                <h6 sytle="color:blue">@_comic.SubTitle</h6><br/>
+                <div class="mb-3">
+                    <label>系列 : </label>
+                    <a href="/comic/search/@_comic.Series" class="badge bg-success me-1">@_comic.Series</a>
+                </div>
+
+                <div class="mb-3">
+                    <label>作者 : </label>
+                    <a href="/comic/search/@_comic.Author" class="badge bg-success me-1">@_comic.Author</a>
+                </div>
+
+                <div class="mb-3">
+                    <label>角色 : </label>
+                    @foreach (var chars in _comic.Characters) {
+                        <a href="/comic/search/@chars" class="badge bg-success me-1">@chars</a>
+                    }
+                </div>
+
+                <div class="mb-3">
+                    <label>標籤 : </label>
+                    @foreach (var tag in _comic.Tags) {
+                        <a href="/comic/search/@tag" class="badge bg-success me-1">@tag </a>
+                    }
+                </div>
+
+                <div class="mb-3">
+                    <label>頁數 : @PageNum</label>
+                </div>
+
+                <div class="mb-3">
+                    <a href="/comic/view/@_comic.Id" target="_blank" class="btn btn-success me-3">
+                        <i class="bi bi-book"></i> Read
+                    </a>
+                    <a href="/comic/edit/@_comic.Id" class="btn btn-warning me-3">
+                        <i class="bi bi-pencil"></i> 編輯
+                    </a>
+                    <button class="btn btn-primary me-3" disabled>
+                        <i class="bi bi-download"></i> 下載
+                    </button>
+                    <button @onclick=ToggleConfirmationDialog class="btn btn-danger me-3">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                    @if (showConfirmationDialog) {
+                        <input @bind="confirmationInput" @bind:event="oninput" class="me-1 border border-danger" style="width:100px" placeholder="delete"  />
+                        <button @onclick=ConfirmDelete class="btn btn-outline-danger me-1">
+                            <i class="bi bi-check-lg"></i>
+                        </button>
+                        <button @onclick=CancelDelete class="btn btn-outline-danger me-1">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+                    }
+
+                    @* <button @onclick=AddToNewSeries class="btn btn-outline-secondary me3"><i class="bi bi-plus-circle"></i></button> *@
+                </div>
+
+            </div>
+        </div>
+    </div>
+}
+else {
+    <Spinner />
+}
+
+@code {
+    [Parameter] public Comic? _comic { get; set; }
+    [Parameter] public int? PageNum { get; set; }
+    [Inject] public IToastService Toast { get; set; }
+    [Inject] public ApiClient ApiClient { get; set; }
+
+
+    private bool showConfirmationDialog = false;
+
+    private string confirmationInput = "";
+    private bool IsConfirmationValid => confirmationInput.Trim().ToLower() == "delete";
+
+    private void ToggleConfirmationDialog() {
+        showConfirmationDialog = !showConfirmationDialog;
+        confirmationInput = ""; // Reset confirmation input when showing dialog
+    }
+    private async Task ConfirmDelete() {
+
+        if (IsConfirmationValid) {
+            await ApiClient.DeleteAsync<string>($"/api/comic/{_comic.Id}");
+            string folderName = Path.Combine(AppState.AssetsFolder, "Comics", _comic.FolderName);
+            if (Directory.Exists(folderName)) {
+                Directory.Delete(folderName, recursive: true);
+            }
+            NavigationManager.NavigateTo("/comic");    
+        }
+        showConfirmationDialog = false;
+    }
+
+    private void CancelDelete() {
+        showConfirmationDialog = false;
+    }
+
+    // TODO comic series
+    // async Task AddToNewSeries(){
+    //     string? seriesStr = await LocalStorage.GetItemAsync<string>("NewComicSeries");
+    //     seriesStr += $"{Comic.Id},";
+    //     Console.WriteLine($"Series : {seriesStr}");
+    //     await LocalStorage.SetItemAsync("NewComicSeries", seriesStr);
+    //     ToastService.ShowSuccess($"{Comic.Title} is temporally added to series.");
+    // }
+}

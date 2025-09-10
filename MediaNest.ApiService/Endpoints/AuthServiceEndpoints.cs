@@ -13,7 +13,7 @@ using System.Linq.Expressions;
 using System.Security.Claims;
 using System.Text;
 
-namespace MediaNest.ApiService.Endpoints; 
+namespace MediaNest.Web.Endpoints; 
 public static class AuthServiceEndpoints {
     // TODO : refresh token store with DB 
     // TODO : change password

@@ -1,7 +1,7 @@
-using MediaNest.ApiService.Database;
-using MediaNest.ApiService.Endpoints;
-using MediaNest.ApiService.Repositories;
-using MediaNest.ApiService.Services;
+using MediaNest.Web.Database;
+using MediaNest.Web.Endpoints;
+using MediaNest.Web.Repositories;
+using MediaNest.Web.Services;
 using MediaNest.Shared.Entities;
 using MediaNest.Web.Database;
 using Microsoft.AspNetCore.Authentication.JwtBearer;

@@ -2,6 +2,7 @@ using Blazored.Toast;
 using MediaNest.Web;
 using MediaNest.Web.AuthStateProvider;
 using MediaNest.Web.Components;
+using MediaNest.Web.Services;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.Extensions.FileProviders;
 
@@ -20,6 +21,9 @@ builder.Services.AddCascadingAuthenticationState();
 
 builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthStateProvider>();
 
+// customs ervice
+builder.Services.AddSingleton<SettingService>();
+builder.Services.AddScoped<JSRuntimeService>();
 builder.Services.AddOutputCache();
 
 
@@ -43,10 +47,12 @@ app.UseStaticFiles(new StaticFileOptions {  // for .vtt subtitle
     DefaultContentType = "text/vtt"
 });
 AppState.AssetsFolder = builder.Configuration["AssetsFolder"];
-app.UseStaticFiles(new StaticFileOptions {
-    FileProvider = new PhysicalFileProvider(AppState.AssetsFolder),
-    RequestPath = new PathString("/Assets"),
-});
+if (Directory.Exists(AppState.AssetsFolder)) {
+    app.UseStaticFiles(new StaticFileOptions {
+        FileProvider = new PhysicalFileProvider(AppState.AssetsFolder),
+        RequestPath = new PathString("/Assets"),
+    });
+}
 
 app.UseAntiforgery();
 

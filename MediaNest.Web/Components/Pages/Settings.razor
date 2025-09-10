@@ -1,4 +1,5 @@
 ﻿@page "/settings"
+@using MediaNest.Web.Services
 @rendermode InteractiveServer
 
 <PageTitle>Admin Panel</PageTitle>
@@ -6,41 +7,58 @@
 <AuthorizeView Roles="Admin">
     <Authorized>
         <div class="container">
-            <h3>Account Manager</h3>
+     
             @if (_users == null){
                 <Spinner />
             }
             else {
-                 <table class="table">
-                <thead>
-                    <tr>
-                        <th>Username</th>
-                        <th>Role</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var user in _users) {
-                        <tr>
-                            <td>@user.Username</td>
-                            <td>
-                                <select class="form-select form-select-sm"
-                                        @bind="user.Role">
-                                    <option value="Pending">Pending</option>
-                                    <option value="User">User</option>
-                                    <option value="Admin">Admin</option>
-                                </select>
-                            </td>
-                            <td>
-                                <button class="btn btn-sm btn-primary"
-                                        @onclick="() => UpdateRole(user)">
-                                    Save
-                                </button>
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
+                <div class="row">
+                    <div class="col-8">
+                        <div class="input-group">
+                            <span class="input-group-text">Asset Folder</span>
+                            <InputText class="form-control" id="Tags" @bind-value="_assetFolder" />
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <button class="btn btn-primary" @onclick="SaveAssetsFolder">Save</button>
+                    </div>
+                </div>
+
+           
+                <div class="row mt-5">
+                    <h3>Account Manager</h3>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Username</th>
+                                <th>Role</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var user in _users) {
+                                <tr>
+                                    <td>@user.Username</td>
+                                    <td>
+                                        <select class="form-select form-select-sm"
+                                                @bind="user.Role">
+                                            <option value="Pending">Pending</option>
+                                            <option value="User">User</option>
+                                            <option value="Admin">Admin</option>
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-sm btn-primary"
+                                                @onclick="() => UpdateRole(user)">
+                                            Save
+                                        </button>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+                
             }
         </div>
            
@@ -58,14 +76,17 @@
 @code {
     [Inject] public ApiClient ApiClient { get; set; }
     [Inject] public AuthenticationStateProvider AuthProvider { get; set; }
-
+    [Inject] public SettingService SettingService { get; set; }
+    [Inject] public IToastService Toast { get; set; }
     private List<Account> _users;
+    private string _assetFolder;
 
     protected override async Task OnInitializedAsync() {
         var authState = await AuthProvider.GetAuthenticationStateAsync();
         if (authState.User.Identity?.IsAuthenticated ?? false
             && authState.User.IsInRole("Admin")) {
             _users = await ApiClient.GetAsync<List<Account>>("/api/account/users");
+            _assetFolder = await SettingService.GetAssetsFolderAsync() ?? "";
         }
     }
 
@@ -77,5 +98,18 @@
 
         await ApiClient.PutAsync<string, AccountUpdateRequest>($"/api/account/users/updateRole", request);
         _users = await ApiClient.GetAsync<List<Account>>("/api/account/users");
+        
     }
+
+    private async Task SaveAssetsFolder()
+    {
+        try {
+            await SettingService.SetAssetsFolderAsync(_assetFolder);
+            Toast.ShowSuccess("Assets folder updated. Please restart the server to apply changes.");
+        }
+        catch (Exception ex) {
+            Toast.ShowError($"Failed to update: {ex.Message}");
+        }
+    }
+    
 }

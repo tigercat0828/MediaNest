@@ -1,10 +1,10 @@
-﻿using MediaNest.ApiService.Services;
+﻿using MediaNest.Web.Services;
 using MediaNest.Shared.Entities;
 using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
 
 
-namespace MediaNest.ApiService.Endpoints;
+namespace MediaNest.Web.Endpoints;
 public static class ComicServiceEndpoints {
     public const int DEFAULT_COUNT = 5;
     public static void MapComicServiceEndpoints(this IEndpointRouteBuilder builder) {

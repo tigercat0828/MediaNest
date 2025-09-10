@@ -1,7 +1,8 @@
-﻿@page "/comic"
+﻿@page "/"   
+@page "/comic"
 @page "/comic/search/{searchText}"
 
-
+@* TODO : "/" new home page*@
 <AuthorizeView Roles="Admin,User">
     <NotAuthorized>
         <div class="container">
@@ -46,7 +47,8 @@
                         @foreach (var comic in _comics) {
                             // TODO : or fix it to P001.jpg
                             string coverSrc = $"/Assets/Comics/{comic.FolderName}/001.jpg";
-                            string href = $"/comic/view/{comic.Id}";
+                            // string href = $"/comic/view/{comic.Id}";
+                            string href = $"/comic/{comic.Id}";
                             <ImageAnchor href="@href" coverSrc="@coverSrc" title="@comic.Title" />
                         }
                     </div>

@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 
-namespace MediaNest.ApiService.Database;
+namespace MediaNest.Web.Database;
 public static class MongoDbServiceExtensions {
 
     /// <summary>

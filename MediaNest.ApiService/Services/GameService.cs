@@ -1,7 +1,7 @@
-﻿using MediaNest.ApiService.Repositories;
+﻿using MediaNest.Web.Repositories;
 using MediaNest.Shared.Entities;
 
-namespace MediaNest.ApiService.Services;
+namespace MediaNest.Web.Services;
 
 public interface IGameService {
     Task<List<Game>> GetAllGames();

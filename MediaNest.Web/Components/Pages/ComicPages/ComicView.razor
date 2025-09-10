@@ -12,7 +12,7 @@
             Please <a href="/account/login">Login</a> first!
         </div>
     </NotAuthorized>
-        <Authorized>
+    <Authorized>
         @if (currentComic != null) {
             <div class="container">
 
@@ -72,7 +72,7 @@
                         <input type="text" class="form-control" @bind-value="currentComic.Series" >
                     </div>
                     <div class="input-group mb-3">
-                        <span class="input-group-text">系列</span>
+                        <span class="input-group-text">角色</span>
                         <input type="text" class="form-control" @bind-value="charaStr" >
                     </div>
                     <div class="input-group mb-3">
@@ -132,13 +132,13 @@
     }
     private async Task DeleteComic() {
         await ApiClient.DeleteAsync<string>($"/api/comic/{id}");
+        // TODO : delete at backend ?
         if (Directory.Exists(folderName)) {
             Directory.Delete(folderName, recursive: true);
         }
         NavigationManager.NavigateTo("/comic");
     }
     private void ScrollToTop() {
-        // 使用 JavaScript 來捲動至最上
         JSRuntime.InvokeVoidAsync("scrollToTop");
     }
     // private async Task CopyLink() {

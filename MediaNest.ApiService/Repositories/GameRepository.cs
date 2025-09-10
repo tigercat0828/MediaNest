@@ -2,7 +2,7 @@
 using MediaNest.Web.Database;
 using Microsoft.EntityFrameworkCore;
 
-namespace MediaNest.ApiService.Repositories;
+namespace MediaNest.Web.Repositories;
 
 public interface IGameRepository {
     Task<List<Game>> GetAllGames();
