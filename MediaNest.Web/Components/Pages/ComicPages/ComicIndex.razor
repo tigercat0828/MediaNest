@@ -3,7 +3,7 @@
 @page "/comic/search/{searchText}"
 
 @* TODO : "/" new home page*@
-<AuthorizeView Roles="Admin,User">
+<AuthorizeView>
     <NotAuthorized>
         <div class="container">
             <div class="alert alert-info mt-2">
@@ -12,53 +12,65 @@
         </div>
     </NotAuthorized>
     <Authorized>
-        <div class="container-fluid">
-            @* Search Bar and Random Button *@
-            <div class="row mb-3">
-                <div class="col-11">
-                    <div class="input-group">
-                        <button class="btn btn-outline-primary" @onclick="GetRandomComics"><i class="bi bi-shuffle"></i></button>
-                        <input type="text" class="form-control" placeholder="輸入關鍵字進行搜尋..." @bind-value="searchText" />
-                        <button class="btn btn-outline-primary" @onclick="HandleSearch">搜尋</button>
+        <AuthorizeView Roles="Pending">
+            <Authorized Context="visitor">
+                <div class="container">
+                    <div class="alert alert-info mt-2">
+                        You have no permission. Please message the Administrator.
                     </div>
                 </div>
-                <div class="col-1">
-                    <a class="btn btn-success" href="/comic/create">新建</a>
-                </div>
-            </div>
-            @* pagination *@
-            <div class="row mb-1">
-                <nav aria-label="Page navigation example">
-                    <ul class="pagination">
-                        <li class="page-item"><button class="page-link" @onclick="LastPage"><i class="bi bi-arrow-left"></i></button></li>
-                        @for (int i = 1; i<=_totalPage; i++)
+            </Authorized>
+        </AuthorizeView>
+        <AuthorizeView Roles="Admin,User">
+            <Authorized Context="general">
+                <div class="container-fluid">
+                    @* Search Bar and Random Button *@
+                    <div class="row mb-3">
+                        <div class="col-11">
+                            <div class="input-group">
+                                <button class="btn btn-outline-primary" @onclick="GetRandomComics"><i class="bi bi-shuffle"></i></button>
+                                <input type="text" class="form-control" placeholder="輸入關鍵字進行搜尋..." @bind-value="searchText" />
+                                <button class="btn btn-outline-primary" @onclick="HandleSearch">搜尋</button>
+                            </div>
+                        </div>
+                        <div class="col-1">
+                            <a class="btn btn-success" href="/comic/create">新建</a>
+                        </div>
+                    </div>
+                    @* pagination *@
+                    <div class="row mb-1">
+                        <nav aria-label="Page navigation example">
+                            <ul class="pagination">
+                                <li class="page-item"><button class="page-link" @onclick="LastPage"><i class="bi bi-arrow-left"></i></button></li>
+                                @for (int i = 1; i<=_totalPage; i++)
+                                {
+                                    int pageNo = i;
+                                    <li class="page-item"><button class="page-link" @onclick="() => SetPage(pageNo)">@pageNo</button></li>
+                                }
+                                <li class="page-item"><button class="page-link" @onclick="NextPage"><i class="bi bi-arrow-right"></i></button></li>
+                            </ul>
+                        </nav>
+                    </div>
+                    <div class="row">
+                        @if (_comics != null) {
+                            <div class="row d-flex flex-wrap">
+                                @foreach (var comic in _comics) {
+                                    // TODO : or fix it to P001.jpg
+                                    string coverSrc = $"/Assets/Comics/{comic.FolderName}/001.jpg";
+                                    // string href = $"/comic/view/{comic.Id}";
+                                    string href = $"/comic/{comic.Id}";
+                                    <ImageAnchor href="@href" coverSrc="@coverSrc" title="@comic.Title" />
+                                }
+                            </div>
+                        }
+                        else
                         {
-                            int pageNo = i;
-                            <li class="page-item"><button class="page-link" @onclick="() => SetPage(pageNo)">@pageNo</button></li>
-                        }
-                        <li class="page-item"><button class="page-link" @onclick="NextPage"><i class="bi bi-arrow-right"></i></button></li>
-                    </ul>
-                </nav>
-            </div>
-
-            <div class="row">
-                @if (_comics != null) {
-                    <div class="row d-flex flex-wrap">
-                        @foreach (var comic in _comics) {
-                            // TODO : or fix it to P001.jpg
-                            string coverSrc = $"/Assets/Comics/{comic.FolderName}/001.jpg";
-                            // string href = $"/comic/view/{comic.Id}";
-                            string href = $"/comic/{comic.Id}";
-                            <ImageAnchor href="@href" coverSrc="@coverSrc" title="@comic.Title" />
+                            <Spinner />
                         }
                     </div>
-                }
-                else
-                {
-                    <Spinner />
-                }
-            </div>
-        </div>
+                </div>
+            </Authorized>
+        </AuthorizeView>
     </Authorized>
 </AuthorizeView>
 

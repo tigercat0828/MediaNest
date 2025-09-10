@@ -17,6 +17,10 @@
             <label for="password">Password</label>
             <InputText id="password" type="password" class="form-control" @bind-Value="authRequest.Password" />
         </div>
+        <div class="form-group mt-2">
+            <label for="repeat">Check Password</label>
+            <InputText id="repeat" type="password" class="form-control" @bind-Value="repeatPassword" />
+        </div>
         <button type="submit" class="btn btn-primary mt-2">Register</button>
     </EditForm>
 </div>
@@ -28,8 +32,12 @@
     [Inject] public NavigationManager Navigation { get; set; }
     [Inject] public AuthenticationStateProvider AuthStateProvider { get; set; }
     private string Message = "";
+    private string repeatPassword { get; set; }
     private async Task HandleRegister() {
-        
+        if (authRequest.Password != repeatPassword) {
+            Message = "password not matched";
+            return;
+        }
         var result = await ApiClient.PostAsync<AuthResponse, AuthRequest>("api/account/register", authRequest);
         if (result != null && result.Token != null) {
             // Use CustomAuthenticationStateProvider to set the authentication state

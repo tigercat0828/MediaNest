@@ -6,7 +6,7 @@ using System.Security.Claims;
 
 namespace MediaNest.Web.Endpoints;
 public static class ComicServiceEndpoints {
-    public const int DEFAULT_COUNT = 5;
+    public const int DEFAULT_COUNT = 30;
     public static void MapComicServiceEndpoints(this IEndpointRouteBuilder builder) {
         var group = builder
             .MapGroup("/api/comic")

@@ -48,6 +48,8 @@ app.UseStaticFiles(new StaticFileOptions {  // for .vtt subtitle
 });
 AppState.AssetsFolder = builder.Configuration["AssetsFolder"];
 if (Directory.Exists(AppState.AssetsFolder)) {
+    var comicsPath = Path.Combine(AppState.AssetsFolder, "Comics");
+    Directory.CreateDirectory(comicsPath); 
     app.UseStaticFiles(new StaticFileOptions {
         FileProvider = new PhysicalFileProvider(AppState.AssetsFolder),
         RequestPath = new PathString("/Assets"),

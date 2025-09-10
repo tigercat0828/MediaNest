@@ -13,44 +13,56 @@
         <EditForm Model="_currentComic" FormName="ComicForm">
             <DataAnnotationsValidator />
             <div class="container">
+                <h3>New Album</h3>
                 <div class="input-group mb-3">
-                    <span class="input-group-text">標題</span>
-                    <InputText class="form-control" id="Title" @bind-value="_currentComic.Title" />
+                    <span class="input-group-text w-25">Title</span>
+                    <InputText class="form-control" id="Title" @bind-Value="_currentComic.Title" />
                 </div>
+
                 <div class="input-group mb-3">
-                    <span class="input-group-text">副標</span>
-                    <InputText class="form-control" id="SubTitle" @bind-value="_currentComic.SubTitle" />
+                    <span class="input-group-text w-25">SubTitle</span>
+                    <InputText class="form-control" id="SubTitle" @bind-Value="_currentComic.SubTitle" />
                 </div>
+
                 <div class="input-group mb-3">
-                    <span class="input-group-text">系列</span>
-                    <InputText class="form-control" id="Series" @bind-value="_currentComic.Series" />
+                    <span class="input-group-text w-25">Series</span>
+                    <InputText class="form-control" id="Series" @bind-Value="_currentComic.Series" />
                 </div>
+
                 <div class="input-group mb-3">
-                    <span class="input-group-text">作者</span>
-                    <InputText class="form-control" id="Author" @bind-value="_currentComic.Author" />
+                    <span class="input-group-text w-25">Author</span>
+                    <InputText class="form-control" id="Author" @bind-Value="_currentComic.Author" />
                 </div>
+
                 <div class="input-group mb-3">
-                    <span class="input-group-text">簡介</span>
-                    <InputText class="form-control" id="Description" @bind-value="_currentComic.Description" />
+                    <span class="input-group-text w-25">Description</span>
+                    <InputText class="form-control" id="Description" @bind-Value="_currentComic.Description" />
                 </div>
+
                 <div class="input-group mb-3">
-                    <span class="input-group-text">標籤</span>
-                    <InputText class="form-control" id="Tags" @bind-value="_tagStr" />
+                    <span class="input-group-text w-25">Tags</span>
+                    <InputText class="form-control" id="Tags" @bind-Value="_tagStr" />
                 </div>
+
                 <div class="input-group mb-3">
-                    <span class="input-group-text">角色</span>
-                    <InputText class="form-control" id="Tags" @bind-value="_characterStr" />
+                    <span class="input-group-text w-25">Figure</span>
+                    <InputText class="form-control" id="Figure" @bind-Value="_characterStr" />
                 </div>
+
                 @if (!_isEditMode) {
                     <div class="mb-3">
-                        <ComicFileUploader SaveDirectory="@directory" SaveSubFolder="@_currentComic.FolderName" OnUploadButtonPressed="HandleUploadButtonPressed" />
+                        <ComicFileUploader SaveDirectory="@directory"
+                                           SaveSubFolder="@_currentComic.FolderName"
+                                           OnUploadButtonPressed="HandleUploadButtonPressed" />
                     </div>
                 }
+
                 <div>
                     @if (_isUploadButtonPressed || _isEditMode) {
                         <button class="btn btn-success" @onclick="HandleUpsertGame">完成</button>
                     }
                 </div>
+
             </div>
         </EditForm>
     </Authorized>
