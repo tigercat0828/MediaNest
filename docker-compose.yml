@@ -1,0 +1,8 @@
+services:
+  apiservice:
+    build:
+      dockerfile:  MediaNest.ApiService/Dockerfile
+    ports:
+      - "5001:8080"
+    environment:
+      - MongoDB__ConnectionString=

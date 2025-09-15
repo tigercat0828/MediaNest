@@ -41,15 +41,19 @@ if (!app.Environment.IsDevelopment()) {
 }
 
 app.UseHttpsRedirection();
+
 app.UseStaticFiles();
 app.UseStaticFiles(new StaticFileOptions {  // for .vtt subtitle
     ServeUnknownFileTypes = true,
     DefaultContentType = "text/vtt"
 });
-AppState.AssetsFolder = builder.Configuration["AssetsFolder"];
+AppState.AssetsFolder = builder.Configuration["AssetsFolder"] ?? "/Assets";
+string[] subDirs = { "Comics", "Videos", "Images" };
+foreach (var dir in subDirs) {
+    var path = Path.Combine(AppState.AssetsFolder, dir);
+    Directory.CreateDirectory(path);
+}
 if (Directory.Exists(AppState.AssetsFolder)) {
-    var comicsPath = Path.Combine(AppState.AssetsFolder, "Comics");
-    Directory.CreateDirectory(comicsPath); 
     app.UseStaticFiles(new StaticFileOptions {
         FileProvider = new PhysicalFileProvider(AppState.AssetsFolder),
         RequestPath = new PathString("/Assets"),
