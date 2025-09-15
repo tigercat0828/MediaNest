@@ -1,8 +1,53 @@
+version: "3.9"
+
 services:
-  apiservice:
-    build:
-      dockerfile:  MediaNest.ApiService/Dockerfile
-    ports:
-      - "5001:8080"
-    environment:
-      - MongoDB__ConnectionString=
+    blazor:
+        build:
+            context: .
+            dockerfile: MediaNest.Web/Dockerfile
+        container_name: meidanest_blazor
+        environment:
+            - DOTNET_ENVIRONMENT=Docker
+        ports:
+            - "5001:8080"
+        volumes:
+            - ./Assets:/Assets
+        depends_on:
+            - mongo
+            - webapi
+
+    webapi:
+        build:
+            context: .
+            dockerfile: MediaNest.ApiService/Dockerfile
+        container_name: meidanest_webapi
+        environment:
+            - DOTNET_ENVIRONMENT=Docker
+        ports:
+            - "5000:8080"
+        depends_on:
+            - mongo
+   
+    mongo:
+        image: mongo:7
+        container_name: MediaNest_Mongo
+        restart: always
+        ports:
+            - "27017:27017"
+        volumes:
+            - mongo_data:/data/db
+            - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+        environment:
+            - MONGO_INITDB_DATABASE=MediaNest
+
+volumes:
+  mongo_data:
+
+        
+    
+    
+
+
+        
+
+      

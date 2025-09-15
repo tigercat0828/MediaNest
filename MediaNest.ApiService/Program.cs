@@ -32,6 +32,9 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
     };
 });
 builder.Services.AddAuthorization();
+
+
+/*
 // ========================================================
 // SQL Server
 // ========================================================
@@ -41,6 +44,9 @@ builder.Services.AddDbContext<AppDbContext>(options => {
 });
 builder.Services.AddScoped<IGameRepository, GameRepository>();
 builder.Services.AddScoped<IGameService, GameService>();
+*/
+
+
 // ========================================================
 // MongoDB
 // ========================================================
@@ -64,7 +70,9 @@ if (!app.Environment.IsDevelopment()) {
 // ========================================================
 // 2. HTTPS / Static Files / Routing
 // ========================================================
-app.UseHttpsRedirection();
+if (!app.Environment.IsEnvironment("Docker")) {
+    app.UseHttpsRedirection();
+}
 // app.UseStaticFiles();
 app.UseRouting();
 // ========================================================
@@ -75,10 +83,10 @@ app.UseAuthorization();
 // ========================================================
 // 4. Map Endpoints
 // ========================================================
-app.MapGet("/", () => "Halo");
+app.MapGet("/", () => "api is running");
 app.MapAuthEndpoints();
-app.MapGameEndpoints();
 app.MapComicServiceEndpoints();
+//app.MapGameEndpoints();
 
 app.MapDefaultEndpoints();
 // ========================================================

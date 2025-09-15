@@ -19,16 +19,21 @@ builder.Services.AddBlazoredToast();
 builder.Services.AddAuthentication();
 builder.Services.AddCascadingAuthenticationState();
 
+// ====================================================================
+// Authentication & Authorization
+// ====================================================================
 builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthStateProvider>();
 
-// customs ervice
+// ====================================================================
+// customs service
+// ====================================================================
 builder.Services.AddSingleton<SettingService>();
 builder.Services.AddScoped<JSRuntimeService>();
 builder.Services.AddOutputCache();
 
-
+var apiBaseUrl = builder.Configuration["ApiClient:BaseUrl"] ?? "https+http://apiservice";
 builder.Services.AddHttpClient<ApiClient>(client => {
-    client.BaseAddress = new("https+http://apiservice");
+    client.BaseAddress = new(apiBaseUrl);
 });
 
 
@@ -42,7 +47,11 @@ if (!app.Environment.IsDevelopment()) {
 
 app.UseHttpsRedirection();
 
+
 app.UseStaticFiles();
+// ====================================================================
+// Config MediaFiles
+// ====================================================================
 app.UseStaticFiles(new StaticFileOptions {  // for .vtt subtitle
     ServeUnknownFileTypes = true,
     DefaultContentType = "text/vtt"
