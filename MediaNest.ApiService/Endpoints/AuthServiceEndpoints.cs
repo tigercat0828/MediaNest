@@ -48,7 +48,7 @@ public static class AuthServiceEndpoints {
     }
 
     // 新增：變更密碼 endpoint
-    private static async Task<IResult> ChangePassword(AuthService authService, AuthRequest request) {
+    private static async Task<IResult> ChangePassword(AuthService authService, AccountUpdateRequest request) {
         var response = await authService.ChangePassword(request);
         if (!string.IsNullOrEmpty(response.Message) && response.Message.Contains("success", StringComparison.OrdinalIgnoreCase))
             return Results.Ok(response);

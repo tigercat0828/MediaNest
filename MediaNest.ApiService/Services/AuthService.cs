@@ -52,17 +52,17 @@ public class AuthService (IConfiguration configuration, IMongoCollection<Account
             Expiration = DateTime.UtcNow.AddHours(1)
         };
     }
-    public async Task<AuthResponse> ChangePassword(AuthRequest request) {
+    public async Task<AuthResponse> ChangePassword(AccountUpdateRequest request) {
         var user = await accounts.Find(u => u.Username == request.Username).FirstOrDefaultAsync();
         if (user == null) return new AuthResponse { Message = "User not found " };
 
         var hasher = new PasswordHasher<Account>();
-        var verifyResult = hasher.VerifyHashedPassword(user, user.HashedPassword, request.Password);
+        var verifyResult = hasher.VerifyHashedPassword(user, user.HashedPassword, request.CurrentPassword);
         if (verifyResult == PasswordVerificationResult.Failed) return new AuthResponse { Message = "Password is incorrect" };
 
-        if (string.IsNullOrEmpty(request.Password)) return new AuthResponse { Message = "New password is required" };
+        if (string.IsNullOrEmpty(request.NewPassword)) return new AuthResponse { Message = "New password is required" };
 
-        var newHashedPassword = hasher.HashPassword(user, request.Password);
+        var newHashedPassword = hasher.HashPassword(user, request.NewPassword);
         var update = Builders<Account>.Update.Set(u => u.HashedPassword, newHashedPassword);
         var result = await accounts.UpdateOneAsync(u=>u.Username == request.Username, update);
         if (result.ModifiedCount == 0) return new AuthResponse { Message = "Password update failed." };

@@ -18,11 +18,11 @@
                         <ValidationSummary />
                         <div class="mb-3">
                             <label>Current Password</label>
-                            <InputText type="password" class="form-control" @bind-Value="changePasswordRequest.Password" />
+                            <InputText type="password" class="form-control" @bind-Value="changePasswordRequest.CurrentPassword" />
                         </div>
                         <div class="mb-3">
                             <label>New Password</label>
-                            <InputText type="password" class="form-control" @bind-Value="_newPassword" />
+                            <InputText type="password" class="form-control" @bind-Value="changePasswordRequest.NewPassword" />
                         </div>
                         <div class="mb-3">
                             <label>Confirm New Password</label>

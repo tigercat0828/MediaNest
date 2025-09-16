@@ -16,14 +16,14 @@ public partial class Settings : ComponentBase{
     private List<Account> _users;
     private string _showDeleteConfirmFor;
 
-    private AuthRequest changePasswordRequest = new();
-    private string _newPassword;
+    private AccountUpdateRequest changePasswordRequest = new();
     private string _confirmPassword;
 
     protected override async Task OnInitializedAsync() {
         var authState = await AuthProvider.GetAuthenticationStateAsync();
         if (authState.User.Identity?.IsAuthenticated ?? false && authState.User.IsInRole("Admin")) {
             _users = await ApiClient.GetAsync<List<Account>>("/api/account/users");
+            changePasswordRequest.Username = authState.User.Identity?.Name; 
         }
     }
 
@@ -55,31 +55,28 @@ public partial class Settings : ComponentBase{
         _showDeleteConfirmFor = null;
     }
     private async Task ChangePassword() {
-        var authState = await AuthProvider.GetAuthenticationStateAsync();
-        var username = authState.User.Identity?.Name;
-        if (string.IsNullOrWhiteSpace(username)) {
+
+        if (string.IsNullOrWhiteSpace(changePasswordRequest.Username)) {
             Toast.ShowError("User not authenticated.");
             return;
         }
-        changePasswordRequest.Username = username;
+  
 
-        if (string.IsNullOrWhiteSpace(_newPassword) || string.IsNullOrWhiteSpace(_confirmPassword)) {
+        if (string.IsNullOrWhiteSpace(changePasswordRequest.NewPassword) || string.IsNullOrWhiteSpace(_confirmPassword)) {
             Toast.ShowError("New password and confirmation are required.");
             return;
         }
-        if (_newPassword != _confirmPassword) {
+        if (changePasswordRequest.NewPassword != _confirmPassword) {
             Toast.ShowError("New password and confirmation do not match.");
             return;
         }
-        // 將新密碼暫存於 Message 欄位（後端需支援）
-        changePasswordRequest.Password = _newPassword;
-        var response = await ApiClient.PostAsync<AuthResponse, AuthRequest>("/api/account/changePassword", changePasswordRequest);
+        var response = await ApiClient.PostAsync<AuthResponse, AccountUpdateRequest>("/api/account/changePassword", changePasswordRequest);
         if (response != null && response.Token != null) {
             await ((CustomAuthStateProvider)AuthProvider).MarkUserAsAuthenticated(response);
 
             Toast.ShowSuccess("Password changed successfully.");
-            changePasswordRequest.Password = "";
-            _newPassword = "";
+            changePasswordRequest.NewPassword = "";
+            changePasswordRequest.CurrentPassword = "";
             _confirmPassword = "";
             Navigation.NavigateTo(Navigation.Uri, forceLoad: true);
         }
