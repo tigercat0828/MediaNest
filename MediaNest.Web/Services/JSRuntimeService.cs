@@ -1,6 +1,7 @@
 ﻿using Microsoft.JSInterop;
 
 namespace MediaNest.Web.Services;
+
 public class JSRuntimeService(IJSRuntime jSRuntime) {
     private readonly IJSRuntime JSRuntime = jSRuntime;
     public async Task CopyToClipboard(string text) {

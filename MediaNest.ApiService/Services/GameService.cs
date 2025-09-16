@@ -1,5 +1,5 @@
-﻿using MediaNest.Web.Repositories;
-using MediaNest.Shared.Entities;
+﻿using MediaNest.Shared.Entities;
+using MediaNest.Web.Repositories;
 
 namespace MediaNest.Web.Services;
 

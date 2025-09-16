@@ -2,6 +2,7 @@
 using MongoDB.Driver;
 
 namespace MediaNest.Web.Database;
+
 public static class MongoDbServiceExtensions {
 
     /// <summary>

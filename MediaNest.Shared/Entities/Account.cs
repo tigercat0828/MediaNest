@@ -3,6 +3,7 @@ using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 
 namespace MediaNest.Shared.Entities;
+
 public class Account {
     [BsonId]
     [BsonRepresentation(BsonType.ObjectId)]

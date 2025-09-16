@@ -13,3 +13,4 @@ if (!db.getCollectionNames().includes("Comics")) {
     db.createCollection("Comics");
     print("✅ Comics collection created");
 }
+

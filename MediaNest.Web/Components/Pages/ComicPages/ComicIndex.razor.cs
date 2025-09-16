@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 
 namespace MediaNest.Web.Components.Pages.ComicPages;
+
 public partial class ComicIndex : ComponentBase {
     [Inject] public ApiClient ApiClient { get; set; }
     [Inject] public AuthenticationStateProvider AuthProvider { get; set; }  // TODO : Authorization

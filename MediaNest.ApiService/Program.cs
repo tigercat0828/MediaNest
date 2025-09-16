@@ -1,11 +1,9 @@
-using MediaNest.Web.Database;
-using MediaNest.Web.Endpoints;
-using MediaNest.Web.Repositories;
-using MediaNest.Web.Services;
+using MediaNest.ApiService.Services;
 using MediaNest.Shared.Entities;
 using MediaNest.Web.Database;
+using MediaNest.Web.Endpoints;
+using MediaNest.Web.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Scalar.AspNetCore;
 using System.Text;
@@ -55,10 +53,14 @@ builder.Services.AddMongoClient();
 builder.Services.AddMongoCollection<Account>("Accounts");
 builder.Services.AddMongoCollection<Comic>("Comics");
 builder.Services.AddScoped<ComicService>();
-// ========================================================
-
+builder.Services.AddScoped<AuthService>();
 
 var app = builder.Build();      // <<<<<<<<<<<<<<<
+// Seed Admin
+using (var scope = app.Services.CreateScope()) {
+    var services = scope.ServiceProvider.GetRequiredService<AuthService>();
+    await services.SetSeedAdminIfNotExist();
+}
 
 // ========================================================
 // 1. Error Handling

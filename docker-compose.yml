@@ -1,17 +1,18 @@
-version: "3.9"
-
 services:
     blazor:
         build:
             context: .
             dockerfile: MediaNest.Web/Dockerfile
-        container_name: meidanest_blazor
+        container_name: medianest_blazor
         environment:
             - DOTNET_ENVIRONMENT=Docker
+            - AssetsFolder=/app/Assets
         ports:
             - "5001:8080"
         volumes:
-            - ./Assets:/Assets
+            #- ./Assets:/app/Assets
+            - ${ASSETS_PATH}:/app/Assets
+            - ./blazor-keys:/app/keys
         depends_on:
             - mongo
             - webapi
@@ -20,7 +21,7 @@ services:
         build:
             context: .
             dockerfile: MediaNest.ApiService/Dockerfile
-        container_name: meidanest_webapi
+        container_name: medianest_webapi
         environment:
             - DOTNET_ENVIRONMENT=Docker
         ports:
@@ -33,7 +34,7 @@ services:
         container_name: MediaNest_Mongo
         restart: always
         ports:
-            - "27017:27017"
+            - "27018:27017"
         volumes:
             - mongo_data:/data/db
             - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro

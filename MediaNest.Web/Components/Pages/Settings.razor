@@ -12,19 +12,6 @@
                 <Spinner />
             }
             else {
-                <div class="row">
-                    <div class="col-8">
-                        <div class="input-group">
-                            <span class="input-group-text">Asset Folder</span>
-                            <InputText class="form-control" id="Tags" @bind-value="_assetFolder" />
-                        </div>
-                    </div>
-                    <div class="col-4">
-                        <button class="btn btn-primary" @onclick="SaveAssetsFolder">Save</button>
-                    </div>
-                </div>
-
-           
                 <div class="row mt-5">
                     <h3>Account Manager</h3>
                     <table class="table">
@@ -48,10 +35,7 @@
                                         </select>
                                     </td>
                                     <td>
-                                        <button class="btn btn-sm btn-primary"
-                                                @onclick="() => UpdateRole(user)">
-                                            Save
-                                        </button>
+                                        <button class="btn btn-sm btn-primary" @onclick="() => UpdateRole(user)">Save</button>
                                     </td>
                                 </tr>
                             }
@@ -86,7 +70,6 @@
         if (authState.User.Identity?.IsAuthenticated ?? false
             && authState.User.IsInRole("Admin")) {
             _users = await ApiClient.GetAsync<List<Account>>("/api/account/users");
-            _assetFolder = await SettingService.GetAssetsFolderAsync() ?? "";
         }
     }
 
@@ -101,15 +84,6 @@
         
     }
 
-    private async Task SaveAssetsFolder()
-    {
-        try {
-            await SettingService.SetAssetsFolderAsync(_assetFolder);
-            Toast.ShowSuccess("Assets folder updated. Please restart the server to apply changes.");
-        }
-        catch (Exception ex) {
-            Toast.ShowError($"Failed to update: {ex.Message}");
-        }
-    }
+   
     
 }

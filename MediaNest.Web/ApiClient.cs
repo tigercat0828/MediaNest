@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
 using System.Net;
 using System.Net.Http.Headers;
 namespace MediaNest.Web;
+
 public class ApiClient(HttpClient client, ProtectedLocalStorage localStorage, AuthenticationStateProvider authStateProvider) {
     public async Task SetAuthorizeHeader() {
         var session = (await localStorage.GetAsync<AuthResponse>("sessionState")).Value;

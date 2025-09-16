@@ -2,6 +2,7 @@
 using MongoDB.Bson.Serialization.Attributes;
 
 namespace MediaNest.Shared.Entities;
+
 public class Comic {
     [BsonId]
     [BsonRepresentation(BsonType.ObjectId)]

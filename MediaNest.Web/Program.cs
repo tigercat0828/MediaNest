@@ -4,6 +4,7 @@ using MediaNest.Web.AuthStateProvider;
 using MediaNest.Web.Components;
 using MediaNest.Web.Services;
 using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.FileProviders;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -15,13 +16,16 @@ builder.AddServiceDefaults();
 builder.Services.AddRazorComponents().AddInteractiveServerComponents();
 builder.Services.AddBlazoredToast();
 
-// Authentication & Authorization
-builder.Services.AddAuthentication();
-builder.Services.AddCascadingAuthenticationState();
+// Persist Key for Docker
+builder.Services.AddDataProtection()
+    .PersistKeysToFileSystem(new DirectoryInfo("/app/keys"))
+    .SetApplicationName("MediaNest");
 
 // ====================================================================
 // Authentication & Authorization
 // ====================================================================
+builder.Services.AddAuthentication();
+builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthStateProvider>();
 
 // ====================================================================
@@ -32,6 +36,7 @@ builder.Services.AddScoped<JSRuntimeService>();
 builder.Services.AddOutputCache();
 
 var apiBaseUrl = builder.Configuration["ApiClient:BaseUrl"] ?? "https+http://apiservice";
+Console.WriteLine($"Api BaseUrl : {apiBaseUrl}");
 builder.Services.AddHttpClient<ApiClient>(client => {
     client.BaseAddress = new(apiBaseUrl);
 });
@@ -56,7 +61,9 @@ app.UseStaticFiles(new StaticFileOptions {  // for .vtt subtitle
     ServeUnknownFileTypes = true,
     DefaultContentType = "text/vtt"
 });
-AppState.AssetsFolder = builder.Configuration["AssetsFolder"] ?? "/Assets";
+var folder = builder.Configuration["AssetsFolder"] ?? "/app/Assets";
+AppState.AssetsFolder = Path.GetFullPath(folder);
+Console.WriteLine($"AssetsFolder : {AppState.AssetsFolder}");
 string[] subDirs = { "Comics", "Videos", "Images" };
 foreach (var dir in subDirs) {
     var path = Path.Combine(AppState.AssetsFolder, dir);
