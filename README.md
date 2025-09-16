@@ -3,6 +3,7 @@
 A web application designed to run as a mini HomeLab host on a family mini PC.
 It provides a convenient UI to manage albums, upload and browse images, and handle user access.
 
+
 ## ✨ Features
 - 🌄 Album Service
     - Upload images file
@@ -12,14 +13,43 @@ It provides a convenient UI to manage albums, upload and browse images, and hand
 - 🔑 User System
     - Login & Registration
     - Role-based access control
-    - Admin Panel for user management, file management
+    - Admin Panel for user management
 
+## 🛳️ Deployment
+MediaNest supports Docker Compose for one-click deployment.  
+This will start **Blazor frontend + WebAPI + MongoDB** together.
+
+default administrator account
+username : admin
+password : admin
+
+1. Clone the repository
+```bash
+git clone https://github.com/tigercat0828/MediaNest.git
+cd MediaNest
+```
+2. Create `.env` file and edit
+```bash
+echo ASSETS_PATH=/absolute/path/to/your/assets > .env
+vi .env   # or use your favorite editor
+```
+3. start the services
+```bash
+docker compose up -d
+```
+
+
+For developers (rebuild after code changes):
+```bash
+docker compose up -d --build
+```
+If cache issues occur:
+```bash
+docker compose build --no-cache
+docker compose up -d
+```
 
 ## 🖼️ Screenshots
-
-
-
-
 
 
 |  |  |
@@ -44,7 +74,5 @@ Before running the project, make sure you have:
 -  .NET 9 Runtime
 -  A running MongoDB service
 
-🛳️ Roadmap
-
-- Docker container support (easy deployment)
+## 🛳️ Roadmap
 - Video service (upload & stream videos)

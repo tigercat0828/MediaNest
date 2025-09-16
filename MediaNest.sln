@@ -18,7 +18,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "方案項目", "方案項�
 		.env = .env
 		docker-compose.yml = docker-compose.yml
 		mongo-init.js = mongo-init.js
-		Setup.md = Setup.md
 	EndProjectSection
 EndProject
 Global

@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Identity.Client;
 using Microsoft.IdentityModel.Tokens;
 using MongoDB.Driver;
+using MongoDB.Driver.Linq;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -50,6 +51,39 @@ public class AuthService (IConfiguration configuration, IMongoCollection<Account
             RefreshToken = GenerateJwtToken(user, isRefreshToken: true),
             Expiration = DateTime.UtcNow.AddHours(1)
         };
+    }
+    public async Task<AuthResponse> ChangePassword(AuthRequest request) {
+        var user = await accounts.Find(u => u.Username == request.Username).FirstOrDefaultAsync();
+        if (user == null) return new AuthResponse { Message = "User not found " };
+
+        var hasher = new PasswordHasher<Account>();
+        var verifyResult = hasher.VerifyHashedPassword(user, user.HashedPassword, request.Password);
+        if (verifyResult == PasswordVerificationResult.Failed) return new AuthResponse { Message = "Password is incorrect" };
+
+        if (string.IsNullOrEmpty(request.Password)) return new AuthResponse { Message = "New password is required" };
+
+        var newHashedPassword = hasher.HashPassword(user, request.Password);
+        var update = Builders<Account>.Update.Set(u => u.HashedPassword, newHashedPassword);
+        var result = await accounts.UpdateOneAsync(u=>u.Username == request.Username, update);
+        if (result.ModifiedCount == 0) return new AuthResponse { Message = "Password update failed." };
+
+        return new AuthResponse {
+            Token = GenerateJwtToken(user, false),
+            RefreshToken = GenerateJwtToken(user, true),
+            Expiration = DateTime.UtcNow.AddHours(1),
+            Message = "Password changed successfully."
+        };
+    }
+    public async Task<AuthResponse> DeleteAsync(string username) {
+        // delete user by given username
+        if (username == "admin") return new AuthResponse { Message = "Admin cannot be deleted" };
+
+        var user = await accounts.Find(u => u.Username == username).FirstOrDefaultAsync();
+        if (user == null) return new AuthResponse { Message = "User not found" };
+
+        var result = await accounts.DeleteOneAsync(u => u.Username == username);
+        if (result.DeletedCount == 0) return new AuthResponse { Message = "Delete failed" };
+        return new AuthResponse { Message = "Account deleted successfully" };
     }
     public async Task<bool> UpdateUserRoleAsync(AccountUpdateRequest request) {
         var update = Builders<Account>.Update.Set(u => u.Role, request.Role);

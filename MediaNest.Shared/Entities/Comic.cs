@@ -1,5 +1,6 @@
 ﻿using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
+using System.ComponentModel.DataAnnotations;
 
 namespace MediaNest.Shared.Entities;
 
@@ -7,6 +8,7 @@ public class Comic {
     [BsonId]
     [BsonRepresentation(BsonType.ObjectId)]
     public string Id { get; set; } = string.Empty;
+    [Required]
     public string Title { get; set; } = string.Empty;
     public string SubTitle { get; set; } = string.Empty;
     public string Series { get; set; } = string.Empty;

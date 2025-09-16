@@ -1,0 +1,95 @@
+﻿@page "/settings"
+@using MediaNest.Web.Services
+@rendermode InteractiveServer
+
+<PageTitle>Admin Panel</PageTitle>
+
+<AuthorizeView Roles="Admin,User,Pending">
+    <Authorized Context="change_password">
+        <div class="container mt-5">
+            <button class="btn btn-outline-secondary mb-3" @onclick="ToggleChangePasswordPanel">
+                @(showChangePasswordPanel ? "Hide Change Password" : "Show Change Password")
+            </button>
+            @if (showChangePasswordPanel) {
+                <div class="card card-body mb-3">
+                    <h3>Change Password</h3>
+                    <EditForm Model="changePasswordRequest" OnValidSubmit="ChangePassword">
+                        <DataAnnotationsValidator />
+                        <ValidationSummary />
+                        <div class="mb-3">
+                            <label>Current Password</label>
+                            <InputText type="password" class="form-control" @bind-Value="changePasswordRequest.Password" />
+                        </div>
+                        <div class="mb-3">
+                            <label>New Password</label>
+                            <InputText type="password" class="form-control" @bind-Value="_newPassword" />
+                        </div>
+                        <div class="mb-3">
+                            <label>Confirm New Password</label>
+                            <InputText type="password" class="form-control" @bind-Value="_confirmPassword" />
+                        </div>
+                        <button class="btn btn-success" type="submit">Change Password</button>
+                    </EditForm>
+                </div>
+            }
+        </div>
+    </Authorized>
+</AuthorizeView>
+
+<AuthorizeView Roles="Admin">
+    <Authorized Context="manager_account">
+        <div class="container">
+     
+            @if (_users == null){
+                <Spinner />
+            }
+            else {
+                <div class="card card-body mb-3">
+
+                    <h3>Account Manager</h3>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Username</th>
+                                <th>Role</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var user in _users) {
+                                <tr>
+                                    <td>@user.Username</td>
+                                    <td>
+                                        <select class="form-select form-select-sm" @bind="user.Role">
+                                            <option value="Pending">Pending</option>
+                                            <option value="User">User</option>
+                                            <option value="Admin">Admin</option>
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-sm btn-primary" @onclick="() => UpdateRole(user)">Save</button>
+                                        <button class="btn btn-sm btn-danger" @onclick="() => ShowCheckDeleteButton(user.Username)">Delete</button>
+                                        @if (_showDeleteConfirmFor == user.Username) {
+                                            <button class="btn btn-sm btn-warning ms-2" @onclick="() => DeleteAccount(user.Username)">Confirm</button>
+                                            <button class="btn btn-sm btn-secondary ms-1" @onclick="CancelDelete">Cancel</button>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+           
+    </Authorized>
+    <NotAuthorized>
+        <div class="container">
+            <div class="alert alert-info mt-2">
+                You have no authorization.
+            </div>
+        </div>
+    </NotAuthorized>
+</AuthorizeView>
+
+

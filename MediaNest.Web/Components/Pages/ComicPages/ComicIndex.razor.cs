@@ -7,8 +7,8 @@ namespace MediaNest.Web.Components.Pages.ComicPages;
 public partial class ComicIndex : ComponentBase {
     [Inject] public ApiClient ApiClient { get; set; }
     [Inject] public AuthenticationStateProvider AuthProvider { get; set; }  // TODO : Authorization
-    [Parameter] public string searchText { get; set; }
-    private bool _isAuthenticated;
+    [Parameter] public string SearchText { get; set; }
+
     private List<Comic> _comics;
     private int _elementPerPage = 30;
     private int _currentPage;
@@ -18,7 +18,7 @@ public partial class ComicIndex : ComponentBase {
 
         var authState = await AuthProvider.GetAuthenticationStateAsync();
         if (authState.User.Identity?.IsAuthenticated ?? false) {
-            if (!string.IsNullOrEmpty(searchText)) {
+            if (!string.IsNullOrEmpty(SearchText)) {
                 await HandleSearch();
             }
             else {
@@ -66,11 +66,11 @@ public partial class ComicIndex : ComponentBase {
     }
     private async Task HandleSearch() {
 
-        if (string.IsNullOrWhiteSpace(searchText)) {
+        if (string.IsNullOrWhiteSpace(SearchText)) {
             await GetComicsByPage(1);
         }
         else {
-            _comics = await ApiClient.GetAsync<List<Comic>>($"api/comic?term={searchText}");
+            _comics = await ApiClient.GetAsync<List<Comic>>($"api/comic?term={SearchText}");
         }
     }
 

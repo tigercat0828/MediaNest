@@ -10,61 +10,69 @@
 
     <Authorized Context="auth">
 
-        <EditForm Model="_currentComic" FormName="ComicForm">
-            <DataAnnotationsValidator />
-            <div class="container">
-                <h3>New Album</h3>
-                <div class="input-group mb-3">
-                    <span class="input-group-text w-25">Title</span>
-                    <InputText class="form-control" id="Title" @bind-Value="_currentComic.Title" />
-                </div>
-
-                <div class="input-group mb-3">
-                    <span class="input-group-text w-25">SubTitle</span>
-                    <InputText class="form-control" id="SubTitle" @bind-Value="_currentComic.SubTitle" />
-                </div>
-
-                <div class="input-group mb-3">
-                    <span class="input-group-text w-25">Series</span>
-                    <InputText class="form-control" id="Series" @bind-Value="_currentComic.Series" />
-                </div>
-
-                <div class="input-group mb-3">
-                    <span class="input-group-text w-25">Author</span>
-                    <InputText class="form-control" id="Author" @bind-Value="_currentComic.Author" />
-                </div>
-
-                <div class="input-group mb-3">
-                    <span class="input-group-text w-25">Description</span>
-                    <InputText class="form-control" id="Description" @bind-Value="_currentComic.Description" />
-                </div>
-
-                <div class="input-group mb-3">
-                    <span class="input-group-text w-25">Tags</span>
-                    <InputText class="form-control" id="Tags" @bind-Value="_tagStr" />
-                </div>
-
-                <div class="input-group mb-3">
-                    <span class="input-group-text w-25">Figure</span>
-                    <InputText class="form-control" id="Figure" @bind-Value="_characterStr" />
-                </div>
-
-                @if (!_isEditMode) {
+        <div class="container">
+            <div class="card card-body mb-3">
+                <EditForm Model="_currentComic" FormName="ComicForm">
+                    <DataAnnotationsValidator />
+                    <h3>New Album</h3>
                     <div class="mb-3">
-                        <ComicFileUploader SaveDirectory="@directory"
-                                           SaveSubFolder="@_currentComic.FolderName"
-                                           OnUploadButtonPressed="HandleUploadButtonPressed" />
+                        <label>Title</label>
+                        <InputText class="form-control" @bind-Value="_currentComic.Title" />
                     </div>
-                }
+                    
+                    <button class="btn btn-outline-secondary mb-3" @onclick="ToggleMoreOptionPanel">
+                        @(_showMoreOptionPanel ? "Hide Options" : "More Options")
+                    </button>
+                    @if (_showMoreOptionPanel)
+                    {
+                        <div class="mb-3">
+                            <label>SubTitle</label>
+                            <InputText class="form-control" @bind-Value="_currentComic.SubTitle" />
+                        </div>
 
-                <div>
-                    @if (_isUploadButtonPressed || _isEditMode) {
-                        <button class="btn btn-success" @onclick="HandleUpsertGame">完成</button>
+                        <div class="mb-3">
+                            <label>Series</label>
+                            <InputText class="form-control" @bind-Value="_currentComic.Series" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label>Author</label>
+                            <InputText class="form-control" @bind-Value="_currentComic.Author" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label>Description</label>
+                            <InputText class="form-control" @bind-Value="_currentComic.Description" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label>Tags</label>
+                            <InputText class="form-control" @bind-Value="_tagStr" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label>Figures</label>
+                            <InputText class="form-control" @bind-Value="_characterStr" />
+                        </div>
                     }
-                </div>
 
+                    @if (!_isEditMode) {
+                        <div class="mb-3">
+                            <ComicFileUploader SaveDirectory="@directory"
+                                               SaveSubFolder="@_currentComic.FolderName"
+                                               OnUploadButtonPressed="HandleUploadButtonPressed" />
+                        </div>
+                    }
+
+                    <div>
+                        @if (_isUploadButtonPressed || _isEditMode) {
+                            <button class="btn btn-success" @onclick="HandleUpsertGame">完成</button>
+                        }
+                    </div>
+
+                </EditForm>
             </div>
-        </EditForm>
+        </div>
     </Authorized>
 </AuthorizeView>
 
@@ -81,8 +89,10 @@
 
     private string _tagStr = "";
     private string _characterStr = "";
-    private string oldTitle = "";
+    private string _oldTitle = "";
     private bool _isUploadButtonPressed = false;
+
+    private bool _showMoreOptionPanel = false;
 
     protected override async Task OnInitializedAsync() {
 
@@ -95,7 +105,7 @@
                 _currentComic = await ApiClient.GetAsync<Comic>($"/api/comic/{id}");
                 _tagStr = string.Join(",", _currentComic.Tags);
                 _characterStr = string.Join(",", _currentComic.Characters);
-                oldTitle = _currentComic.Title;
+                _oldTitle = _currentComic.Title;
             }
         }
     }
@@ -107,7 +117,7 @@
         _currentComic.Uploader = ""; 
         if (_isEditMode) {
             string newFolderPath = Path.Combine(AppState.AssetsFolder, "Comics", _currentComic.FolderName);
-            string oldFolderPath = Path.Combine(AppState.AssetsFolder, "Comics", $"{_currentComic.Code[..3]}\\[{_currentComic.Code}]{oldTitle}");
+            string oldFolderPath = Path.Combine(AppState.AssetsFolder, "Comics", $"{_currentComic.Code[..3]}\\[{_currentComic.Code}]{_oldTitle}");
             if (oldFolderPath != newFolderPath) Directory.Move(oldFolderPath, newFolderPath);
             await ApiClient.PutAsync<Comic, Comic>($"/api/comic/{id}", _currentComic);
         }
@@ -120,5 +130,9 @@
     private void HandleUploadButtonPressed(bool isPressed) {
         // 當按鈕被按下時更新狀態
         _isUploadButtonPressed = isPressed;
+    }
+    private void ToggleMoreOptionPanel()
+    {
+        _showMoreOptionPanel = !_showMoreOptionPanel;
     }
 }
