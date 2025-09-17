@@ -117,7 +117,7 @@
         _currentComic.Uploader = ""; 
         if (_isEditMode) {
             string newFolderPath = Path.Combine(AppState.AssetsFolder, "Comics", _currentComic.FolderName);
-            string oldFolderPath = Path.Combine(AppState.AssetsFolder, "Comics", $"{_currentComic.Code[..3]}\\[{_currentComic.Code}]{_oldTitle}");
+            string oldFolderPath = Path.Combine(AppState.AssetsFolder, "Comics", $"{_currentComic.Code[..3]}", $"[{_currentComic.Code}]{_oldTitle}");
             if (oldFolderPath != newFolderPath) Directory.Move(oldFolderPath, newFolderPath);
             await ApiClient.PutAsync<Comic, Comic>($"/api/comic/{id}", _currentComic);
         }
