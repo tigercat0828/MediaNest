@@ -1,3 +1,4 @@
+using MediaNest.ApiService.Endpoints;
 using MediaNest.ApiService.Services;
 using MediaNest.Shared.Entities;
 using MediaNest.Web.Database;

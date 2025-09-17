@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
 
 
-namespace MediaNest.Web.Endpoints;
+namespace MediaNest.ApiService.Endpoints;
 
 public static class ComicServiceEndpoints {
     public const int DEFAULT_COUNT = 30;
