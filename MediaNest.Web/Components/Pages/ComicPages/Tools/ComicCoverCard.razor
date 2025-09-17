@@ -12,25 +12,29 @@
                 <h3 class="mb-3">@_comic.Title<i class="bi bi-bookmark-plus btn-outline-secondary disabled"></i></h3>
                 
                 <h6 sytle="color:blue">@_comic.Description</h6><br/>
-                <div class="mb-2 d-flex">
-                    <label class="fw-bold me-2" style="width: 4rem;">Title</label>
-                    <div>
-                        <a href="/comic/search/@_comic.Series" class="badge bg-success me-1">@_comic.Series</a>
-                    </div>
-                </div>
+
 
                 <div class="mb-2 d-flex">
                     <label class="fw-bold me-2" style="width: 4rem;">Author</label>
                     <div>
-                        <a href="/comic/search/@_comic.Author" class="badge bg-success me-1">@_comic.Author</a>
+                        <a href="/comic/search/@_comic.Author" class="badge bg-light text-dark me-1">@_comic.Author</a>
                     </div>
                 </div>
+
+
+                <div class="mb-2 d-flex">
+                    <label class="fw-bold me-2" style="width: 4rem;">Series</label>
+                    <div>
+                        <a href="/comic/search/@_comic.Series" class="badge bg-light text-dark me-1">@_comic.Series</a>
+                    </div>
+                </div>
+
 
                 <div class="mb-2 d-flex">
                     <label class="fw-bold me-2" style="width: 4rem;">Figure</label>
                     <div>
                         @foreach (var chars in _comic.Characters) {
-                            <a href="/comic/search/@chars" class="badge bg-success me-1">@chars</a>
+                            <a href="/comic/search/@chars" class="badge bg-light text-dark me-1">@chars</a>
                         }
                     </div>
                 </div>
@@ -39,7 +43,7 @@
                     <label class="fw-bold me-2" style="width: 4rem;">Tags</label>
                     <div>
                         @foreach (var tag in _comic.Tags) {
-                            <a href="/comic/search/@tag" class="badge bg-success me-1">@tag</a>
+                            <a href="/comic/search/@tag" class="badge bg-light text-dark me-1">@tag</a>
                         }
                     </div>
                 </div>
