@@ -30,11 +30,21 @@ public class ApiClient(HttpClient client, ProtectedLocalStorage localStorage, Au
     }
     public async Task<T> GetAsync<T>(string path) {
         await SetAuthorizeHeader();
+
         var response = await client.GetAsync(path);
-        if (response != null && response.IsSuccessStatusCode) {
-            return await response.Content.ReadFromJsonAsync<T>();
+
+        if (response.StatusCode == HttpStatusCode.Unauthorized ||
+            response.StatusCode == HttpStatusCode.Forbidden) {
+            await ((CustomAuthStateProvider)authStateProvider).MarkUserAsLoggedOut();
+            return default;
         }
-        return default;
+
+        if (response.StatusCode == HttpStatusCode.NotFound) {
+            return default;
+        }
+
+        response.EnsureSuccessStatusCode();
+        return await response.Content.ReadFromJsonAsync<T>();
     }
     public async Task<T1> PostAsync<T1, T2>(string path, T2 item) {
         await SetAuthorizeHeader();

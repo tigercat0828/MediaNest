@@ -24,6 +24,7 @@
         <AuthorizeView Roles="Admin,User">
             <Authorized Context="general">
                 <div class="container-fluid">
+                    @* ================================================================ *@
                     @* Search Bar and Random Button *@
                     <div class="row mb-3">
                         <div class="col-11">
@@ -37,13 +38,13 @@
                             <a class="btn btn-success" href="/comic/create">新建</a>
                         </div>
                     </div>
+                    @* ================================================================ *@
                     @* pagination *@
                     <div class="row mb-1">
                         <nav aria-label="Page navigation example">
                             <ul class="pagination">
                                 <li class="page-item"><button class="page-link" @onclick="LastPage"><i class="bi bi-arrow-left"></i></button></li>
-                                @for (int i = 1; i<=_totalPage; i++)
-                                {
+                                @for (int i = 1; i<=_totalPage; i++) {
                                     int pageNo = i;
                                     <li class="page-item"><button class="page-link" @onclick="() => SetPage(pageNo)">@pageNo</button></li>
                                 }
@@ -51,23 +52,25 @@
                             </ul>
                         </nav>
                     </div>
+                    @* ================================================================ *@
+                    @* Comic Covers *@
                     <div class="row">
                         @if (_comics != null) {
                             <div class="row d-flex flex-wrap">
                                 @foreach (var comic in _comics) {
                                     // TODO : or fix it to P001.jpg
                                     string coverSrc = $"/Assets/Comics/{comic.FolderName}/001.jpg";
-                                    // string href = $"/comic/view/{comic.Id}";
                                     string href = $"/comic/{comic.Id}";
                                     <ImageAnchor href="@href" coverSrc="@coverSrc" title="@comic.Title" />
                                 }
                             </div>
                         }
-                        else
-                        {
+                        else {
                             <Spinner />
                         }
                     </div>
+                    @* ================================================================ *@
+
                 </div>
             </Authorized>
         </AuthorizeView>

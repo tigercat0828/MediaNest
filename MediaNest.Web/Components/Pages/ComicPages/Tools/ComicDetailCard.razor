@@ -1,23 +1,23 @@
 ﻿@inject IWebHostEnvironment WebEnv
 @inject NavigationManager NavigationManager
 
-@if (_comic != null) {
+@if (Comic != null) {
     <div class="container-fluid mb-3 border border-secondary rounded p-4">
         <div class="row">
             <div class="col-auto mb-1 mt-1" >
-                <img src="/Assets/Comics/@(_comic.FolderName)/001.jpg" style="width: 15rem;"  alt="@_comic.Title">
+                <img src="/Assets/Comics/@(Comic.FolderName)/001.jpg" style="width: 15rem;"  alt="@Comic.Title">
             </div>
 
             <div class="col-8">
-                <h3 class="mb-3">@_comic.Title<i class="bi bi-bookmark-plus btn-outline-secondary disabled"></i></h3>
+                <h3 class="mb-3">@Comic.Title</h3>
                 
-                <h6 sytle="color:blue">@_comic.Description</h6><br/>
+                <h6 sytle="color:blue">@Comic.Code</h6><br/>
 
 
                 <div class="mb-2 d-flex">
                     <label class="fw-bold me-2" style="width: 4rem;">Author</label>
                     <div>
-                        <a href="/comic/search/@_comic.Author" class="badge bg-light text-dark me-1">@_comic.Author</a>
+                        <a href="/comic/search/@Comic.Author" class="badge bg-light text-dark me-1">@Comic.Author</a>
                     </div>
                 </div>
 
@@ -25,7 +25,7 @@
                 <div class="mb-2 d-flex">
                     <label class="fw-bold me-2" style="width: 4rem;">Series</label>
                     <div>
-                        <a href="/comic/search/@_comic.Series" class="badge bg-light text-dark me-1">@_comic.Series</a>
+                        <a href="/comic/search/@Comic.Series" class="badge bg-light text-dark me-1">@Comic.Series</a>
                     </div>
                 </div>
 
@@ -33,7 +33,7 @@
                 <div class="mb-2 d-flex">
                     <label class="fw-bold me-2" style="width: 4rem;">Figure</label>
                     <div>
-                        @foreach (var chars in _comic.Characters) {
+                        @foreach (var chars in Comic.Characters) {
                             <a href="/comic/search/@chars" class="badge bg-light text-dark me-1">@chars</a>
                         }
                     </div>
@@ -42,28 +42,28 @@
                 <div class="mb-2 d-flex">
                     <label class="fw-bold me-2" style="width: 4rem;">Tags</label>
                     <div>
-                        @foreach (var tag in _comic.Tags) {
+                        @foreach (var tag in Comic.Tags) {
                             <a href="/comic/search/@tag" class="badge bg-light text-dark me-1">@tag</a>
                         }
                     </div>
                 </div>
 
 
-                <div class="mb-3">
-                    <label>Page : @PageNum</label>
+                <div class="mb-4 d-flex">
+                    <label class="fw-bold me-2" style="width: 4rem;">Page</label> @PageNum
                 </div>
 
                 <div class="mb-3">
-                    <a href="/comic/view/@_comic.Id" target="_blank" class="btn btn-success me-3">
+                    <a href="/comic/view/@Comic.Id" target="_blank" class="btn btn-outline-success me-3">
                         <i class="bi bi-book"></i> Read
                     </a>
-                    <a href="/comic/edit/@_comic.Id" class="btn btn-warning me-3">
+                    <a href="/comic/edit/@Comic.Id" class="btn btn-outline-warning me-3">
                         <i class="bi bi-pencil"></i> Edit
                     </a>
 @*                     <button class="btn btn-primary me-3" disabled>
                         <i class="bi bi-download"></i> 下載
                     </button> *@
-                    <button @onclick=ToggleConfirmationDialog class="btn btn-danger me-3">
+                    <button @onclick=ToggleConfirmationDialog class="btn btn-outline-danger me-3">
                         <i class="bi bi-trash"></i>
                     </button>
                     @if (showConfirmationDialog) {
@@ -88,7 +88,7 @@ else {
 }
 
 @code {
-    [Parameter] public Comic? _comic { get; set; }
+    [Parameter] public Comic? Comic { get; set; }
     [Parameter] public int? PageNum { get; set; }
     [Inject] public IToastService Toast { get; set; }
     [Inject] public ApiClient ApiClient { get; set; }
@@ -106,8 +106,8 @@ else {
     private async Task ConfirmDelete() {
 
         if (IsConfirmationValid) {
-            await ApiClient.DeleteAsync<string>($"/api/comic/{_comic.Id}");
-            string folderName = Path.Combine(AppState.AssetsFolder, "Comics", _comic.FolderName);
+            await ApiClient.DeleteAsync<string>($"/api/comic/{Comic.Id}");
+            string folderName = Path.Combine(AppState.AssetsFolder, "Comics", Comic.FolderName);
             if (Directory.Exists(folderName)) {
                 Directory.Delete(folderName, recursive: true);
             }

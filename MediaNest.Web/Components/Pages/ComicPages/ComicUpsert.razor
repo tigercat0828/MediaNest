@@ -9,68 +9,92 @@
     </NotAuthorized>
 
     <Authorized Context="auth">
-
         <div class="container">
-            <div class="card card-body mb-3">
-                <EditForm Model="_currentComic" FormName="ComicForm">
-                    <DataAnnotationsValidator />
-                    <h3>New Album</h3>
-                    <div class="mb-3">
-                        <label>Title</label>
-                        <InputText class="form-control" @bind-Value="_currentComic.Title" />
-                    </div>
-                    
-                    <button class="btn btn-outline-secondary mb-3" @onclick="ToggleMoreOptionPanel">
-                        @(_showMoreOptionPanel ? "Hide Options" : "More Options")
-                    </button>
-                    @if (_showMoreOptionPanel)
-                    {
-                        <div class="mb-3">
-                            <label>SubTitle</label>
-                            <InputText class="form-control" @bind-Value="_currentComic.SubTitle" />
-                        </div>
-
-                        <div class="mb-3">
-                            <label>Series</label>
-                            <InputText class="form-control" @bind-Value="_currentComic.Series" />
-                        </div>
-
-                        <div class="mb-3">
-                            <label>Author</label>
-                            <InputText class="form-control" @bind-Value="_currentComic.Author" />
-                        </div>
-
-                        <div class="mb-3">
-                            <label>Description</label>
-                            <InputText class="form-control" @bind-Value="_currentComic.Description" />
-                        </div>
-
-                        <div class="mb-3">
-                            <label>Tags</label>
-                            <InputText class="form-control" @bind-Value="_tagStr" />
-                        </div>
-
-                        <div class="mb-3">
-                            <label>Figures</label>
-                            <InputText class="form-control" @bind-Value="_characterStr" />
-                        </div>
-                    }
-
-                    @if (!_isEditMode) {
-                        <div class="mb-3">
-                            <ComicFileUploader SaveDirectory="@directory"
-                                               SaveSubFolder="@_currentComic.FolderName"
-                                               OnUploadButtonPressed="HandleUploadButtonPressed" />
-                        </div>
-                    }
-
-                    <div>
-                        @if (_isUploadButtonPressed || _isEditMode) {
-                            <button class="btn btn-success" @onclick="HandleUpsertGame">完成</button>
+            <div class="row">
+                <div class="card card-body mb-3">
+                    <EditForm Model="_currentComic" FormName="ComicForm">
+                        <DataAnnotationsValidator />
+                        @if (_isEditMode) {
+                            <h3>Edit Album</h3>
                         }
-                    </div>
+                        else {
+                            <h3>New Album</h3>
+                        }
+                        <div class="mb-3">
+                            <label>Title</label>
+                            <InputText class="form-control" @bind-Value="_currentComic.Title" />
+                        </div>
 
-                </EditForm>
+                        <button class="btn btn-outline-secondary mb-3" @onclick="ToggleMoreOptionPanel">
+                            @(_showMoreOptionPanel ? "Hide Options" : "More Options")
+                        </button>
+                        @if (_showMoreOptionPanel) {
+                            <div class="mb-3">
+                                <label>SubTitle</label>
+                                <InputText class="form-control" @bind-Value="_currentComic.SubTitle" />
+                            </div>
+
+                            <div class="mb-3">
+                                <label>Series</label>
+                                <InputText class="form-control" @bind-Value="_currentComic.Series" />
+                            </div>
+
+                            <div class="mb-3">
+                                <label>Author</label>
+                                <InputText class="form-control" @bind-Value="_currentComic.Author" />
+                            </div>
+
+                            <div class="mb-3">
+                                <label>Description</label>
+                                <InputText class="form-control" @bind-Value="_currentComic.Description" />
+                            </div>
+
+                            <div class="mb-3">
+                                <label>Tags</label>
+                                <InputText class="form-control" @bind-Value="_tagStr" />
+                            </div>
+
+                            <div class="mb-3">
+                                <label>Figures</label>
+                                <InputText class="form-control" @bind-Value="_characterStr" />
+                            </div>
+                        }
+
+                        @if (!_isEditMode) {
+                            <div class="mb-3">
+                                <ComicFileUploader SaveDirectory="@directory" SaveSubFolder="@_currentComic.FolderName" OnUploadButtonPressed="HandleUploadButtonPressed" />
+                            </div>
+                        }
+                        <div>
+                            @if (_isUploadButtonPressed || _isEditMode) {
+                                <button class="btn btn-success" @onclick="HandleUpsertGame">完成</button>
+                            }
+                        </div>
+                    </EditForm>
+                </div>
+            </div>
+            <div>
+                <div class="col mb-2">
+                    @if (_selectedImages.Count > 0) {
+                        <button class="btn btn-danger mb-2" @onclick="DeleteSelectedImages">
+                            刪除選中圖片 (@_selectedImages.Count)
+                        </button>
+                    }
+                </div>
+            </div>
+            <div class="d-flex flex-wrap">
+                @for (int i = 0; i < _imageSrcs.Count; i++) {
+                    var imgFile = _imageSrcs[i];
+                    bool isSelected = _selectedImages.Contains(imgFile);
+
+                    <div class="p-1">
+                        <img src="/Assets/Comics/@_currentComic.FolderName/@imgFile"
+                                alt="Page @i"
+                                class="comic-img @(isSelected ? "selected" : "")"
+                                @onclick="() => ToggleSelect(imgFile)" />
+                                 
+                    </div>
+                }
             </div>
         </div>
     </Authorized>
@@ -94,6 +118,12 @@
 
     private bool _showMoreOptionPanel = false;
 
+
+    // 選中頁面功能
+    private HashSet<string> _selectedImages = [];
+    private List<string> _imageSrcs = [];
+
+
     protected override async Task OnInitializedAsync() {
 
         var authState = await AuthProvider.GetAuthenticationStateAsync();
@@ -102,10 +132,12 @@
             _currentComic.Code = Utility.GenerateSixDigitCode();
             if (id != null) {
                 _isEditMode = true;
+                _showMoreOptionPanel = true;
                 _currentComic = await ApiClient.GetAsync<Comic>($"/api/comic/{id}");
                 _tagStr = string.Join(",", _currentComic.Tags);
                 _characterStr = string.Join(",", _currentComic.Characters);
                 _oldTitle = _currentComic.Title;
+                LoadImageSrcs();
             }
         }
     }
@@ -131,8 +163,71 @@
         // 當按鈕被按下時更新狀態
         _isUploadButtonPressed = isPressed;
     }
-    private void ToggleMoreOptionPanel()
-    {
+    private void ToggleMoreOptionPanel() {
         _showMoreOptionPanel = !_showMoreOptionPanel;
     }
+
+    void LoadImageSrcs() {
+        var folderName = Path.Combine(AppState.AssetsFolder, "Comics", _currentComic.FolderName);
+        foreach (var path in Directory.GetFiles(folderName)) {
+            _imageSrcs.Add(Path.GetFileName(path));
+        }
+    }
+
+    private void ToggleSelect(string imgFile) {
+        if (_selectedImages.Contains(imgFile))
+            _selectedImages.Remove(imgFile);
+        else
+            _selectedImages.Add(imgFile);
+    }
+    private void DeleteSelectedImages() {
+        var folderPath = Path.Combine(AppState.AssetsFolder, "Comics", _currentComic.FolderName);
+
+        foreach (var imgFile in _selectedImages.ToList()) {
+            string fullPath = Path.Combine(folderPath, imgFile);
+            if (File.Exists(fullPath))
+                File.Delete(fullPath);
+
+            _imageSrcs.Remove(imgFile);
+        }
+
+        _selectedImages.Clear();
+
+
+        // --- 重新命名剩下的圖片 ---
+        var ordered = _imageSrcs.OrderBy(x => x).ToList();
+        _imageSrcs.Clear();
+
+        int counter = 1;
+        foreach (var oldName in ordered) {
+            string ext = Path.GetExtension(oldName); // 例如 ".jpg"
+            string newName = $"{counter:D3}{ext}";
+            string oldPath = Path.Combine(folderPath, oldName);
+            string newPath = Path.Combine(folderPath, newName);
+
+            // 只有在檔名不同時才需要改名
+            if (!oldName.Equals(newName, StringComparison.OrdinalIgnoreCase)) {
+                if (File.Exists(newPath))
+                    File.Delete(newPath); // 避免衝突
+                File.Move(oldPath, newPath);
+            }
+
+            _imageSrcs.Add(newName);
+            counter++;
+        }
+        StateHasChanged();
+    }
 }
+
+<style>
+.comic-img {
+    width: 9rem;
+    cursor: pointer;
+    border: 3px solid transparent;
+    transition: border 0.2s;
+}
+
+.comic-img.selected {
+    border: 3px solid red;
+}
+</style>
