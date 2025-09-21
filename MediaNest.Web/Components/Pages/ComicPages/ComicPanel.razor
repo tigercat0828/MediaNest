@@ -79,10 +79,11 @@
         if (authState.User.Identity?.IsAuthenticated ?? false) {
             _comic = await ApiClient.GetAsync<Comic>($"/api/comic/{id}");
             LoadImageSrcs();
-            if (page > 0) GoPageView(page);
+            if (page > 0) GoPageView(page-1);
         }
     }
     void GoPageView(int page) {
+        if (page < 0) page = 0;
         _viewMode = ComicViewMode.PageView;
         _currentPage = page;
     }

@@ -80,6 +80,7 @@ if (!app.Environment.IsEnvironment("Docker")) {
 }
 var folder = builder.Configuration["AssetsFolder"] ?? "/app/Assets";
 AppState.AssetsFolder = Path.GetFullPath(folder);
+Console.WriteLine($"AssetsFolder : {AppState.AssetsFolder}");
 // app.UseStaticFiles();
 app.UseRouting();
 // ========================================================

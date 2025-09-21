@@ -9,6 +9,7 @@ public class Comic {
     [BsonRepresentation(BsonType.ObjectId)]
     public string Id { get; set; } = string.Empty;
     [Required]
+    [RegularExpression(@"^[^\/:*?""<>|]+$", ErrorMessage = "Title 不可包含 / \\ : * ? \" < > | 這些字元")]
     public string Title { get; set; } = string.Empty;
     public string SubTitle { get; set; } = string.Empty;
     public string Series { get; set; } = string.Empty;

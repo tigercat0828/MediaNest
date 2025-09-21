@@ -26,6 +26,8 @@ services:
             - DOTNET_ENVIRONMENT=Docker
         ports:
             - "5000:8080"
+        volumes:
+            - ${ASSETS_PATH}:/app/Assets
         depends_on:
             - mongo
    
@@ -44,11 +46,3 @@ services:
 volumes:
   mongo_data:
 
-        
-    
-    
-
-
-        
-
-      
