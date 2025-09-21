@@ -18,13 +18,19 @@ public static class ComicServiceEndpoints {
         group.MapGet("/", GetComics);   // random, search, paging
         group.MapGet("/count", GetCount);
         group.MapGet("/{id}", GetComicById);
+        
         // [HttpPost]
         group.MapPost("/", CreateComic);
+        group.MapPost("/split", SplitComic);
         // [HttpPut]
         group.MapPut("/{id}", UpdateComic);
         // [HttpDelete]
         group.MapDelete("/{id}", DeleteComic);
+        
     }
+
+ 
+
     private static async Task<IResult> GetComicById(ComicService service, string id) {
         var comic = await service.GetComicById(id);
         if (comic == null)
@@ -59,6 +65,12 @@ public static class ComicServiceEndpoints {
         await service.CreateComic(comic);
         return Results.Created($"/api/comic/{comic.Id}", comic); // 回傳 Comic 本身
     }
+
+    private static async Task<IResult> SplitComic(ComicService service, Comic comic) {
+        await service.SplitComic(comic);
+        return Results.Ok("success");
+    }
+
     private static async Task<IResult> DeleteComic(ComicService service, string id) {
         bool exist = await service.CheckExists(id);
         if (exist) {

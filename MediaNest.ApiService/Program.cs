@@ -1,6 +1,7 @@
 using MediaNest.ApiService.Endpoints;
 using MediaNest.ApiService.Services;
 using MediaNest.Shared.Entities;
+using MediaNest.Web;
 using MediaNest.Web.Database;
 using MediaNest.Web.Endpoints;
 using MediaNest.Web.Services;
@@ -53,6 +54,7 @@ builder.Services.Configure<MongoDbConfig>(builder.Configuration.GetSection("Mong
 builder.Services.AddMongoClient();
 builder.Services.AddMongoCollection<Account>("Accounts");
 builder.Services.AddMongoCollection<Comic>("Comics");
+builder.Services.AddMongoCollection<ComicList>("ComicLists");
 builder.Services.AddScoped<ComicService>();
 builder.Services.AddScoped<AuthService>();
 
@@ -76,6 +78,8 @@ if (!app.Environment.IsDevelopment()) {
 if (!app.Environment.IsEnvironment("Docker")) {
     app.UseHttpsRedirection();
 }
+var folder = builder.Configuration["AssetsFolder"] ?? "/app/Assets";
+AppState.AssetsFolder = Path.GetFullPath(folder);
 // app.UseStaticFiles();
 app.UseRouting();
 // ========================================================
