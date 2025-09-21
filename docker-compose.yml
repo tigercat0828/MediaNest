@@ -24,6 +24,7 @@ services:
         container_name: medianest_webapi
         environment:
             - DOTNET_ENVIRONMENT=Docker
+            - AssetsFolder=/app/Assets
         ports:
             - "5000:8080"
         volumes:
