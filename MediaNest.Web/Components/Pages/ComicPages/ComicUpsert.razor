@@ -210,6 +210,7 @@
     private void DeleteSelectedImages() {
         var folderPath = Path.Combine(AppState.AssetsFolder, "Comics", _currentComic.FolderName);
 
+
         foreach (var imgFile in _selectedImages.ToList()) {
             string fullPath = Path.Combine(folderPath, imgFile);
             if (File.Exists(fullPath))

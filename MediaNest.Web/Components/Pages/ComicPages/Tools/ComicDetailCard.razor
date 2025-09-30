@@ -2,7 +2,7 @@
 @inject NavigationManager NavigationManager
 
 @if (Comic != null) {
-    <div class="container-fluid mb-3 border border-secondary rounded p-4">
+    <div class="container-fluid mb-3 border border-secondary rounded p-3">
         <div class="row">
             <div class="col-auto mb-1 mt-1" >
                 <img src="/Assets/Comics/@(Comic.FolderName)/001.jpg" style="width: 15rem;"  alt="@Comic.Title">
@@ -10,12 +10,13 @@
 
             <div class="col-8">
                 <h3 class="mb-3">@Comic.Title</h3>
-                
-                <h6 sytle="color:blue">@Comic.Code</h6><br/>
-
+                <div class="mb-3 badge bg-primary-subtle text-dark">
+                    @Comic.Code 
+                </div>
+                @Comic.SubTitle
 
                 <div class="mb-2 d-flex">
-                    <label class="fw-bold me-2" style="width: 5rem;">Author</label>
+                    <label class="fw-bold me-2" style="width: 4rem;">Author</label>
                     <div>
                         <a href="/comic/search/@Comic.Author" class="badge bg-light text-dark me-1">@Comic.Author</a>
                     </div>
@@ -23,7 +24,7 @@
 
 
                 <div class="mb-2 d-flex">
-                    <label class="fw-bold me-2" style="width: 5rem;">Series</label>
+                    <label class="fw-bold me-2" style="width: 4rem;">Series</label>
                     <div>
                         <a href="/comic/search/@Comic.Series" class="badge bg-light text-dark me-1">@Comic.Series</a>
                     </div>
@@ -31,7 +32,7 @@
 
 
                 <div class="mb-2 d-flex">
-                    <label class="fw-bold me-2" style="width: 5rem;">Figures</label>
+                    <label class="fw-bold me-2" style="width: 4rem;">Figures</label>
                     <div>
                         @foreach (var chars in Comic.Characters) {
                             <a href="/comic/search/@chars" class="badge bg-light text-dark me-1">@chars</a>
@@ -40,7 +41,7 @@
                 </div>
 
                 <div class="mb-2 d-flex">
-                    <label class="fw-bold me-2" style="width: 5rem;">Tags</label>
+                    <label class="fw-bold me-2" style="width: 4rem;">Tags</label>
                     <div>
                         @foreach (var tag in Comic.Tags) {
                             <a href="/comic/search/@tag" class="badge bg-light text-dark me-1">@tag</a>
@@ -49,7 +50,7 @@
                 </div>
 
                 <div class="mb-2 d-flex">
-                    <label class="fw-bold me-2" style="width: 5rem;">Marks</label>
+                    <label class="fw-bold me-2" style="width: 4rem;">Marks</label>
                     <div>
                         @foreach (var mark in Comic.Bookmarks) {
                             <a class="badge bg-light text-dark me-1" @onclick="() => OnBookmarkClicked.InvokeAsync(mark)" style="cursor:pointer;">
@@ -61,11 +62,11 @@
 
                 
 
-                <div class="mb-4 d-flex">
-                    <label class="fw-bold me-2" style="width: 4rem;">Page</label> @PageCount
+                <div class="mb-3 d-flex">
+                    <label class="fw-bold me-2" style="width: 4rem;">Page</label><div class="badge bg-light text-dark">@PageCount</div>
                 </div>
 
-                <div class="mb-3">
+                <div>
                     <a href="/comic/view/@Comic.Id" target="_blank" class="btn btn-outline-success me-3">
                         <i class="bi bi-book"></i> Read
                     </a>
@@ -122,10 +123,6 @@ else {
 
         if (IsConfirmationValid) {
             await ApiClient.DeleteAsync<string>($"/api/comic/{Comic.Id}");
-            string folderName = Path.Combine(AppState.AssetsFolder, "Comics", Comic.FolderName);
-            if (Directory.Exists(folderName)) {
-                Directory.Delete(folderName, recursive: true);
-            }
             NavigationManager.NavigateTo("/comic");    
         }
         showConfirmationDialog = false;

@@ -6,8 +6,9 @@ using MediaNest.Web.Services;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 
-namespace MediaNest.Web.Components.Pages.AccountPage; 
-public partial class Settings : ComponentBase{
+namespace MediaNest.Web.Components.Pages.AccountPage;
+
+public partial class Settings : ComponentBase {
     [Inject] public ApiClient ApiClient { get; set; }
     [Inject] public AuthenticationStateProvider AuthProvider { get; set; }
     [Inject] public SettingService SettingService { get; set; }
@@ -23,7 +24,7 @@ public partial class Settings : ComponentBase{
         var authState = await AuthProvider.GetAuthenticationStateAsync();
         if (authState.User.Identity?.IsAuthenticated ?? false && authState.User.IsInRole("Admin")) {
             _users = await ApiClient.GetAsync<List<Account>>("/api/account/users");
-            changePasswordRequest.Username = authState.User.Identity?.Name; 
+            changePasswordRequest.Username = authState.User.Identity?.Name;
         }
     }
 
@@ -60,7 +61,7 @@ public partial class Settings : ComponentBase{
             Toast.ShowError("User not authenticated.");
             return;
         }
-  
+
 
         if (string.IsNullOrWhiteSpace(changePasswordRequest.NewPassword) || string.IsNullOrWhiteSpace(_confirmPassword)) {
             Toast.ShowError("New password and confirmation are required.");

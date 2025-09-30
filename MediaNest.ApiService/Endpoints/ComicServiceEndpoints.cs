@@ -18,7 +18,7 @@ public static class ComicServiceEndpoints {
         group.MapGet("/", GetComics);   // random, search, paging
         group.MapGet("/count", GetCount);
         group.MapGet("/{id}", GetComicById);
-        
+
         // [HttpPost]
         group.MapPost("/", CreateComic);
         group.MapPost("/split", SplitComic);
@@ -26,10 +26,10 @@ public static class ComicServiceEndpoints {
         group.MapPut("/{id}", UpdateComic);
         // [HttpDelete]
         group.MapDelete("/{id}", DeleteComic);
-        
+
     }
 
- 
+
 
     private static async Task<IResult> GetComicById(ComicService service, string id) {
         var comic = await service.GetComicById(id);

@@ -12,13 +12,14 @@ public class CustomAuthStateProvider(ProtectedLocalStorage localStorage) : Authe
         var identity = new ClaimsIdentity();
         try {
             var session = (await localStorage.GetAsync<AuthResponse>("sessionState")).Value;
-            if(session != null) {
+            if (session != null) {
                 identity = GetClaimsIdentity(session.Token);
             }
-        }catch(CryptographicException) {
+        }
+        catch (CryptographicException) {
             await localStorage.DeleteAsync("sessionState");
             Console.WriteLine("Session corrupted.");
-            
+
         }
         catch {
 

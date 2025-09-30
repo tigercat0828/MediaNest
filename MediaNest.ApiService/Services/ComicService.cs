@@ -1,11 +1,12 @@
-﻿using MediaNest.Shared;
+﻿using MediaNest.ApiService.Services;
+using MediaNest.Shared;
 using MediaNest.Shared.Entities;
 using MongoDB.Bson;
 using MongoDB.Driver;
-using System.Net.NetworkInformation;
+using System.Text.RegularExpressions;
 
 namespace MediaNest.Web.Services {
-    public class ComicService(IMongoCollection<Comic> _comicCollection, IMongoCollection<ComicList> _listCollection) {
+    public class ComicService(FileService _fileService, IMongoCollection<Comic> _comicCollection, IMongoCollection<ComicList> _listCollection) {
         public async Task<int> GetCount() {
             return (int)await _comicCollection.CountDocumentsAsync(_ => true);
         }
@@ -27,7 +28,9 @@ namespace MediaNest.Web.Services {
             return await _comicCollection.Find(comic => comic.Id == id).FirstOrDefaultAsync();
         }
         public async Task DeleteComic(string id) {
-            // Todo : delete file here           
+            var comic =  await GetComicById(id);
+            var folder = Path.Combine(_fileService.ComicFolder, comic.FolderName);
+            _fileService.DeleteFolder(folder);
             await _comicCollection.DeleteOneAsync(comic => comic.Id == id);
         }
         public async Task CreateComic(Comic comic) {
@@ -38,17 +41,25 @@ namespace MediaNest.Web.Services {
         }
         public async Task<List<Comic>> SearchComic(string term) {
             // 建立 SearchComicByIdInfo 的 Filter
-            var titleFilter = Builders<Comic>.Filter.Regex("Title", new BsonRegularExpression(term, "i"));
-            var sourceTitleFilter = Builders<Comic>.Filter.Regex("SourceTitle", new BsonRegularExpression(term, "i"));
-            var authorFilter = Builders<Comic>.Filter.Regex("Author", new BsonRegularExpression(term, "i"));
-            var parodyFilter = Builders<Comic>.Filter.Regex("Series", new BsonRegularExpression(term, "i"));
+            var escapedTerm = Regex.Escape(term);
+
+            // 模糊搜尋（加上 .* 讓字串前後可以有其他文字）
+            var pattern = $".*{escapedTerm}.*";
+
+            // 建立各種欄位的 regex filter
+            var titleFilter = Builders<Comic>.Filter.Regex("Title", new BsonRegularExpression(pattern, "i"));
+            var subTitleFilter = Builders<Comic>.Filter.Regex("SubTitle", new BsonRegularExpression(pattern, "i"));
+            var authorFilter = Builders<Comic>.Filter.Regex("Author", new BsonRegularExpression(pattern, "i"));
+            var seriesFilter = Builders<Comic>.Filter.Regex("Series", new BsonRegularExpression(pattern, "i"));
+
             var codeFilter = Builders<Comic>.Filter.Eq("Code", term);
 
             // 建立 SearchComicByTags 的 Filter
             var tagsFilter = Builders<Comic>.Filter.AnyIn("Tags", [term]);
             var charactersFilter = Builders<Comic>.Filter.AnyIn("Characters", [term]);
 
-            var combinedFilter = titleFilter | sourceTitleFilter | authorFilter | parodyFilter | codeFilter | tagsFilter | charactersFilter;
+
+            var combinedFilter = titleFilter | subTitleFilter | authorFilter | seriesFilter | codeFilter | tagsFilter | charactersFilter;
             return await _comicCollection.Find(combinedFilter).ToListAsync();
         }
         public async Task<bool> CheckExists(string id) {
@@ -57,9 +68,8 @@ namespace MediaNest.Web.Services {
         public async Task SplitComic(Comic comic) {
             if (comic.Bookmarks.Count < 2) return;
 
-            ComicList list = new() { Title = comic.Title };
+            List<string> comicIds = [];
 
-            int count = 1;
             string sourceFolder = Path.Combine(AppState.AssetsFolder, "Comics", comic.FolderName);
 
             // bookmark = [1, 9, 27, 36]
@@ -69,8 +79,8 @@ namespace MediaNest.Web.Services {
 
                 // 建立子 Comic（不必設定 FolderName，會自動算）
                 Comic subComic = new() {
-                    Title = $"{comic.Title} {count++}",
-                    SubTitle = $"{comic.SubTitle} {count++}",
+                    Title = $"{comic.Title} {i + 1}",
+                    SubTitle = $"{comic.SubTitle} {i + 1}",
                     Author = comic.Author,
                     Series = comic.Series,
                     Uploader = comic.Uploader,
@@ -95,26 +105,32 @@ namespace MediaNest.Web.Services {
                     string ext = Path.GetExtension(imgPath);
                     string newName = $"{pageNo:D3}{ext}";
                     string destPath = Path.Combine(targetFolder, newName);
-                    File.Copy(imgPath, destPath, overwrite:true);
+                    File.Copy(imgPath, destPath, overwrite: true);
                     pageNo++;
                 }
 
                 // 記錄 Comic Id
-                list.ComicIds.Add(subComic.Id);
+                comicIds.Add(subComic.Id);
             }
 
             // 存 ComicList
-            await _listCollection.InsertOneAsync(list);
-            
-        }
+            await CreateComicList(comicIds, comic.Title);
 
+        }
         private bool IsPageInRange(string filePath, int start, int end) {
+            // 001.jpg => 001
             string fileName = Path.GetFileNameWithoutExtension(filePath);
             if (int.TryParse(fileName, out int pageNum)) {
                 return pageNum >= start && pageNum <= end;
             }
             return false;
         }
-
+        public async Task CreateComicList(List<string> comicIds, string title) {
+            ComicList list = new() {
+                Title = title,
+                ComicIds = comicIds
+            };
+            await _listCollection.InsertOneAsync(list);
+        }
     }
 }

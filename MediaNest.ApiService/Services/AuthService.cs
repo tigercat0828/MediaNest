@@ -1,7 +1,6 @@
 ﻿using MediaNest.Shared.Dtos;
 using MediaNest.Shared.Entities;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.Identity.Client;
 using Microsoft.IdentityModel.Tokens;
 using MongoDB.Driver;
 using MongoDB.Driver.Linq;
@@ -15,7 +14,7 @@ namespace MediaNest.ApiService.Services;
 // TODO : change password
 // TODO : get user by DTO
 // TODO : refresh token store with DB 
-public class AuthService (IConfiguration configuration, IMongoCollection<Account> accounts){
+public class AuthService(IConfiguration configuration, IMongoCollection<Account> accounts) {
     public async Task<List<Account>> GetAllUsersAsync() => await accounts.Find(_ => true).ToListAsync();
     public async Task<AuthResponse?> LoginAsync(AuthRequest request) {
         var user = await accounts.Find(u => u.Username == request.Username).FirstOrDefaultAsync();
@@ -64,7 +63,7 @@ public class AuthService (IConfiguration configuration, IMongoCollection<Account
 
         var newHashedPassword = hasher.HashPassword(user, request.NewPassword);
         var update = Builders<Account>.Update.Set(u => u.HashedPassword, newHashedPassword);
-        var result = await accounts.UpdateOneAsync(u=>u.Username == request.Username, update);
+        var result = await accounts.UpdateOneAsync(u => u.Username == request.Username, update);
         if (result.ModifiedCount == 0) return new AuthResponse { Message = "Password update failed." };
 
         return new AuthResponse {

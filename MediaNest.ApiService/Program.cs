@@ -7,6 +7,7 @@ using MediaNest.Web.Endpoints;
 using MediaNest.Web.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using MongoDB.Driver;
 using Scalar.AspNetCore;
 using System.Text;
 
@@ -46,7 +47,7 @@ builder.Services.AddScoped<IGameRepository, GameRepository>();
 builder.Services.AddScoped<IGameService, GameService>();
 */
 
-
+builder.Services.AddSingleton<FileService>();
 // ========================================================
 // MongoDB
 // ========================================================
@@ -57,14 +58,14 @@ builder.Services.AddMongoCollection<Comic>("Comics");
 builder.Services.AddMongoCollection<ComicList>("ComicLists");
 builder.Services.AddScoped<ComicService>();
 builder.Services.AddScoped<AuthService>();
+// ========================================================
 
-var app = builder.Build();      // <<<<<<<<<<<<<<<
+var app = builder.Build();      
 // Seed Admin
 using (var scope = app.Services.CreateScope()) {
     var services = scope.ServiceProvider.GetRequiredService<AuthService>();
     await services.SetSeedAdminIfNotExist();
 }
-
 // ========================================================
 // 1. Error Handling
 // ========================================================
@@ -78,6 +79,7 @@ if (!app.Environment.IsDevelopment()) {
 if (!app.Environment.IsEnvironment("Docker")) {
     app.UseHttpsRedirection();
 }
+
 var folder = builder.Configuration["AssetsFolder"] ?? "/app/Assets";
 AppState.AssetsFolder = Path.GetFullPath(folder);
 Console.WriteLine($"AssetsFolder : {AppState.AssetsFolder}");

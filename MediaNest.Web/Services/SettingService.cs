@@ -1,6 +1,4 @@
-﻿using System.Text.Json;
-
-namespace MediaNest.Web.Services;
+﻿namespace MediaNest.Web.Services;
 
 public class SettingService {
 
@@ -10,5 +8,5 @@ public class SettingService {
     public SettingService(IWebHostEnvironment env) {
         _configPath = Path.Combine(env.ContentRootPath, "appsettings.json");
     }
-  
+
 }

@@ -1,15 +1,7 @@
 ﻿
 using MediaNest.ApiService.Services;
 using MediaNest.Shared.Dtos;
-using MediaNest.Shared.Entities;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.IdentityModel.Tokens;
-using MongoDB.Driver;
-using MongoDB.Driver.Linq;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
 
 namespace MediaNest.Web.Endpoints;
 
@@ -41,7 +33,7 @@ public static class AuthServiceEndpoints {
             ? Results.BadRequest(new AuthResponse { Message = "Username exists" })
             : Results.Ok(response);
     }
-    
+
     private static async Task<IResult> ToggleUserRole(AuthService authService, AccountUpdateRequest request) {
         var success = await authService.UpdateUserRoleAsync(request);
         return success ? Results.Ok("success") : Results.NotFound("User not found");
