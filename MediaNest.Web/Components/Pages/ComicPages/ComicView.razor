@@ -1,4 +1,5 @@
 ﻿@page "/comic/view/{id}"
+@using MediaNest.Web.Services
 @rendermode InteractiveServer
 @inject NavigationManager NavigationManager
 
@@ -98,10 +99,11 @@
 
 
 @code {
+    [Parameter] public string id { get; set; }
     [Inject] public AuthenticationStateProvider authProvider { get; set; }
     [Inject] public IJSRuntime JSRuntime { get; set; }
     [Inject] public ApiClient ApiClient { get; set; }
-    [Parameter] public string id { get; set; }
+    [Inject] public WebAppState WebAppState { get; set; }
     Comic currentComic;
     List<string> images = [];
     bool doShowDeleteButton = false;
@@ -118,8 +120,8 @@
             currentComic = await ApiClient.GetAsync<Comic>($"/api/comic/{id}");
             charaStr = string.Join(',', currentComic.Characters);
             tagStr = string.Join(',', currentComic.Tags);
-            resourceUrl = Path.Combine(AppState.AssetsFolder, currentComic.FolderName);
-            folderName = Path.Combine(AppState.AssetsFolder, "Comics", currentComic.FolderName);
+            resourceUrl = Path.Combine(WebAppState.AssetsFolder, currentComic.FolderName);
+            folderName = Path.Combine(WebAppState.AssetsFolder, "Comics", currentComic.FolderName);
             foreach (var path in Directory.GetFiles(folderName)) {
                 images.Add(Path.GetFileName(path));
             }

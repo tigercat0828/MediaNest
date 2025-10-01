@@ -1,6 +1,4 @@
-﻿using MongoDB.Bson;
-
-namespace MediaNest.ApiService.Services {
+﻿namespace MediaNest.ApiService.Services {
     public class FileService(IConfiguration config) {
         public string AssetsFolder { get; private set; } = Path.GetFullPath(config["AssetsFolder"] ?? "/app/Assets");
         public string ComicFolder => Path.Combine(AssetsFolder, "Comics");
@@ -11,24 +9,24 @@ namespace MediaNest.ApiService.Services {
         public void SetAssetsFolder(string path) {
             AssetsFolder = path;
         }
-        public void DeleteFolder(string path, bool recursive= true) {
+        public void DeleteFolder(string path, bool recursive = true) {
             try {
                 if (Directory.Exists(path)) {
                     Console.WriteLine("Delete by file service");
                     Directory.Delete(path, recursive);
                 }
             }
-            catch { 
+            catch {
                 // ignore
             }
         }
         public void CreateFolder(string path) {
-             Directory.CreateDirectory(path);
+            Directory.CreateDirectory(path);
         }
         public void CopyFile(string source, string destination, bool overwrite = true) {
             File.Copy(source, destination, overwrite);
         }
-        
+
     }
 }
 

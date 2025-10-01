@@ -1,5 +1,6 @@
-﻿namespace MediaNest.Web.Services; 
-public class UserStateService(ApiClient client) {
+﻿namespace MediaNest.Web.Services;
+
+public class UserStateService() {
     private List<string> selectedComic = [];
     public void AddComic(string id) {
         if (!selectedComic.Contains(id)) {
@@ -11,5 +12,5 @@ public class UserStateService(ApiClient client) {
             selectedComic.Remove(id);
         }
     }
-    
+
 }

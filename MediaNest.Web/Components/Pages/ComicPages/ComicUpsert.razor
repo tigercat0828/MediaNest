@@ -1,6 +1,7 @@
 ﻿@page "/comic/create"
 @page "/comic/edit/{id}"
-
+@using MediaNest.Web.Services
+@using MediaNest.Web.Components.Pages.ComicPages.Tools
 <AuthorizeView Roles="Admin,User">
     <NotAuthorized>
         <div class="alert alert-info mt-2">
@@ -125,9 +126,10 @@
     [Inject] public ApiClient ApiClient { get; set; }
     [Inject] public NavigationManager Navigation { get; set; }
     [Inject] public AuthenticationStateProvider AuthProvider { get; set; }
+	[Inject] public WebAppState WebAppState { get; set; }
     [Parameter] public string id { get; set; }
 
-    private string directory = Path.Combine(AppState.AssetsFolder, "Comics");
+    private string directory => Path.Combine(WebAppState.AssetsFolder, "Comics");
     private bool _isEditMode = false;
     private Comic _currentComic = new();
 
@@ -171,8 +173,8 @@
         _currentComic.Characters = _characterStr.Split(",", StringSplitOptions.RemoveEmptyEntries).ToList();
         _currentComic.Uploader = ""; 
         if (_isEditMode) {
-            string newFolderPath = Path.Combine(AppState.AssetsFolder, "Comics", _currentComic.FolderName);
-            string oldFolderPath = Path.Combine(AppState.AssetsFolder, "Comics", $"{_currentComic.Code[..3]}", $"[{_currentComic.Code}]{_oldTitle}");
+            string newFolderPath = Path.Combine(WebAppState.AssetsFolder, "Comics", _currentComic.FolderName);
+            string oldFolderPath = Path.Combine(WebAppState.AssetsFolder, "Comics", $"{_currentComic.Code[..3]}", $"[{_currentComic.Code}]{_oldTitle}");
             if (oldFolderPath != newFolderPath) Directory.Move(oldFolderPath, newFolderPath);
             await ApiClient.PutAsync<Comic, Comic>($"/api/comic/{id}", _currentComic);
         }
@@ -182,8 +184,9 @@
         Navigation.NavigateTo($"/comic/{_currentComic.Id}");
     }
     private async Task SplitComic(){
-        var response = await ApiClient.PostAsync<string, Comic>("/api/comic/split", _currentComic);
+        _showConfirmSplit = false;
         Navigation.NavigateTo($"/comic/{_currentComic.Id}");
+        var response = await ApiClient.PostAsync<string, Comic>("/api/comic/split", _currentComic);
     }
 
     private void HandleUploadButtonPressed(bool isPressed) {
@@ -195,7 +198,7 @@
     }
 
     void LoadImageSrcs() {
-        var folderName = Path.Combine(AppState.AssetsFolder, "Comics", _currentComic.FolderName);
+        var folderName = Path.Combine(WebAppState.AssetsFolder, "Comics", _currentComic.FolderName);
         foreach (var path in Directory.GetFiles(folderName)) {
             _imageSrcs.Add(Path.GetFileName(path));
         }
@@ -208,7 +211,7 @@
             _selectedImages.Add(imgFile);
     }
     private void DeleteSelectedImages() {
-        var folderPath = Path.Combine(AppState.AssetsFolder, "Comics", _currentComic.FolderName);
+        var folderPath = Path.Combine(WebAppState.AssetsFolder, "Comics", _currentComic.FolderName);
 
 
         foreach (var imgFile in _selectedImages.ToList()) {

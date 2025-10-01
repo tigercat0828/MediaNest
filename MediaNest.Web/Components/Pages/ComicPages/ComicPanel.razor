@@ -59,11 +59,12 @@
 </AuthorizeView>
     
 @code {
+    [Parameter] public string id { get; set; }
+    [Parameter] public int page { get; set; } = 0;
     [Inject] public ApiClient ApiClient { get; set; }
     [Inject] public AuthenticationStateProvider AuthProvider { get; set; }
     [Inject] public JSRuntimeService JS { get; set; }
-    [Parameter] public string id { get; set; }
-    [Parameter] public int page { get; set; } = 0;
+	[Inject] public WebAppState WebAppState { get; set; }
 
 
     private int _currentPage = 0;
@@ -89,7 +90,7 @@
     }
 
     void LoadImageSrcs() {
-        var folderName = Path.Combine(AppState.AssetsFolder, "Comics", _comic.FolderName);
+        var folderName = Path.Combine(WebAppState.AssetsFolder, "Comics", _comic.FolderName);
         foreach (var path in Directory.GetFiles(folderName)) {
             _imageSrcs.Add(Path.GetFileName(path));
         }

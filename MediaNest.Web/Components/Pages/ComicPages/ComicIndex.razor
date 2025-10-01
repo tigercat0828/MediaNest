@@ -1,7 +1,7 @@
 ﻿@page "/"   
 @page "/comic"
 @page "/comic/search/{searchText}"
-
+@using MediaNest.Web.Components.Pages.ComicPages.Tools
 @* TODO : "/" new home page*@
 <AuthorizeView>
     <NotAuthorized>
@@ -58,16 +58,27 @@
                         @if (_comics != null) {
                             <div class="row d-flex flex-wrap">
                                 @foreach (var comic in _comics) {
-                                    // TODO : or fix it to P001.jpg
-                                    string coverSrc = $"/Assets/Comics/{comic.FolderName}/001.jpg";
-                                    string href = $"/comic/{comic.Id}";
-                                    <ImageAnchor href="@href" coverSrc="@coverSrc" title="@comic.Title" />
+                                    <ComicCover Target="@comic" />
                                 }
                             </div>
                         }
                         else {
                             <Spinner />
                         }
+                    </div>
+                    @* ================================================================ *@
+                    @* pagination *@
+                    <div class="row mb-1">
+                        <nav aria-label="Page navigation example">
+                            <ul class="pagination">
+                                <li class="page-item"><button class="page-link" @onclick="LastPage"><i class="bi bi-arrow-left"></i></button></li>
+                                @for (int i = 1; i <= _totalPage; i++) {
+                                    int pageNo = i;
+                                    <li class="page-item"><button class="page-link" @onclick="() => SetPage(pageNo)">@pageNo</button></li>
+                                }
+                                <li class="page-item"><button class="page-link" @onclick="NextPage"><i class="bi bi-arrow-right"></i></button></li>
+                            </ul>
+                        </nav>
                     </div>
                     @* ================================================================ *@
 

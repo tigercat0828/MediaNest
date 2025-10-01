@@ -31,8 +31,10 @@ builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthStateProvider>
 // ====================================================================
 // customs service
 // ====================================================================
-builder.Services.AddSingleton<SettingService>();
 builder.Services.AddScoped<JSRuntimeService>();
+var fullPath = SetupAssetFolder();
+builder.Services.AddSingleton(new WebAppState { AssetsFolder = fullPath });
+
 builder.Services.AddOutputCache();
 
 var apiBaseUrl = builder.Configuration["ApiClient:BaseUrl"] ?? "https+http://apiservice";
@@ -40,7 +42,6 @@ Console.WriteLine($"Api BaseUrl : {apiBaseUrl}");
 builder.Services.AddHttpClient<ApiClient>(client => {
     client.BaseAddress = new(apiBaseUrl);
 });
-
 
 var app = builder.Build();
 
@@ -61,17 +62,11 @@ app.UseStaticFiles(new StaticFileOptions {  // for .vtt subtitle
     ServeUnknownFileTypes = true,
     DefaultContentType = "text/vtt"
 });
-var folder = builder.Configuration["AssetsFolder"] ?? "/app/Assets";
-AppState.AssetsFolder = Path.GetFullPath(folder);
-Console.WriteLine($"AssetsFolder : {AppState.AssetsFolder}");
-string[] subDirs = { "Comics", "Videos", "Images" };
-foreach (var dir in subDirs) {
-    var path = Path.Combine(AppState.AssetsFolder, dir);
-    Directory.CreateDirectory(path);
-}
-if (Directory.Exists(AppState.AssetsFolder)) {
+
+var appState = app.Services.GetRequiredService<WebAppState>();
+if (Directory.Exists(appState.AssetsFolder)) {
     app.UseStaticFiles(new StaticFileOptions {
-        FileProvider = new PhysicalFileProvider(AppState.AssetsFolder),
+        FileProvider = new PhysicalFileProvider(appState.AssetsFolder),
         RequestPath = new PathString("/Assets"),
     });
 }
@@ -92,3 +87,14 @@ app.MapDefaultEndpoints();
 
 app.Run();
 
+string SetupAssetFolder() {
+    var folder = builder.Configuration["AssetsFolder"] ?? "/app/Assets";
+    var fullPath = Path.GetFullPath(folder);
+    Console.WriteLine($"AssetsFolder : {fullPath}");
+    string[] subDirs = { "Comics", "Videos", "Images" };
+    foreach (var dir in subDirs) {
+        var path = Path.Combine(fullPath, dir);
+        Directory.CreateDirectory(path);
+    }
+    return fullPath;
+}

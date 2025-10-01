@@ -2,7 +2,6 @@
 using MediaNest.Shared.Dtos;
 using MediaNest.Shared.Entities;
 using MediaNest.Web.AuthStateProvider;
-using MediaNest.Web.Services;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 
@@ -11,7 +10,6 @@ namespace MediaNest.Web.Components.Pages.AccountPage;
 public partial class Settings : ComponentBase {
     [Inject] public ApiClient ApiClient { get; set; }
     [Inject] public AuthenticationStateProvider AuthProvider { get; set; }
-    [Inject] public SettingService SettingService { get; set; }
     [Inject] public IToastService Toast { get; set; }
     [Inject] public NavigationManager Navigation { get; set; }
     private List<Account> _users;

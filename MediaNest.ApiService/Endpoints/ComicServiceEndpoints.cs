@@ -1,5 +1,5 @@
-﻿using MediaNest.Shared.Entities;
-using MediaNest.Web.Services;
+﻿using MediaNest.ApiService.Services;
+using MediaNest.Shared.Entities;
 using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
 

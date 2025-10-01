@@ -1,37 +1,26 @@
-﻿@* <div class="card" style="width:15rem; padding: 0;">
-    <div class="card-body" style="padding: 0;">
-        <a href="@href" style="position: relative; display: block;">
-            <img class="rounded-top" src="@coverSrc" alt="@title" style="width:100%; height:100%; object-fit: cover;" />
-            <div class="card-title-overlay">
-                <p class="card-title text-center">@title</p>
-            </div>
-        </a>
-    </div>
-</div>
- *@
-
+﻿
 <div class="card overflow-hidden" style="width: 15rem; height: 20rem;">
-    <a href="@href" class="d-block h-100 position-relative">
-        <img src="@coverSrc" alt="@title"
-             class="w-100 h-100 object-fit-cover">
+    <a href="/comic/@Target.Id" class="d-block h-100 position-relative">
+
+
+        <img src="/Assets/Comics/@Target.FolderName/001.jpg"
+             alt="@Target.Title"
+             class="w-100 h-100 object-fit-cover"
+             onerror="fallbackImage(this)" />
+
 
         <div class="card-img-overlay d-flex align-items-end p-0">
             <p class="card-title text-center bg-dark bg-opacity-50 text-white w-100 m-0">
-                @title
+                @Target.Title
             </p>
         </div>
     </a>
 </div>
 
-
-
 @code {
-    [Parameter]
-    public string href { get; set; }
-    [Parameter]
-    public string coverSrc { get; set; }
-    [Parameter]
-    public string title { get; set; }
+    [Parameter] public Comic Target { get; set; }
+
+    private string GetCoverPath(string ext) => $"/Assets/Comics/{Target.FolderName}/001.{ext}";
 }
 
 <style>
@@ -59,3 +48,25 @@
         justify-content: center;                /* 水平置中 */
     }
 </style>
+
+<script>
+    function fallbackImage(img) {
+        // 備援清單 (依序嘗試)
+        const fallbackList = [
+            '001.png',
+            '001.webp',
+            '001.jpeg'
+        ];
+        // 目前已經嘗試過幾次
+        if (!img.dataset.fallbackIndex) {
+            img.dataset.fallbackIndex = 0;
+        }
+        let idx = parseInt(img.dataset.fallbackIndex, 10);
+
+        if (idx < fallbackList.length) {
+            img.src = img.src.replace(/001\.\w+$/, fallbackList[idx]);
+            img.dataset.fallbackIndex = idx + 1;
+        }
+    }
+</script>
+    

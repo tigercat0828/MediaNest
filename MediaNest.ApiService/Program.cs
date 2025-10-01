@@ -1,13 +1,10 @@
 using MediaNest.ApiService.Endpoints;
 using MediaNest.ApiService.Services;
 using MediaNest.Shared.Entities;
-using MediaNest.Web;
 using MediaNest.Web.Database;
 using MediaNest.Web.Endpoints;
-using MediaNest.Web.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
-using MongoDB.Driver;
 using Scalar.AspNetCore;
 using System.Text;
 
@@ -60,7 +57,7 @@ builder.Services.AddScoped<ComicService>();
 builder.Services.AddScoped<AuthService>();
 // ========================================================
 
-var app = builder.Build();      
+var app = builder.Build();
 // Seed Admin
 using (var scope = app.Services.CreateScope()) {
     var services = scope.ServiceProvider.GetRequiredService<AuthService>();
@@ -80,9 +77,6 @@ if (!app.Environment.IsEnvironment("Docker")) {
     app.UseHttpsRedirection();
 }
 
-var folder = builder.Configuration["AssetsFolder"] ?? "/app/Assets";
-AppState.AssetsFolder = Path.GetFullPath(folder);
-Console.WriteLine($"AssetsFolder : {AppState.AssetsFolder}");
 // app.UseStaticFiles();
 app.UseRouting();
 // ========================================================
