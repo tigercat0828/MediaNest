@@ -73,6 +73,11 @@ public class ComicService(FileService _fileService, IMongoCollection<Comic> _com
 
         string sourceFolder = Path.Combine(_fileService.ComicFolder, comic.FolderName);
 
+        // 一次取所有檔案並依頁碼排序
+        var allFiles = Directory.GetFiles(sourceFolder)
+            .OrderBy(f => ExtractPageNumber(f))
+            .ToList();
+
         // bookmark = [1, 9, 27, 36]
         for (int i = 0; i < comic.Bookmarks.Count; i++) {
             int start = comic.Bookmarks[i];
@@ -96,9 +101,8 @@ public class ComicService(FileService _fileService, IMongoCollection<Comic> _com
             Directory.CreateDirectory(targetFolder);
 
             // 搬移並重新命名檔案
-            var images = Directory.GetFiles(sourceFolder)
+            var images = allFiles
                 .Where(f => IsPageInRange(f, start, end))
-                .OrderBy(f => f)
                 .ToList();
 
             int pageNo = 1;
@@ -117,15 +121,23 @@ public class ComicService(FileService _fileService, IMongoCollection<Comic> _com
         // 存 ComicList
         await CreateComicList(comicIds, comic.Title);
 
-    }
-    private bool IsPageInRange(string filePath, int start, int end) {
-        // 001.jpg => 001
-        string fileName = Path.GetFileNameWithoutExtension(filePath);
-        if (int.TryParse(fileName, out int pageNum)) {
-            return pageNum >= start && pageNum <= end;
+
+        int ExtractPageNumber(string path) {
+            string fileName = Path.GetFileNameWithoutExtension(path);
+            if (int.TryParse(fileName, out int num)) return num;
+            return int.MaxValue; // 無法解析的排到最後
         }
-        return false;
+
+        bool IsPageInRange(string filePath, int start, int end) {
+            // 001.jpg => 001
+            string fileName = Path.GetFileNameWithoutExtension(filePath);
+            if (int.TryParse(fileName, out int pageNum)) {
+                return pageNum >= start && pageNum <= end;
+            }
+            return false;
+        }
     }
+   
     public async Task CreateComicList(List<string> comicIds, string title) {
         ComicList list = new() {
             Title = title,

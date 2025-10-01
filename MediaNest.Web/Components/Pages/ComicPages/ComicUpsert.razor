@@ -183,10 +183,14 @@
         }
         Navigation.NavigateTo($"/comic/{_currentComic.Id}");
     }
+        private bool _isSplitting = false;
     private async Task SplitComic(){
+        if (_isSplitting) return;
         _showConfirmSplit = false;
         Navigation.NavigateTo($"/comic/{_currentComic.Id}");
+        _isSplitting = true;
         var response = await ApiClient.PostAsync<string, Comic>("/api/comic/split", _currentComic);
+        _isSplitting = false;
     }
 
     private void HandleUploadButtonPressed(bool isPressed) {
