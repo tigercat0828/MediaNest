@@ -116,6 +116,8 @@ public class ComicService(FileService _fileService, IMongoCollection<Comic> _com
 
             // 記錄 Comic Id
             comicIds.Add(subComic.Id);
+
+            Console.WriteLine($"SplitComic triggered for {subComic.Title} at {DateTime.Now}");
         }
 
         // 存 ComicList
