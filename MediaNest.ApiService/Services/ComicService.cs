@@ -6,12 +6,12 @@ using System.Text.RegularExpressions;
 
 namespace MediaNest.ApiService.Services;
 
-public class ComicService(FileService _fileService, IMongoCollection<Comic> _comicCollection, IMongoCollection<ComicList> _listCollection) {
+public class ComicService(ComicListService _listService, FileService _fileService, IMongoCollection<Comic> _comicCollection) {
+    public async Task CreateComic(Comic comic) {
+        await _comicCollection.InsertOneAsync(comic);
+    }
     public async Task<int> GetCount() {
         return (int)await _comicCollection.CountDocumentsAsync(_ => true);
-    }
-    public async Task<List<Comic>> GetAllComics() {
-        return await _comicCollection.Find(_ => true).ToListAsync();
     }
     public async Task<List<Comic>> GetRandomComics(int count) {
         return await _comicCollection.Aggregate().Sample(count).ToListAsync();
@@ -27,18 +27,6 @@ public class ComicService(FileService _fileService, IMongoCollection<Comic> _com
     }
     public async Task<Comic> GetComicById(string id) {
         return await _comicCollection.Find(comic => comic.Id == id).FirstOrDefaultAsync();
-    }
-    public async Task DeleteComic(string id) {
-        var comic = await GetComicById(id);
-        var folder = Path.Combine(_fileService.ComicFolder, comic.FolderName);
-        _fileService.DeleteFolder(folder);
-        await _comicCollection.DeleteOneAsync(comic => comic.Id == id);
-    }
-    public async Task CreateComic(Comic comic) {
-        await _comicCollection.InsertOneAsync(comic);
-    }
-    public async Task UpdateComic(string id, Comic comic) {
-        await _comicCollection.ReplaceOneAsync(x => x.Id == id, comic);
     }
     public async Task<List<Comic>> SearchComic(string term) {
         // 建立 SearchComicByIdInfo 的 Filter
@@ -63,7 +51,16 @@ public class ComicService(FileService _fileService, IMongoCollection<Comic> _com
         var combinedFilter = titleFilter | subTitleFilter | authorFilter | seriesFilter | codeFilter | tagsFilter | charactersFilter;
         return await _comicCollection.Find(combinedFilter).ToListAsync();
     }
-    public async Task<bool> CheckExists(string id) {
+    public async Task UpdateComic(string id, Comic comic) {
+        await _comicCollection.ReplaceOneAsync(x => x.Id == id, comic);
+    }
+    public async Task DeleteComic(string id) {
+        var comic = await GetComicById(id);
+        var folder = Path.Combine(_fileService.ComicFolder, comic.FolderName);
+        _fileService.DeleteFolder(folder);
+        await _comicCollection.DeleteOneAsync(comic => comic.Id == id);
+    }
+    public async Task<bool> CheckComicExists(string id) {
         return await _comicCollection.Find(comic => comic.Id == id).AnyAsync();
     }
     public async Task SplitComic(Comic comic) {
@@ -121,8 +118,7 @@ public class ComicService(FileService _fileService, IMongoCollection<Comic> _com
         }
 
         // 存 ComicList
-        await CreateComicList(comicIds, comic.Title);
-
+        await _listService.CreateComicList(comicIds, comic.Title);
 
         int ExtractPageNumber(string path) {
             string fileName = Path.GetFileNameWithoutExtension(path);
@@ -138,13 +134,5 @@ public class ComicService(FileService _fileService, IMongoCollection<Comic> _com
             }
             return false;
         }
-    }
-   
-    public async Task CreateComicList(List<string> comicIds, string title) {
-        ComicList list = new() {
-            Title = title,
-            ComicIds = comicIds
-        };
-        await _listCollection.InsertOneAsync(list);
     }
 }

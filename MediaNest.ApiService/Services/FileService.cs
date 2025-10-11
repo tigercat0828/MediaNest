@@ -4,7 +4,7 @@
         public string ComicFolder => Path.Combine(AssetsFolder, "Comics");
         public string VideoFolder => Path.Combine(AssetsFolder, "Videos");
         public string MusicFolder => Path.Combine(AssetsFolder, "Musics");
-
+        public string ImageFolder => Path.Combine(AssetsFolder, "Images");
         public string TempFolder => Path.Combine(AssetsFolder, "Temp");
         public void SetAssetsFolder(string path) {
             AssetsFolder = path;

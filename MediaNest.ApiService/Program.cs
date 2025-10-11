@@ -8,6 +8,8 @@ using Microsoft.IdentityModel.Tokens;
 using Scalar.AspNetCore;
 using System.Text;
 
+Console.OutputEncoding = System.Text.Encoding.UTF8;
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.AddServiceDefaults();           // Add service defaults & Aspire client integrations.
@@ -53,6 +55,10 @@ builder.Services.AddMongoClient();
 builder.Services.AddMongoCollection<Account>("Accounts");
 builder.Services.AddMongoCollection<Comic>("Comics");
 builder.Services.AddMongoCollection<ComicList>("ComicLists");
+builder.Services.AddMongoCollection<Video>("Videos");
+builder.Services.AddMongoCollection<Music>("Musics");
+
+builder.Services.AddScoped<ComicListService>();
 builder.Services.AddScoped<ComicService>();
 builder.Services.AddScoped<AuthService>();
 // ========================================================
@@ -90,6 +96,7 @@ app.UseAuthorization();
 app.MapGet("/", () => "api is running");
 app.MapAuthEndpoints();
 app.MapComicServiceEndpoints();
+app.MapComicListServiceEndpoints();
 //app.MapGameEndpoints();
 
 app.MapDefaultEndpoints();

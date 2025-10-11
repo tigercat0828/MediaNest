@@ -1,0 +1,91 @@
+﻿@page "/comic"
+@page "/comic/search/{searchText}"
+@using MediaNest.Web.Components.Pages.ComicPages.Tools
+
+<AuthorizeView>
+    <NotAuthorized>
+        <div class="container">
+            <div class="alert alert-info mt-2">
+                Please <a href="/account/login">Login</a> first!
+            </div>
+        </div>
+    </NotAuthorized>
+    <Authorized>
+        <AuthorizeView Roles="Pending">
+            <Authorized Context="visitor">
+                <div class="container">
+                    <div class="alert alert-info mt-2">
+                        You have no permission. Please message the Administrator.
+                    </div>
+                </div>
+            </Authorized>
+        </AuthorizeView>
+        <AuthorizeView Roles="Admin,User">
+            <Authorized Context="general">
+                <div class="container-fluid">
+                    @* ================================================================ *@
+                    @* Search Bar and Random Button *@
+                    <div class="row mb-3">
+                        <div class="col-11">
+                            <div class="input-group">
+                                <button class="btn btn-outline-primary" @onclick="GetRandomComics"><i class="bi bi-shuffle"></i></button>
+                                <input type="text" class="form-control" placeholder="輸入關鍵字進行搜尋..." @bind-value="SearchText" />
+                                <button class="btn btn-outline-primary" @onclick="HandleSearch">搜尋</button>
+                            </div>
+                        </div>
+                        <div class="col-1">
+                            <a class="btn btn-success" href="/comic/create">新建</a>
+                        </div>
+                    </div>
+                    @* ================================================================ *@
+                    @* pagination *@
+                    <div class="row mb-1">
+                        <nav aria-label="Page navigation example">
+                            <ul class="pagination">
+                                <li class="page-item"><button class="page-link" @onclick="LastPage"><i class="bi bi-arrow-left"></i></button></li>
+                                @for (int i = 1; i<=_totalPage; i++) {
+                                    int pageNo = i;
+                                    <li class="page-item"><button class="page-link" @onclick="() => SetPage(pageNo)">@pageNo</button></li>
+                                }
+                                <li class="page-item"><button class="page-link" @onclick="NextPage"><i class="bi bi-arrow-right"></i></button></li>
+                            </ul>
+                        </nav>
+                    </div>
+                    @* ================================================================ *@
+                    @* Comic Covers *@
+                    <div class="row">
+                        @if (_comics != null) {
+                            <div class="row d-flex flex-wrap">
+                                @foreach (var comic in _comics) {
+									string link = $"/comic/{comic.Id}";
+                                    string source = $"/Assets/Comics/Thumbs/{comic.FolderName}/001.jpg";
+                                    <ImageCover Link="@link" Title="@comic.Title" Source="@source" />
+                                }
+                            </div>
+                        }
+                        else {
+                            <Spinner />
+                        }
+                    </div>
+                    @* ================================================================ *@
+                    @* pagination *@
+                    <div class="row mb-1">
+                        <nav aria-label="Page navigation example">
+                            <ul class="pagination">
+                                <li class="page-item"><button class="page-link" @onclick="LastPage"><i class="bi bi-arrow-left"></i></button></li>
+                                @for (int i = 1; i <= _totalPage; i++) {
+                                    int pageNo = i;
+                                    <li class="page-item"><button class="page-link" @onclick="() => SetPage(pageNo)">@pageNo</button></li>
+                                }
+                                <li class="page-item"><button class="page-link" @onclick="NextPage"><i class="bi bi-arrow-right"></i></button></li>
+                            </ul>
+                        </nav>
+                    </div>
+                    @* ================================================================ *@
+
+                </div>
+            </Authorized>
+        </AuthorizeView>
+    </Authorized>
+</AuthorizeView>
+

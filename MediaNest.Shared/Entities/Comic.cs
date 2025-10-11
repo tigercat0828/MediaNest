@@ -19,7 +19,7 @@ public class Comic {
     public List<string> Characters { get; set; } = [];
     public List<int> Bookmarks { get; set; } = [];
     public string Uploader { get; set; } = string.Empty;
-    public string Code { get; set; } = "000000";
+    public string Code { get; set; } = "xxxxxx";
     [BsonIgnore]
     public string FolderName => Path.Combine(Code[..3], $"[{Code}]{Title}");    // retrieve asset path (physical hierarchy directories)
 }

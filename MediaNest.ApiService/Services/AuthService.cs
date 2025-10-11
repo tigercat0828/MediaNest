@@ -29,7 +29,7 @@ public class AuthService(IConfiguration configuration, IMongoCollection<Account>
         return new AuthResponse {
             Token = GenerateJwtToken(user, isRefreshToken: false),
             RefreshToken = GenerateJwtToken(user, isRefreshToken: true),
-            Expiration = DateTime.UtcNow.AddHours(1),
+            Expiration = DateTime.UtcNow.AddDays(1),
             Message = "Login successful!"
         };
     }

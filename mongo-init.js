@@ -18,3 +18,14 @@ if (!db.getCollectionNames().includes("ComicLists")) {
     db.createCollection("ComicLists");
     print("✅ ComicLists collection created");
 }
+
+if (!db.getCollectionNames().includes("Videos")) {
+    db.createCollection("Videos");
+    print("✅ Videos collection created");
+}
+
+if (!db.getCollectionNames().includes("Musics")) {
+    db.createCollection("Musics");
+    print("✅ Musics collection created");
+}
+

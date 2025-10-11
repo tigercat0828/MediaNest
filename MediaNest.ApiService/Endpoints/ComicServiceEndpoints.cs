@@ -29,8 +29,6 @@ public static class ComicServiceEndpoints {
 
     }
 
-
-
     private static async Task<IResult> GetComicById(ComicService service, string id) {
         var comic = await service.GetComicById(id);
         if (comic == null)
@@ -71,17 +69,8 @@ public static class ComicServiceEndpoints {
         return Results.Ok("success");
     }
 
-    private static async Task<IResult> DeleteComic(ComicService service, string id) {
-        bool exist = await service.CheckExists(id);
-        if (exist) {
-            await service.DeleteComic(id);  // TODO : delete the folder and its content
-            return Results.Ok("success");
-        }
-        else
-            return Results.NotFound();
-    }
     private static async Task<IResult> UpdateComic(ComicService service, string id, Comic updatedComic) {
-        bool exists = await service.CheckExists(id);
+        bool exists = await service.CheckComicExists(id);
         if (exists) {
             await service.UpdateComic(id, updatedComic);    // TODO : change folder name
             return Results.Ok(updatedComic);
@@ -89,5 +78,14 @@ public static class ComicServiceEndpoints {
         else {
             return Results.NotFound();
         }
+    }
+    private static async Task<IResult> DeleteComic(ComicService service, string id) {
+        bool exist = await service.CheckComicExists(id);
+        if (exist) {
+            await service.DeleteComic(id);  // TODO : delete the folder and its content
+            return Results.Ok("success");
+        }
+        else
+            return Results.NotFound();
     }
 }

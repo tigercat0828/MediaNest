@@ -20,6 +20,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "方案項目", "方案項�
 		mongo-init.js = mongo-init.js
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Utility", "Utility\Utility.csproj", "{3506B7EB-F0D2-45DE-85B8-3399788D8D6B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -46,6 +48,10 @@ Global
 		{FE11684E-19A1-476B-925A-44D57509ABDD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FE11684E-19A1-476B-925A-44D57509ABDD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FE11684E-19A1-476B-925A-44D57509ABDD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3506B7EB-F0D2-45DE-85B8-3399788D8D6B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3506B7EB-F0D2-45DE-85B8-3399788D8D6B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3506B7EB-F0D2-45DE-85B8-3399788D8D6B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3506B7EB-F0D2-45DE-85B8-3399788D8D6B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
