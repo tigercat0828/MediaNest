@@ -58,9 +58,7 @@
                             <div class="row d-flex flex-wrap">
                                 @foreach (var comic in _comics) {
 									string link = $"/comic/{comic.Id}";
-                                    @* string source = $"/Assets/Comics/Thumbs/{comic.FolderName}/001.jpg"; *@
-                                    string source = $"/Assets/Comics/{comic.FolderName}/001.jpg";
-
+                                    string source = $"/Assets/Comics/Thumbs/{comic.FolderName}/001.jpg"; 
                                     <ImageCover Link="@link" Title="@comic.Title" Source="@source" />
                                 }
                             </div>

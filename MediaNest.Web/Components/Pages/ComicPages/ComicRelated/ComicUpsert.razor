@@ -109,16 +109,10 @@
                     bool isSelected = _selectedImages.Contains(imgFile);
 
                     <div class="p-1">
-                      @*  <img src="/Assets/Comics/Thumbs/@_currentComic.FolderName/@imgFile?v=@DateTime.Now.Ticks"
+                        <img src="/Assets/Comics/Thumbs/@_currentComic.FolderName/@imgFile?v=@DateTime.Now.Ticks"
                                 alt="Page @i"
                                 class="comic-img @(isSelected ? "selected" : "")"
-                                @onclick="() => ToggleSelect(imgFile)" /> *@
-                        
-                        <img src="/Assets/Comics/currentComic.FolderName/@imgFile?v=@DateTime.Now.Ticks"
-                             alt="Page @i"
-                             class="comic-img @(isSelected ? "selected" : "")"
-                             @onclick="() => ToggleSelect(imgFile)" />
-
+                                @onclick="() => ToggleSelect(imgFile)" /> 
                     </div>
                 }
             </div>
