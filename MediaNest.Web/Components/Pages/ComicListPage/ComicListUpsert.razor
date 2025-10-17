@@ -93,7 +93,7 @@ else {
                 _comics.Add(new ComicDto {
                         Id = comic.Id,
                         Title = comic.Title,
-                        FolderName = comic.Folder
+                        Folder = comic.Folder
                 });
             }
             _comics.AddRange( ComicCartService.SelectedComics);

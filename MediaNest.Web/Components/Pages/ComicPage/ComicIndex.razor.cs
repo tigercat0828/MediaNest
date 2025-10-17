@@ -1,5 +1,7 @@
-﻿using MediaNest.Shared.Entities;
+﻿using MediaNest.Shared.Dtos;
+using MediaNest.Shared.Entities;
 using MediaNest.Shared.Services;
+using MediaNest.Web.Services;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Web;
@@ -10,11 +12,12 @@ public partial class ComicIndex : ComponentBase {
     [CascadingParameter] private Task<AuthenticationState> _authStateTask { get; set; }
     [Parameter] public string SearchText { get; set; } = null!;
     [Inject] public ComicService ComicService { get; set; } = null!;
+    [Inject] public ComicCartService ComicCartService { get; set; }
     private List<Comic> _comics = [];
     private int _elementPerPage = 30;
     private int _currentPage;
     private int _totalPage;
-
+    private bool _isSelectMode = false;
     private async Task SetPage(int page) {
         _currentPage = page;
         await GetComicsByPage(page);
@@ -66,5 +69,15 @@ public partial class ComicIndex : ComponentBase {
             await HandleSearch();
         }
     }
-
+    private async Task AddToCart(Comic comic) {
+        await ComicCartService.AddAsync(
+            new ComicDto {
+                Id = comic.Id,
+                Title = comic.Title,
+                Folder = comic.Folder,
+            });
+    }
+    private void ToggleSelectMode() {
+        _isSelectMode = !_isSelectMode;
+    }
 }

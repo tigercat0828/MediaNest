@@ -6,7 +6,6 @@ using MediaNest.Shared.Services.Background;
 using MediaNest.Web.Components;
 using MediaNest.Web.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.Extensions.FileProviders;
 
 var builder = WebApplication.CreateBuilder(args);

@@ -1,6 +1,7 @@
 ﻿@page "/comiclist"
 @page "/comiclist/search/{SearchText}"
 @using MediaNest.Shared.Entities
+@using MediaNest.Web.Components.Pages.ComicPage
 @rendermode InteractiveServer
 @attribute [Authorize(Roles = "Admin,User")]
 
@@ -44,7 +45,7 @@
                                     source = $"/Assets/Comics/{_coverComics[index].Folder}/001.jpg";
                                     link = $"/comiclist/{_comicLists[index].Id}";
                                 }
-                                <ImageCover Link="@link" Source="@source" Title="@_comicLists[i].Title" />
+                                <ComicCover Link="@link" Source="@source" Title="@_comicLists[i].Title" />
                             }
                         </div>
                     }

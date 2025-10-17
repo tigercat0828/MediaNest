@@ -14,6 +14,7 @@
                 <div class="row mb-3">
                     <div class="col-11">
                         <div class="input-group">
+                            <button class="btn btn-outline-primary" @onclick="ToggleSelectMode"><i class="bi bi-check-all"></i></button>
                             <button class="btn btn-outline-primary" @onclick="()=> GetComicsByPage(1)"><i class="bi bi-arrow-counterclockwise"></i></button>
                             <button class="btn btn-outline-primary" @onclick="GetRandomComics"><i class="bi bi-shuffle"></i></button>
                             <input type="text" class="form-control" placeholder="輸入關鍵字進行搜尋..." @bind-value="SearchText" />
@@ -36,7 +37,10 @@
                         @foreach (var comic in _comics) {
                             string link = $"/comic/{comic.Id}";
                             string source = $"/Assets/Comics/Thumbs/{comic.Folder}/001.jpg";
-                            <ImageCover Link="@link" Title="@comic.Title" Source="@source" />
+                            <ComicCover Link="@link" Title="@comic.Title" Source="@source" 
+                                        ShowAddButton="_isSelectMode"        
+                                        OnAddClicked="() => AddToCart(comic)" />    
+                            
                         }
                     }
                     else {

@@ -1,0 +1,101 @@
+﻿<div class="card overflow-hidden" style="width: 15rem; ">
+    <a href=@Link class="d-block h-100 position-relative">
+
+        <img src="@Source"
+             alt="@Title"
+             class="w-100 h-100 object-fit-cover"
+             onerror="fallbackImage(this)" />
+
+        <div class="card-img-overlay d-flex align-items-end p-0">
+            <p class="card-title text-center bg-dark bg-opacity-50 text-white w-100 m-0">
+                @Title
+            </p>
+        </div>
+    </a>
+
+    @* ✅ 新增：右上角浮動按鈕（只在 ShowAddButton 為 true 時出現） *@
+    @if (ShowAddButton) {
+        <button class="btn btn-sm position-absolute top-0 end-0 m-1 rounded-circle btn-primary" 
+        @onclick:stopPropagation="true"
+        @onclick="OnAddClicked">
+            <i class="bi bi-plus")"></i>
+        </button>
+    }
+
+</div>
+
+
+
+
+@code {
+    [Parameter] public string Title { get; set; }
+    [Parameter] public string Link { get; set; }
+    [Parameter] public string Source { get; set; }
+
+    [Parameter] public EventCallback OnAddClicked { get; set; }
+    // ✅ 新增參數
+    [Parameter] public bool ShowAddButton { get; set; } = false;
+}
+
+<style>
+    .card-title {
+        font-size: 1rem; /* 預設字體大小 */
+        white-space: nowrap; /* 不換行 */
+        overflow: hidden; /* 隱藏超出部分 */
+        text-overflow: ellipsis; /* 使用省略號 */
+        display: block; /* 使元素為塊級元素 */
+        max-width: 100%; /* 限制最大寬度 */
+    }
+
+    .card-title-overlay {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background-color: rgba(0, 0, 0, 0.5); /* 半透明黑色背景 */
+        color: white;
+        text-align: center;
+        padding: 1px; /* 上下填充 */
+        margin: 0; /* 移除外邊距 */
+        display: flex; /* 使用 Flexbox */
+        align-items: center; /* 垂直置中 */
+        justify-content: center; /* 水平置中 */
+    }
+
+    .btn-primary:hover, .btn-success:hover {
+        filter: brightness(1.1);
+    }
+</style>
+
+<script>
+    function fallbackImage(img) {
+        // 支援的副檔名 (依序嘗試)
+        const fallbackExts = ["jpg", "webp", "jpeg", "png"];
+
+        // 若尚未初始化索引，設為 0
+        if (!img.dataset.fallbackIndex) {
+            img.dataset.fallbackIndex = 0;
+        }
+
+        let idx = parseInt(img.dataset.fallbackIndex, 10);
+
+        // 取得原始路徑與主檔名（不含副檔名）
+        const originalSrc = img.dataset.originalSrc || img.src;
+        const baseName = originalSrc.substring(0, originalSrc.lastIndexOf('.'));
+
+        // 初始化時存下原始檔路徑
+        if (!img.dataset.originalSrc) {
+            img.dataset.originalSrc = originalSrc;
+        }
+
+        // 嘗試下個副檔名
+        if (idx < fallbackExts.length) {
+            const newSrc = `${baseName}.${fallbackExts[idx]}`;
+            img.src = newSrc;
+            img.dataset.fallbackIndex = idx + 1;
+        } else {
+            // 全部失敗時，設為預設圖
+            img.src = "/images/placeholder.jpg";
+        }
+    }
+</script>

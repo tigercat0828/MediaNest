@@ -119,7 +119,7 @@ else {
     }
 
     private async Task AddToCart() {
-        await ComicCartService.AddAsync(new ComicDto { Id = Comic.Id, Title = Comic.Title, FolderName = Comic.Folder });
+        await ComicCartService.AddAsync(new ComicDto { Id = Comic.Id, Title = Comic.Title, Folder = Comic.Folder });
         ToastService.ShowSuccess($"{Comic.Title} is added to list.");
     }
 

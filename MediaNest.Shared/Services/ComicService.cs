@@ -57,7 +57,7 @@ public class ComicService(ComicListService _listService, FileService _fileServic
     public async Task DeleteComic(string id) {
         var comic = await GetComicById(id);
         var sourcefolder = Path.Combine(_fileService.ComicFolder, comic.Folder);
-        var thumbsFolder = Path.Combine(_fileService.ComicFolder, "Thumbs",comic.Folder);
+        var thumbsFolder = Path.Combine(_fileService.ComicFolder, "Thumbs", comic.Folder);
         _fileService.DeleteFolder(sourcefolder);
         _fileService.DeleteFolder(thumbsFolder);
         await _comicCollection.DeleteOneAsync(comic => comic.Id == id);

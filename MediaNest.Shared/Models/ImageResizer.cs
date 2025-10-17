@@ -27,7 +27,7 @@ public class ImageResizer {
                 count++;
             }
             catch (Exception ex) {
-                // Console.WriteLine($"❌ {srcFile}: {ex.Message}");
+                Console.WriteLine($"❌ {srcFile}: {ex.Message}");
             }
         }
 

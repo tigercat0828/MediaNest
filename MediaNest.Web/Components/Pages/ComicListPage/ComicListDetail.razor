@@ -1,5 +1,6 @@
 ﻿@page "/comiclist/{id}"
 @using MediaNest.Shared.Entities
+@using MediaNest.Web.Components.Pages.ComicPage
 @using MediaNest.Web.Services
 @inject NavigationManager NavigationManager;
 @rendermode InteractiveServer
@@ -33,7 +34,7 @@
 				@foreach (var comic in _comics) {
 					string link = $"/comic/{comic.Id}";
 					string source = $"/Assets/Comics/Thumbs/{comic.Folder}/001.jpg";
-					<ImageCover Link="@link" Title="@comic.Title" Source="@source" />
+					<ComicCover Link="@link" Title="@comic.Title" Source="@source" />
 				}
 			</div>
 		}

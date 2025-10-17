@@ -5,7 +5,7 @@ using Microsoft.JSInterop;
 using System.Text.Json;
 
 namespace MediaNest.Web.Services {
-    public class ComicCartService (ComicListService _comicListService, IJSRuntime JS){
+    public class ComicCartService(ComicListService _comicListService, IJSRuntime JS) {
         private const string StorageKey_Comics = "MediaNest.CartComics";
         private const string StorageKey_ComicList = "MediaNest.CartComicList";
 
@@ -14,18 +14,18 @@ namespace MediaNest.Web.Services {
 
         public event Action? OnChange;
 
-        public async Task SetComicList(ComicList list) { 
+        public async Task SetComicList(ComicList list) {
             SelectedComicList = list;
-        }   
+        }
 
         public async Task CreateComicList(string Title) {
             var comicList = new ComicList();
-            foreach (var comic in SelectedComics) { 
+            foreach (var comic in SelectedComics) {
                 comicList.ComicIds.Add(comic.Id);
             }
             await _comicListService.CreateComicList(comicList);
         }
-        public async Task UpdateComicList() { 
+        public async Task UpdateComicList() {
             var id = SelectedComicList.Id;
             var ids = SelectedComics.Select(x => x.Id);
             SelectedComicList.ComicIds.AddRange(ids);
@@ -45,13 +45,13 @@ namespace MediaNest.Web.Services {
                     if (list != null) SelectedComicList = list;
                 }
             }
-            catch (Exception ex) { 
+            catch (Exception ex) {
                 // ignore
             }
             OnChange?.Invoke();
         }
         public async Task AddAsync(ComicDto comic) {
-            if (!SelectedComics.Any(c => c.Id == comic.Id)) { 
+            if (!SelectedComics.Any(c => c.Id == comic.Id)) {
                 SelectedComics.Add(comic);
                 await SaveAsync();
             }
@@ -68,7 +68,7 @@ namespace MediaNest.Web.Services {
             OnChange?.Invoke();
         }
 
-        private async Task SaveAsync() { 
+        private async Task SaveAsync() {
             var json = JsonSerializer.Serialize(SelectedComics);
             await JS.InvokeVoidAsync("localStorage.setItem", StorageKey_Comics, json);
             OnChange?.Invoke();
