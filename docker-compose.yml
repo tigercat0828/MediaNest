@@ -12,26 +12,10 @@ services:
         volumes:
             #- ./Assets:/app/Assets
             - ${ASSETS_PATH}:/app/Assets
-            - ./blazor-keys:/app/keys
+            #- ./blazor-keys:/app/keys
         depends_on:
             - mongo
-            - webapi
 
-    webapi:
-        build:
-            context: .
-            dockerfile: MediaNest.ApiService/Dockerfile
-        container_name: medianest_webapi
-        environment:
-            - DOTNET_ENVIRONMENT=Docker
-            - AssetsFolder=/app/Assets
-        ports:
-            - "5000:8080"
-        volumes:
-            - ${ASSETS_PATH}:/app/Assets
-        depends_on:
-            - mongo
-   
     mongo:
         image: mongo:7
         container_name: MediaNest_Mongo
@@ -45,5 +29,4 @@ services:
             - MONGO_INITDB_DATABASE=MediaNest
 
 volumes:
-  mongo_data:
-
+    mongo_data:

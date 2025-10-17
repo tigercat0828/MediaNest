@@ -1,0 +1,71 @@
+﻿@page "/comiclist/{id}"
+@using MediaNest.Shared.Entities
+@using MediaNest.Web.Services
+@inject NavigationManager NavigationManager;
+@rendermode InteractiveServer
+@attribute [Authorize(Roles = "Admin,User")]
+
+<div class="container">
+	<div class="row">
+		<div class="col-1 mb-4">
+			<a href="/comiclist" class="btn btn-outline-success">Back</a>
+		</div>
+	</div>
+
+	@if (_comicList != null) {
+		<div class="row">
+			<div class="col-10">
+				<PageTitle>@_comicList.Title</PageTitle>
+				<h3>@_comicList.Title</h3>
+			</div>
+			<div class="col-2 d-flex justify-content-end">
+				<a class="btn btn-primary me-1" href="/comiclist/edit/@_comicList.Id">編輯</a>
+				<button class="btn btn-danger me-1" @onclick="ShowDeleteButton">刪除</button>
+				@if (_showDeleteButton) {
+					<button class="btn btn-outline-danger me-1" @onclick="ConfirmDelete">V</button>
+				}
+			</div>
+		</div>
+	}
+	<div class="row">
+		@if (_comics != null) {
+			<div class="row d-flex flex-wrap">
+				@foreach (var comic in _comics) {
+					string link = $"/comic/{comic.Id}";
+					string source = $"/Assets/Comics/Thumbs/{comic.Folder}/001.jpg";
+					<ImageCover Link="@link" Title="@comic.Title" Source="@source" />
+				}
+			</div>
+		}
+		else {
+			<LoadingSpinner />
+		}
+	</div>
+</div>
+
+@code {
+	[Parameter] public string Id { get; set; }
+	[Inject] public ComicListService ComicListService { get; set; }
+	[Inject] public ComicService ComicService { get; set; }
+
+	private List<Comic> _comics = [];
+	private ComicList _comicList;
+	private bool _showDeleteButton = false;
+	private void ShowDeleteButton() {
+		_showDeleteButton = true;
+	}
+	private async Task ConfirmDelete() {
+		await ComicListService.DeleteComicList(Id);
+		NavigationManager.NavigateTo("/comiclist");
+
+	}
+	protected override async Task OnInitializedAsync() {
+
+		_comicList = await ComicListService.GetComicListById(Id);
+		foreach (var id in _comicList.ComicIds) {
+			var comic = await ComicService.GetComicById(id);
+			if (comic != null) _comics.Add(comic);
+		}
+	}
+
+}

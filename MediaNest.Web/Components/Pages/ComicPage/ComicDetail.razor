@@ -1,0 +1,126 @@
+﻿@page "/comic/{id}"
+@page "/comic/{id}/start={page:int}"
+@attribute [Authorize(Roles = "Admin,User")]
+@rendermode InteractiveServer
+@using MediaNest.Shared.Entities
+@using MediaNest.Web.Services
+
+
+<AuthorizeView Roles="Admin,User">
+    <Authorized>
+        <div class="container">
+            @if (_comic != null) {
+                <PageTitle>@_comic?.Title</PageTitle>
+                @if (_viewMode == ComicViewMode.Preview) {
+
+                    <a href="/comic" class="btn btn-outline-success mb-2">Back</a>
+                    <div class="container-fluid">
+                        @* Comic cover and information*@
+                        <div class="row">
+                            <ComicInfo Comic="@_comic" PageCount="@_imageSrcs.Count" OnBookmarkClicked="GoPageView" />
+                        </div>
+                        @* Comic images Preview *@
+                        <div class="row">
+                            <div class="col">
+                                @for (int i = 0; i < _imageSrcs.Count; i++) {
+                                    int index = i;
+                                    <div class="btn p-1" @onclick=@(()=>GoPageView(index))>
+                                        <img src="/Assets/Comics/Thumbs/@_comic.Folder/@_imageSrcs[i]" alt="Page @i" style="width: 9rem;" /> 
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                }
+                else if(_viewMode == ComicViewMode.PageView){
+                    <ComicPageViewToolbar @bind-ViewMode=_viewMode @bind-CurrentPage=_currentPage TotalPageNum=_imageSrcs.Count />
+                    <div class="container-xl container-fluid">
+                        <div class="row justify-content-center">
+                            <div class="col-auto">
+                                <img id="CurrentPageImg" class="img-fluid" src="/Assets/Comics/@_comic.Folder/@_imageSrcs[_currentPage]" alt="Page @_currentPage" @onmousedown=OnImageClick />
+                            </div>
+                        </div>
+                    </div>
+                    <ComicPageViewToolbar @bind-ViewMode=_viewMode @bind-CurrentPage=_currentPage TotalPageNum=_imageSrcs.Count />
+                }
+                else {
+                    <p>Error</p>
+                }
+            }
+            else {
+                <LoadingSpinner />
+            }
+
+        </div>
+    </Authorized>
+    <NotAuthorized>
+        <div class="alert alert-info mt-2">
+            Please <a href="/account/login">Login</a> first!
+        </div>
+    </NotAuthorized>
+</AuthorizeView>
+    
+@code {
+    [CascadingParameter] private Task<AuthenticationState> _authStateTask { get; set; }
+    [Parameter] public string id { get; set; }
+    [Parameter] public int page { get; set; } = 0;
+    [Inject] public JSRuntimeService JS { get; set; }
+    [Inject] public FileService FileService { get; set; }
+    [Inject] public ComicService ComicService { get; set; }
+
+
+    private int _currentPage = 0;
+    ComicViewMode _viewMode = ComicViewMode.Preview;
+    private List<string> _imageSrcs = [];
+    private Comic _comic = null!;
+    private int _mouseXinImg;
+
+
+    protected override async Task OnInitializedAsync() {
+
+
+        var authState = await _authStateTask;
+        if (authState.User.Identity?.IsAuthenticated ?? false) {
+            _comic = await ComicService.GetComicById(id);
+            LoadImageSrcs();
+            if (page > 0) GoPageView(page-1);
+        }
+    }
+    void GoPageView(int page) {
+        if (page < 0) page = 0;
+        _viewMode = ComicViewMode.PageView;
+        _currentPage = page;
+    }
+
+    void LoadImageSrcs() {
+        var folderName = Path.Combine(FileService.ComicFolder, "Thumbs", _comic.Folder);
+        foreach (var path in Directory.GetFiles(folderName)) {
+            _imageSrcs.Add(Path.GetFileName(path));
+        }
+    }
+
+    async Task OnImageClick(MouseEventArgs e) {
+        _mouseXinImg = (int)e.OffsetX;
+
+        int? imgWidth = await JS.GetImageWidth("CurrentPageImg");
+
+        if (imgWidth.HasValue) {
+            var clickPosition = _mouseXinImg / (float)imgWidth;
+
+            if (clickPosition < 0.5) {
+                PreviousPage();
+            }
+            else {
+                NextPage();
+            }
+        }
+    }
+    void NextPage() {
+        if (_currentPage == _imageSrcs.Count - 1) return;
+        _currentPage++;
+    }
+    void PreviousPage() {
+        if (_currentPage == 0) return;
+        _currentPage--;
+    }
+}

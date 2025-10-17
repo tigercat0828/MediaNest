@@ -1,5 +1,5 @@
-﻿
-using MediaNest.Shared.Entities;
+﻿using MediaNest.Shared.Entities;
+using MediaNest.Shared.Models;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using System.Text.RegularExpressions;
@@ -56,8 +56,10 @@ public class ComicService(ComicListService _listService, FileService _fileServic
     }
     public async Task DeleteComic(string id) {
         var comic = await GetComicById(id);
-        var folder = Path.Combine(_fileService.ComicFolder, comic.FolderName);
-        _fileService.DeleteFolder(folder);
+        var sourcefolder = Path.Combine(_fileService.ComicFolder, comic.Folder);
+        var thumbsFolder = Path.Combine(_fileService.ComicFolder, "Thumbs",comic.Folder);
+        _fileService.DeleteFolder(sourcefolder);
+        _fileService.DeleteFolder(thumbsFolder);
         await _comicCollection.DeleteOneAsync(comic => comic.Id == id);
     }
     public async Task<bool> CheckComicExists(string id) {
@@ -68,7 +70,7 @@ public class ComicService(ComicListService _listService, FileService _fileServic
 
         List<string> comicIds = [];
 
-        string sourceFolder = Path.Combine(_fileService.ComicFolder, comic.FolderName);
+        string sourceFolder = Path.Combine(_fileService.ComicFolder, comic.Folder);
 
         // 一次取所有檔案並依頁碼排序
         var allFiles = Directory.GetFiles(sourceFolder)
@@ -80,7 +82,6 @@ public class ComicService(ComicListService _listService, FileService _fileServic
             int start = comic.Bookmarks[i];
             int end = (i < comic.Bookmarks.Count - 1) ? comic.Bookmarks[i + 1] - 1 : int.MaxValue;
 
-            // 建立子 Comic（不必設定 FolderName，會自動算）
             Comic subComic = new() {
                 Title = $"{comic.Title} {i + 1}",
                 SubTitle = $"{comic.SubTitle} {i + 1}",
@@ -94,7 +95,7 @@ public class ComicService(ComicListService _listService, FileService _fileServic
             await CreateComic(subComic);
 
             // 新資料夾位置
-            string targetFolder = Path.Combine(_fileService.ComicFolder, subComic.FolderName);
+            string targetFolder = Path.Combine(_fileService.ComicFolder, subComic.Folder);
             Directory.CreateDirectory(targetFolder);
 
             // 搬移並重新命名檔案
@@ -134,5 +135,12 @@ public class ComicService(ComicListService _listService, FileService _fileServic
             }
             return false;
         }
+    }
+
+    public async Task GeneratePreviewThumbs(Comic comic) {
+        var resizer = new ImageResizer();
+        string srcFolder = Path.Combine(_fileService.ComicFolder, comic.Folder);
+        string dstFolder = Path.Combine(_fileService.ComicFolder, "Thumbs", comic.Folder);
+        resizer.ResizeFolder(srcFolder, dstFolder, 0.2f);
     }
 }

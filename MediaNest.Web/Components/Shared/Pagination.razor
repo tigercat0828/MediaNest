@@ -1,0 +1,49 @@
+﻿<nav aria-label="Page navigation">
+    <ul class="pagination mb-0">
+        <li class="page-item">
+            <button class="page-link" @onclick="LastPage" disabled="@IsFirstPage">
+                <i class="bi bi-arrow-left"></i>
+            </button>
+        </li>
+
+        @for (int i = 1; i <= TotalPages; i++) {
+            int pageNo = i;
+            <li class="page-item @(pageNo == CurrentPage ? "active" : "")">
+                <button class="page-link" @onclick="() => SetPage(pageNo)">
+                    @pageNo
+                </button>
+            </li>
+        }
+
+        <li class="page-item">
+            <button class="page-link" @onclick="NextPage" disabled="@IsLastPage">
+                <i class="bi bi-arrow-right"></i>
+            </button>
+        </li>
+    </ul>
+</nav>
+
+@code {
+    [Parameter] public int TotalPages { get; set; }
+    [Parameter] public int CurrentPage { get; set; }
+
+    [Parameter] public EventCallback<int> OnPageChanged { get; set; }
+
+    private bool IsFirstPage => CurrentPage <= 1;
+    private bool IsLastPage => CurrentPage >= TotalPages;
+
+    private async Task SetPage(int page) {
+        if (page != CurrentPage)
+            await OnPageChanged.InvokeAsync(page);
+    }
+
+    private async Task LastPage() {
+        if (!IsFirstPage)
+            await OnPageChanged.InvokeAsync(CurrentPage - 1);
+    }
+
+    private async Task NextPage() {
+        if (!IsLastPage)
+            await OnPageChanged.InvokeAsync(CurrentPage + 1);
+    }
+}

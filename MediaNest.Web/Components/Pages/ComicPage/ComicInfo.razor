@@ -1,0 +1,162 @@
+﻿@using MediaNest.Shared.Dtos
+@using MediaNest.Shared.Entities
+@using MediaNest.Web.Services
+@inject IWebHostEnvironment WebEnv
+@inject NavigationManager NavigationManager
+
+@if (Comic != null) {
+    <div class="container-fluid mb-3 border border-secondary rounded p-3">
+        <div class="row">
+            <div class="col-auto mb-1 mt-1" >
+                <img src="/Assets/Comics/@Comic.Folder/001.jpg" alt="@Comic.Title" style="width: 15rem;"
+                     onerror="fallbackImage(this)" />
+            </div>
+
+            <div class="col-8">
+                <h3 class="mb-3">@Comic.Title</h3>
+                <div class="mb-3 badge bg-primary-subtle text-dark">
+                    @Comic.Code 
+                </div>
+                @Comic.SubTitle
+
+                <div class="mb-2 d-flex">
+                    <label class="fw-bold me-2" style="width: 4rem;">Author</label>
+                    <div>
+                        <a href="/comic/search/@Comic.Author" class="badge bg-light text-dark me-1">@Comic.Author</a>
+                    </div>
+                </div>
+
+
+                <div class="mb-2 d-flex">
+                    <label class="fw-bold me-2" style="width: 4rem;">Series</label>
+                    <div>
+                        <a href="/comic/search/@Comic.Series" class="badge bg-light text-dark me-1">@Comic.Series</a>
+                    </div>
+                </div>
+
+
+                <div class="mb-2 d-flex">
+                    <label class="fw-bold me-2" style="width: 4rem;">Figures</label>
+                    <div>
+                        @foreach (var chars in Comic.Characters) {
+                            <a href="/comic/search/@chars" class="badge bg-light text-dark me-1">@chars</a>
+                        }
+                    </div>
+                </div>
+
+                <div class="mb-2 d-flex">
+                    <label class="fw-bold me-2" style="width: 4rem;">Tags</label>
+                    <div>
+                        @foreach (var tag in Comic.Tags) {
+                            <a href="/comic/search/@tag" class="badge bg-light text-dark me-1">@tag</a>
+                        }
+                    </div>
+                </div>
+
+                <div class="mb-2 d-flex">
+                    <label class="fw-bold me-2" style="width: 4rem;">Marks</label>
+                    <div>
+                        @foreach (var mark in Comic.Bookmarks) {
+                            <a class="badge bg-light text-dark me-1" @onclick="() => OnBookmarkClicked.InvokeAsync(mark)" style="cursor:pointer;">
+                                @mark
+                            </a>
+                        }
+                    </div>
+                </div>
+
+                <div class="mb-3 d-flex">
+                    <label class="fw-bold me-2" style="width: 4rem;">Page</label><div class="badge bg-light text-dark">@PageCount</div>
+                </div>
+
+                <div>
+                    <a href="/comic/view/@Comic.Id" target="_blank" class="btn btn-outline-success me-3">
+                        <i class="bi bi-book"></i> Read
+                    </a>
+                    <a href="/comic/edit/@Comic.Id" class="btn btn-outline-warning me-3">
+                        <i class="bi bi-pencil"></i> Edit
+                    </a>
+                    @*<button class="btn btn-primary me-3" disabled>
+                        <i class="bi bi-download"></i> 下載
+                    </button> *@
+                    <button @onclick=ToggleConfirmationDialog class="btn btn-outline-danger me-3">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                    @if (showConfirmationDialog) {
+                        <button @onclick=ConfirmDelete class="btn btn-outline-danger me-1">
+                            <i class="bi bi-check-lg"></i>
+                        </button>
+                        <button @onclick=CancelDelete class="btn btn-outline-danger me-1">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+                    }
+
+                    <button @onclick=AddToCart class="btn btn-outline-secondary me3"><i class="bi bi-plus-circle"></i></button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+}
+else {
+    <Spinner />
+}
+
+@code {
+    [Parameter] public Comic? Comic { get; set; }
+    [Parameter] public int? PageCount { get; set; }   // total Page count
+    [Inject] public IToastService Toast { get; set; }
+    [Inject] public ComicService ComicService { get; set; }
+    [Inject] public ComicCartService ComicCartService { get; set; }
+    [Inject] public IToastService ToastService { get; set; }
+
+    // 讓父元件接收通知
+    [Parameter] public EventCallback<int> OnBookmarkClicked { get; set; }
+
+    private bool showConfirmationDialog = false;
+
+    protected override async Task OnInitializedAsync() {
+        await ComicCartService.InitializeAsync();
+    }
+
+    private async Task AddToCart() {
+        await ComicCartService.AddAsync(new ComicDto { Id = Comic.Id, Title = Comic.Title, FolderName = Comic.Folder });
+        ToastService.ShowSuccess($"{Comic.Title} is added to list.");
+    }
+
+
+    private void ToggleConfirmationDialog() {
+        showConfirmationDialog = !showConfirmationDialog;
+    }
+    private async Task ConfirmDelete() {
+
+        await ComicService.DeleteComic(Comic.Id);
+        NavigationManager.NavigateTo("/comic");    
+        showConfirmationDialog = false;
+    }
+
+    private void CancelDelete() {
+        showConfirmationDialog = false;
+    }
+
+    
+}
+<script>
+    function fallbackImage(img) {
+        // 備援清單 (依序嘗試)
+        const fallbackList = [
+            '001.png',
+            '001.webp',
+            '001.jpeg'
+        ];
+        // 目前已經嘗試過幾次
+        if (!img.dataset.fallbackIndex) {
+            img.dataset.fallbackIndex = 0;
+        }
+        let idx = parseInt(img.dataset.fallbackIndex, 10);
+
+        if (idx < fallbackList.length) {
+            img.src = img.src.replace(/001\.\w+$/, fallbackList[idx]);
+            img.dataset.fallbackIndex = idx + 1;
+        }
+    }
+</script>

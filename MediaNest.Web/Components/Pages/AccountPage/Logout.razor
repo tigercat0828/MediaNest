@@ -1,16 +1,33 @@
-﻿@page "/account/logout"
-@using MediaNest.Web.AuthStateProvider
-@using Microsoft.AspNetCore.Components.Authorization
+﻿@page "/logout"
+@using Microsoft.AspNetCore.Authentication
+@rendermode InteractiveServer
 
-<h3>LogoutPage</h3>
+<div class="row">
+	<div class="col-12">
+		<div class="card">
+			<div class="card-body flex-column">
+				<div class="text-center">
+					<img src="/images/exit.png" style="max-height:5rem" />
+				</div>
+				<div class="text-center">
+					<span class="text-success fw-bolder">
+						You have logged the application. You can <a href="login">login</a> here.
+					</span>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
 
 @code {
-    [Inject] public AuthenticationStateProvider AuthStateProvider { get; set; }
-    [Inject] public NavigationManager Navigation { get; set; }
+	[CascadingParameter] HttpContext HttpContext { get; set; }
+	[Inject] public NavigationManager Nav{ get; set; }
+	protected override async Task OnInitializedAsync() {
+		await base.OnInitializedAsync();
+		if (HttpContext != null && HttpContext.User.Identity.IsAuthenticated) {
+			await HttpContext.SignOutAsync();
+			Nav.NavigateTo("/logout", true);
+		}
+	}
 
-    protected override async Task OnInitializedAsync()
-    {
-        await ((CustomAuthStateProvider)AuthStateProvider).MarkUserAsLoggedOut();
-        Navigation.NavigateTo("/account/login");
-    }
 }

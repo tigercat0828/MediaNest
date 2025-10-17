@@ -24,8 +24,18 @@ if (!db.getCollectionNames().includes("Videos")) {
     print("✅ Videos collection created");
 }
 
+if (!db.getCollectionNames().includes("VideoLists")) {
+    db.createCollection("VideoLists");
+    print("✅ VideoLists collection created");
+}
+
 if (!db.getCollectionNames().includes("Musics")) {
     db.createCollection("Musics");
     print("✅ Musics collection created");
+}
+
+if (!db.getCollectionNames().includes("MusicsList")) {
+    db.createCollection("MusicsList");
+    print("✅ MusicsList collection created");
 }
 

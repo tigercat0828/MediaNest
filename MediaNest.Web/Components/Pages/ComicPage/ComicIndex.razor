@@ -1,0 +1,59 @@
+﻿@page "/comic"
+@page "/comic/search/{SearchText}"
+@rendermode InteractiveServer
+@attribute [Authorize(Roles= "Admin,User")]
+<AuthorizeView>
+    <Authorized>
+        <div class="container-fluid">
+            @if (context.User.IsInRole("Pending")) {
+                <div class="alert alert-info mt-2">
+                    <AccessDenied />
+                </div>
+            }
+            else if (context.User.IsInRole("Admin") || context.User.IsInRole("User")) {
+                <div class="row mb-3">
+                    <div class="col-11">
+                        <div class="input-group">
+                            <button class="btn btn-outline-primary" @onclick="()=> GetComicsByPage(1)"><i class="bi bi-arrow-counterclockwise"></i></button>
+                            <button class="btn btn-outline-primary" @onclick="GetRandomComics"><i class="bi bi-shuffle"></i></button>
+                            <input type="text" class="form-control" placeholder="輸入關鍵字進行搜尋..." @bind-value="SearchText" />
+                            <button class="btn btn-outline-primary" @onclick="HandleSearch" @onkeydown="OnKeyDown">搜尋</button>
+                        </div>
+                    </div>
+                    <div class="col-1">
+                        <a class="btn btn-success" href="/comic/create">新建</a>
+                    </div>
+                </div>
+                @* ================================================================ *@
+                @* pagination *@
+                <div class="row mb-1 mt-1">
+                    <Pagination TotalPages="_totalPage" CurrentPage="_currentPage" OnPageChanged="SetPage" />
+                </div>
+                @* ================================================================ *@
+                @* Comic Covers *@
+                <div class="row">
+                    @if (_comics != null) {
+                        @foreach (var comic in _comics) {
+                            string link = $"/comic/{comic.Id}";
+                            string source = $"/Assets/Comics/Thumbs/{comic.Folder}/001.jpg";
+                            <ImageCover Link="@link" Title="@comic.Title" Source="@source" />
+                        }
+                    }
+                    else {
+                        <LoadingSpinner />
+                    }
+                </div>
+
+                @* ================================================================ *@
+                @* pagination *@
+                    <div class="row mb-1 mt-1">
+                    <Pagination TotalPages="_totalPage" CurrentPage="_currentPage" OnPageChanged="SetPage" />
+                </div>
+                @* ================================================================ *@
+                }
+        </div>
+    </Authorized>
+    <NotAuthorized>
+        <AccessDenied />
+    </NotAuthorized>
+</AuthorizeView>

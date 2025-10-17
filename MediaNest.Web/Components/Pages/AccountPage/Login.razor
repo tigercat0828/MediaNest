@@ -1,55 +1,72 @@
-﻿@page "/account/login"
-@using MediaNest.Web.AuthStateProvider
-@using MediaNest.Web.Components.Layout
-@using Microsoft.AspNetCore.Components.Authorization
-@* @layout EmptyLayout *@
+﻿@page "/login"
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Authentication
 
-<div class="container mt-3 p-5">
-    <EditForm Model="authRequest" FormName="Login" OnValidSubmit="HandleLogin">
-        <DataAnnotationsValidator />
-        <div class="form-group mt-2">
-            <label for="username">Username</label>
-            <InputText id="username" class="form-control" @bind-Value="authRequest.Username" />
-        </div>
-        <div class="form-group mt-2">
-            <label for="password">Password</label>
-            <InputText id="password" type="password" class="form-control" @bind-Value="authRequest.Password" />
-        </div>
-        <button type="submit" class="btn btn-primary mt-3">Login</button>
-        <a href="/account/register" class="btn btn-secondary ms-2 mt-3">Register</a>
-    </EditForm>
-    @if (isFailed)
-    {
-        <div class="alert alert-danger mt-2" role="alert">
-            @Message
-        </div>
-    }
+
+<div class="container">
+	<div class="row">
+		<div class="col-4 offset-4">
+			<div class="card card-body mb-3">
+				<EditForm FormName="LoginForm" Model="@Model" OnValidSubmit="Auththenticate">
+					<DataAnnotationsValidator />
+					<div class="mb-3 text-center flex-column">
+						<img src="/images/member.png" style="max-height:5rem;" />
+						<h3>Login</h3>
+					</div>
+					<div class="mb-3">
+						<label>Username</label>
+						<InputText @bind-Value="Model.Username" class="form-control" />
+						<ValidationMessage For="@(() => Model.Username)" />
+					</div>
+					<div class="mb-3">
+						<label>Password</label>
+						<InputText @bind-Value="Model.Password" class="form-control" type="password" />
+						<ValidationMessage For="@(() => Model.Password)" />
+					</div>
+					<div class="mb-3 text-center">
+						<span class="text-danger">@_errorMessage</span>
+					</div>
+					<div>
+						<button type="submit" class="btn btn-primary">Login</button>
+						<a href="/register" class="btn btn-primary">Register</a>
+					</div>
+				</EditForm>
+			</div>
+		</div>
+	</div>
+	
 </div>
 
 @code {
-    private AuthRequest authRequest = new AuthRequest();
+	[CascadingParameter] public HttpContext? HttpContext { get; set; }
 
-    [Inject] public ApiClient ApiClient { get; set; }
-    [Inject] public NavigationManager Navigation { get; set; }
-    [Inject] public AuthenticationStateProvider AuthStateProvider { get; set; }
-    private string Message;
-    private bool isFailed = false;
-    private async Task HandleLogin() {
-        var result = await ApiClient.PostAsync<AuthResponse, AuthRequest>("api/account/login", authRequest);
-        if (result != null && result.Token != null) {
+	[SupplyParameterFromForm] public LoginViewModel Model { get; set; } = new();
 
-            // Use CustomAuthenticationStateProvider to set the authentication state
-            await ((CustomAuthStateProvider)AuthStateProvider).MarkUserAsAuthenticated(result);
-            Navigation.NavigateTo("/");
-        }
-        else {
-            isFailed = true;
-            if (!string.IsNullOrEmpty(result?.Message)) {
-                Message = result.Message; // e.g. "Account not approved yet."
-            }
-            else {
-                Message = "Username and Password not matched.";
-            }
-        }
-    }
+	[Inject] public AuthService AuthService { get; set; }
+
+	[Inject] public NavigationManager NavigationManager { get; set; }
+
+	// [Inject] IHttpContextAccessor HttpContextAccessor { get; set; }
+
+	private string? _errorMessage;
+	private async Task Auththenticate() {
+		AuthResponse response = await AuthService.LoginAsync(Model.Username, Model.Password);
+		if (response.Success) {
+			// await HttpContextAccessor.HttpContext!.SignInAsync("Cookies", response.Principal!);
+			await HttpContext.SignInAsync(response.Principal);
+			NavigationManager.NavigateTo("/");
+		}
+		else {
+			_errorMessage = response.Message;
+		}
+	}
+
+
+	public class LoginViewModel {
+		[Required(AllowEmptyStrings = false, ErrorMessage = "Please provide username")]
+		public string? Username { get; set; }
+
+		[Required(AllowEmptyStrings = false, ErrorMessage = "Please provide password")]
+		public string? Password { get; set; }
+	}
 }

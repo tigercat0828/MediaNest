@@ -1,11 +1,21 @@
 ﻿@page "/"
-@page "/home"
+@rendermode InteractiveServer
 
+<AuthorizeView>
+	<Authorized>
+		<button @onclick="Halo">Halo</button>
+	</Authorized>
+</AuthorizeView>
 
 <PageTitle>Home</PageTitle>
 
-<div class="container">
-    <h1>Hello, world!</h1>
-    Welcome to your new app.
-</div>
-
+<FileUpload />
+@code {
+	[CascadingParameter] private Task<AuthenticationState> _authStateTask { get; set; }
+	[Inject] public IJSRuntime JS { get; set; }
+	public async Task Halo() {
+		var authState = await _authStateTask;
+		var message = authState.User.Identity.Name;
+		await JS.InvokeVoidAsync("alert", message);
+	}
+}

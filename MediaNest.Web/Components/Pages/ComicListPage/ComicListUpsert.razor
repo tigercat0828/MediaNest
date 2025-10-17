@@ -1,0 +1,149 @@
+﻿@page "/comiclist/edit/{id}"
+@page "/comiclist/create"
+@rendermode InteractiveServer
+@attribute [Authorize(Roles = "Admin,User")]
+@using MediaNest.Shared.Dtos
+@using MediaNest.Shared.Entities
+@using MediaNest.Web.Services
+
+@if (_isEditMode) {
+    <h3>編輯合集</h3>
+}
+else {
+    <h3>新增合集</h3>
+}
+
+<div class="container">
+    <div class="row">
+        <div class="card card-body">
+            <div class="mb-3">
+                <label for="Title" class="form-label">Email address</label>
+                <EditForm FormName="ComicListUpsert" Model="@_comicList" OnValidSubmit="HandleUpsertComicList">
+                    <DataAnnotationsValidator />
+                    <div class="mb-3">
+                        <label>Title</label>
+                        <InputText @bind-Value="_comicList.Title" class="form-control" />
+                        <ValidationMessage For="@(() => _comicList.Title)" />
+                    </div>
+                    <div class="mb-3">
+                        <label>Description</label>
+                        <InputText @bind-Value="_comicList.Description" class="form-control" />
+                    </div>
+                    <div class="mb-3">
+                        <label>Tags</label>
+                        <InputText @bind-Value="_tagStr" class="form-control" />
+                    </div>
+                    <div>
+                        <button type="submit" class="btn btn-success" >完成</button>
+                    </div>
+                </EditForm>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="card card-body">
+            <ul class="list-group">
+                @for (int i = 0; i < _comics.Count; i++) {
+                    var comic = _comics[i];
+                    int index = i;
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span>@($"{comic.Title} ({comic.Id})")</span>
+
+                        <div class="btn-group" role="group">
+                            <button class="btn btn-outline-primary" @onclick="() => MoveUp(index)" disabled="@(index == 0)">
+                                <i class="bi bi-arrow-bar-up"></i>
+                            </button>
+                            <button class="btn btn-outline-primary" @onclick="() => MoveDown(index)" disabled="@(index == _comics.Count - 1)">
+                                <i class="bi bi-arrow-bar-down"></i>
+                            </button>
+                            <button class="btn btn-outline-danger" @onclick="() => Remove(index)">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
+                    </li>
+                }
+            </ul>
+        </div>
+
+    </div>
+</div>
+
+
+
+@code {
+    [Parameter] public string Id { get; set; }
+    [Inject] public NavigationManager NavigationManager { get; set; }
+    [Inject] public ComicListService ComicListService { get; set; }
+    [Inject] public ComicCartService ComicCartService { get; set; }
+    [Inject] public ComicService ComicService { get; set; }
+    [SupplyParameterFromForm] public ComicList _comicList { get; set; } = new();
+    List<ComicDto> _comics = [];
+
+    private bool _isEditMode = false;
+    private string _tagStr = string.Empty;
+
+    protected override async Task OnInitializedAsync() {
+        await ComicCartService.InitializeAsync();
+        if (Id != null) {
+            _isEditMode = true;
+            _tagStr = string.Join(",", _comicList.Tags);
+            _comicList = await ComicListService.GetComicListById(Id);
+            foreach(var id in _comicList.ComicIds) {
+                Comic comic = await ComicService.GetComicById(id);
+                _comics.Add(new ComicDto {
+                        Id = comic.Id,
+                        Title = comic.Title,
+                        FolderName = comic.Folder
+                });
+            }
+            _comics.AddRange( ComicCartService.SelectedComics);
+        }
+        else {
+            _comics = ComicCartService.SelectedComics;
+        }
+
+    }
+
+    private void Remove(int index) {
+
+        _comics.RemoveAt(index);
+    }
+    private void MoveUp(int index) {
+        if (index <= 0) return;
+        (_comics[index - 1], _comics[index]) = (_comics[index], _comics[index - 1]);
+    }
+
+    private void MoveDown(int index) {
+        if (index >= _comics.Count - 1) return;
+        (_comics[index + 1], _comics[index]) = (_comics[index], _comics[index + 1]);
+    }
+
+    private async Task HandleUpsertComicList() {
+
+        _comicList.Tags = _tagStr.Split(',', StringSplitOptions.RemoveEmptyEntries).ToList();
+        _comicList.ComicIds = _comics.Select(c => c.Id).ToList();
+
+        if (_isEditMode) {
+            await HandleEditModeAsync();
+        }
+        else {
+            await HandleCreateModeAsync();
+        }
+
+        await ComicCartService.ClearAsync();
+        NavigationManager.NavigateTo($"/comiclist");
+    }
+
+    private async Task HandleEditModeAsync() {
+        if (_comicList.ComicIds.Count == 0) {
+            await ComicListService.DeleteComicList(Id);
+            return;
+        }
+
+        await ComicListService.UpdateComicList(Id, _comicList);
+    }
+
+    private async Task HandleCreateModeAsync() {
+        await ComicListService.CreateComicList(_comicList);
+    }
+}

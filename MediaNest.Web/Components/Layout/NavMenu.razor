@@ -1,58 +1,35 @@
-﻿<nav class="navbar navbar-expand-md navbar-dark bg-dark mb-4">
+﻿<div class="top-row ps-3 navbar navbar-dark">
     <div class="container-fluid">
-        <a class="navbar-brand" href="">MediaNest</a>
-        <button class="navbar-toggler @NavButtonCssClass" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse"
-                aria-controls="navbarCollapse" aria-label="Toggle navigation" @onclick="ToggleNavMenu">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse @NavBarCssClass" id="navbarCollapse" @onclick="ToggleNavMenu">
-            <ul class="navbar-nav me-auto mb-2 mb-md-0">
-                <li class="nav-item">
-                    <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                        <span class="oi oi-home" aria-hidden="true"></span> Home
-                    </NavLink>
-                </li>
-                <li class="nav-item">
-                    <NavLink class="nav-link" href="comic">
-                        <span class="oi oi-plus" aria-hidden="true"></span> 相簿
-                    </NavLink>
-                </li>
-                <li class="nav-item">
-                    <NavLink class="nav-link" href="game">
-                        <span class="oi oi-plus" aria-hidden="true"></span> Game
-                    </NavLink>
-                </li>
-
-            </ul>
-            <!-- 右側使用者區塊 (必須是另一個 navbar-nav，並用 ms-auto) -->
-            <ul class="navbar-nav ms-auto mb-2 mb-md-0">
-                <li class="nav-item d-flex align-items-center">
-                    <AuthorizeView>
-                        <Authorized Context="auth">
-                            <span class="navbar-text me-2">Hello, @auth.User.Identity?.Name!</span>
-
-                            <AuthorizeView Roles="Admin">
-                                <a href="/settings" class="btn btn-outline-light btn-sm me-2">Settings</a>
-                            </AuthorizeView>
-                            <a href="/account/logout" class="btn btn-outline-light btn-sm">Logout</a>
-                        </Authorized>
-                        <NotAuthorized>
-                            <a href="/account/login" class="btn btn-outline-light btn-sm me-2">Login</a>
-                            <a href="/account/register" class="btn btn-outline-light btn-sm">Register</a>
-                        </NotAuthorized>
-                    </AuthorizeView>
-                </li>
-            </ul>
-        </div>
+        <a class="navbar-brand" href="">MediaNest.Web</a>
     </div>
-</nav>
+</div>
 
-@code {
-    private bool collapseNavMenu = true;
-    private string? NavBarCssClass => collapseNavMenu ? null : "show";
-    private string? NavButtonCssClass => collapseNavMenu ? "collapsed" : null;
+<input type="checkbox" title="Navigation menu" class="navbar-toggler" />
 
-    private void ToggleNavMenu() {
-        collapseNavMenu = !collapseNavMenu;
-    }
-}
+<div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
+    <nav class="nav flex-column">
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
+                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Home
+            </NavLink>
+        </div>
+
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="/settings" >
+                <i class="bi bi-book"></i>Settings 
+            </NavLink>
+        </div>
+
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="/comic">
+                <i class="bi bi-book"></i>漫畫列表
+            </NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="/comiclist">
+                <i class="bi bi-book"></i>漫畫合集
+            </NavLink>
+        </div>
+    </nav>
+</div>
+

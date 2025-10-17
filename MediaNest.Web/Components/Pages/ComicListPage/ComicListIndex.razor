@@ -1,0 +1,145 @@
+﻿@page "/comiclist"
+@page "/comiclist/search/{SearchText}"
+@using MediaNest.Shared.Entities
+@rendermode InteractiveServer
+@attribute [Authorize(Roles = "Admin,User")]
+
+<AuthorizeView>
+    <Authorized>
+        <div class="container-fluid">
+            @if (context.User.IsInRole("Pending")) {
+                <div class="alert alert-info mt-2">
+                    <AccessDenied />
+                </div>
+            }
+            else if (context.User.IsInRole("Admin") || context.User.IsInRole("User")) {
+                <div class="row mb-3">
+                    <div class="col-11">
+                        <div class="input-group">
+                            <button class="btn btn-outline-primary" @onclick="() => GetComicListsByPage(1)"><i class="bi bi-arrow-counterclockwise"></i></button>
+                            <button class="btn btn-outline-primary" @onclick="GetRandomComics"><i class="bi bi-shuffle"></i></button>
+                            <input type="text" class="form-control" placeholder="輸入關鍵字進行搜尋..." @bind-value="SearchText" @onkeydown="OnKeyDown" />
+                            <button class="btn btn-outline-primary" @onclick="HandleSearch">搜尋</button>
+                        </div>
+                    </div>
+                    <div class="col-1">
+                        <a class="btn btn-success" href="/comiclist/create">新建</a>
+                    </div>
+                </div>
+                @* ================================================================ *@
+                @* pagination *@
+                <div class="row mb-1 mt-1">
+                    <Pagination TotalPages="_totalPage" CurrentPage="_currentPage" OnPageChanged="SetPage" />
+                </div>
+                @* ================================================================ *@
+                @* Comic Covers *@
+                <div class="row">
+                    @if (_comicLists != null && _coverComics !=null) {
+                        <div class="row d-flex flex-wrap">
+                            @for (int i = 0; i < _comicLists.Count; i++) {
+                                string link = $"/comiclist";
+                                string source = "/images/placeholder.jpg";
+                                int index = i; 
+                                if (_comicLists[index].ComicIds.Count > 0) {
+                                    source = $"/Assets/Comics/{_coverComics[index].Folder}/001.jpg";
+                                    link = $"/comiclist/{_comicLists[index].Id}";
+                                }
+                                <ImageCover Link="@link" Source="@source" Title="@_comicLists[i].Title" />
+                            }
+                        </div>
+                    }
+                    else {
+                        <Spinner />
+                    }
+                </div>
+                @* ================================================================ *@
+                @* pagination *@
+                <div class="row mb-1 mt-1">
+                    <Pagination TotalPages="_totalPage" CurrentPage="_currentPage" OnPageChanged="SetPage" />
+                </div>
+                @* ================================================================ *@
+            }
+        </div>
+    </Authorized>
+    <NotAuthorized>
+        <AccessDenied />
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+    [CascadingParameter] private Task<AuthenticationState> _authStateTask { get; set; }
+    [Parameter] public string SearchText { get; set; }
+    [Inject] public ComicService ComicService { get; set; }
+    [Inject] public ComicListService ComicListService { get; set; }
+
+    private List<ComicList> _comicLists = [];
+    private List<Comic> _coverComics = [];
+    private int _elementPerPage = 30;
+    private int _currentPage;
+    private int _totalPage;
+
+    protected override async Task OnInitializedAsync() {
+
+        var authState = await _authStateTask;
+        if (authState.User.Identity?.IsAuthenticated ?? false) {
+
+            if (!string.IsNullOrEmpty(SearchText)) {
+                await HandleSearch();
+            }
+            else {
+                await GetTotalPage();
+                if (_totalPage <= 0) {
+                    _comicLists = [];
+                    return;
+                }
+                await GetComicListsByPage(1);
+            }
+            await SetupCoverComics();
+
+        }
+    }
+    private async Task SetupCoverComics() {
+        _coverComics.Clear();
+        foreach (var comicList in _comicLists) {
+            if (comicList.ComicIds.Count > 0) {
+                var comic = await ComicService.GetComicById(comicList.ComicIds[0]);
+                _coverComics.Add(comic);
+            }
+        }
+    }
+    private async Task GetTotalPage() {
+        int total = await ComicListService.GetCount();
+        _totalPage = (int)Math.Ceiling(total / (double)_elementPerPage);
+    }
+
+    private async Task SetPage(int page) {
+        await GetComicListsByPage(page);
+    }
+    private async Task GetComicListsByPage(int page) {
+        if (_totalPage <= 0) {
+            _comicLists = [];
+            return;
+        }
+
+        page = Math.Clamp(page, 1, _totalPage);
+        _currentPage = page;
+        _comicLists = await ComicListService.GetComicLists(page, _elementPerPage);
+    }
+    private async Task GetRandomComics() {
+        _comicLists = await ComicListService.GetRamdomComicLists(_elementPerPage);
+    }
+    private async Task HandleSearch() {
+
+        if (string.IsNullOrWhiteSpace(SearchText)) {
+            await GetComicListsByPage(1);
+        }
+        else {
+            _comicLists = await ComicListService.GetRamdomComicLists(_elementPerPage);
+        }
+    }
+    private async Task OnKeyDown(KeyboardEventArgs e) {
+        if (e.Key == "Enter") {
+            await HandleSearch();
+        }
+    }
+}

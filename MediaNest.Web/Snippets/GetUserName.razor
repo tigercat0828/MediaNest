@@ -1,0 +1,14 @@
+﻿@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.JSInterop
+<h3>GetUseerName</h3>
+
+@code {
+
+	[CascadingParameter] private Task<AuthenticationState> _authStateTask { get; set; }
+	[Inject] public IJSRuntime JS { get; set; }
+	public async Task Halo() {
+		var authState = await _authStateTask;
+		var message = authState.User.Identity.Name;
+		await JS.InvokeVoidAsync("alert", message);
+	}
+}
