@@ -71,11 +71,13 @@ public class ComicService(ComicListService _listService, FileService _fileServic
         List<string> comicIds = [];
 
         string sourceFolder = Path.Combine(_fileService.ComicFolder, comic.Folder);
-
+        string thumbFolder = Path.Combine(_fileService.ComicFolder, "Thumbs", comic.Folder);
+        
         // 一次取所有檔案並依頁碼排序
-        var allFiles = Directory.GetFiles(sourceFolder)
-            .OrderBy(f => ExtractPageNumber(f))
-            .ToList();
+        var allFiles = Directory.GetFiles(sourceFolder).OrderBy(ExtractPageNumber).ToList();
+        var allThumbs = Directory.GetFiles(thumbFolder).OrderBy(ExtractPageNumber).ToList();
+       
+
 
         // bookmark = [1, 9, 27, 36]
         for (int i = 0; i < comic.Bookmarks.Count; i++) {
@@ -96,13 +98,12 @@ public class ComicService(ComicListService _listService, FileService _fileServic
 
             // 新資料夾位置
             string targetFolder = Path.Combine(_fileService.ComicFolder, subComic.Folder);
+            string targetThumbFolder = Path.Combine(_fileService.ComicFolder,"Thumbs", subComic.Folder);
             Directory.CreateDirectory(targetFolder);
+            Directory.CreateDirectory(targetThumbFolder);
 
             // 搬移並重新命名檔案
-            var images = allFiles
-                .Where(f => IsPageInRange(f, start, end))
-                .ToList();
-
+            var images = allFiles.Where(f => IsPageInRange(f, start, end)).ToList();
             int pageNo = 1;
             foreach (var imgPath in images) {
                 string ext = Path.GetExtension(imgPath);
@@ -110,6 +111,17 @@ public class ComicService(ComicListService _listService, FileService _fileServic
                 string destPath = Path.Combine(targetFolder, newName);
                 File.Copy(imgPath, destPath, overwrite: true);
                 pageNo++;
+            }
+
+            // 搬移並重新命名縮圖（若存在）
+            var thumbs = allThumbs.Where(f => IsPageInRange(f, start, end)).ToList();
+            int thumbNo = 1;
+            foreach (var thumbPath in thumbs) {
+                string ext = Path.GetExtension(thumbPath);
+                string newName = $"{thumbNo:D3}{ext}";
+                string destPath = Path.Combine(targetThumbFolder, newName);
+                File.Copy(thumbPath, destPath, overwrite: true);
+                thumbNo++;
             }
 
             // 記錄 Comic Id

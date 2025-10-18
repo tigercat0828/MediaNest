@@ -24,10 +24,10 @@
                     <EditForm Model="_currentComic" FormName="ComicForm">
                         <DataAnnotationsValidator />
                         @if (_isEditMode) {
-                            <h3>Edit Album</h3>
+                            <h3>Edit Comic</h3>
                         }
                         else {
-                            <h3>New Album</h3>
+                            <h3>New Comic</h3>
                         }
                         <div class="mb-3">
                             <label>Title</label>
@@ -213,7 +213,7 @@
     }
 
     void LoadImageSrcs() {
-        var folderName = Path.Combine(FileService.AssetsFolder, "Comics", _currentComic.Folder);
+        var folderName = Path.Combine(FileService.ComicFolder, "Thumbs", _currentComic.Folder);
         foreach (var path in Directory.GetFiles(folderName)) {
             _imageSrcs.Add(Path.GetFileName(path));
         }

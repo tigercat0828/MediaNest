@@ -39,13 +39,20 @@ builder.Services.Configure<MongoDbConfig>(builder.Configuration.GetSection("Mong
 builder.Services.AddMongoClient();
 builder.Services.AddMongoCollection<Account>("Accounts");
 builder.Services.AddMongoCollection<Comic>("Comics");
+builder.Services.AddMongoCollection<Music>("Musics");
+builder.Services.AddMongoCollection<Video>("Videos");
 builder.Services.AddMongoCollection<ComicList>("ComicLists");
+builder.Services.AddMongoCollection<MusicList>("MusicLists");
+builder.Services.AddMongoCollection<VideoList>("VideoLists");
 // ========================================================================================
 // Main MediaNest Service
 // ========================================================================================
 builder.Services.AddScoped<ComicListService>();
-builder.Services.AddScoped<ComicService>();
 builder.Services.AddScoped<ComicCartService>();
+builder.Services.AddScoped<ComicService>();
+
+builder.Services.AddScoped<EntityService<Music, MusicList>>();
+builder.Services.AddScoped<EntityService<Video, VideoList>>();;
 // ========================================================================================
 
 var app = builder.Build();
@@ -81,7 +88,6 @@ if (Directory.Exists(appState.AssetsFolder)) {
         RequestPath = new PathString("/Assets"),
     });
 }
-
 
 app.UseAuthentication();
 app.UseAuthorization();
