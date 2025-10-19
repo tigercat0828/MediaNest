@@ -36,7 +36,7 @@
                     @if (_comics != null) {
                         @foreach (var comic in _comics) {
                             string link = $"/comic/{comic.Id}";
-                            string source = $"/Assets/Comics/Thumbs/{comic.Folder}/001.jpg";
+                            string source = $"/Assets/Comics/{comic.Folder}/001.jpg";
                             <ComicCover Link="@link" Title="@comic.Title" Source="@source" 
                                         ShowAddButton="_isSelectMode"        
                                         OnAddClicked="() => AddToCart(comic)" />    

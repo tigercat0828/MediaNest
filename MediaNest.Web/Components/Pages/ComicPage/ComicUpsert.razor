@@ -134,7 +134,7 @@
     [Inject] public IBackgroundTaskQueue TaskQueue { get; set; }
     [Parameter] public string id { get; set; }
 
-    private string _directory => Path.Combine(FileService.AssetsFolder, "Comics");
+    private string _directory => FileService.ComicFolder;
     private bool _isEditMode = false;
     private Comic _currentComic = new();
 

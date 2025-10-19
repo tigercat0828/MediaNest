@@ -1,0 +1,79 @@
+﻿@page "/rapid-upload"
+@using MediaNest.Shared.Entities
+@using MediaNest.Shared.Models
+@using System.Threading.Tasks
+
+@rendermode InteractiveServer
+
+@if (_showOk) {
+	<button class="btn btn-success mb-3" @onclick="Okay">Okay</button>
+}
+
+<div class="container">
+	<div class="card card-body mb-3">
+		<h4 class="card-title">上傳漫畫</h4>
+		<FileUpload SaveDirectory="@_taskFolder" OnUploadButtonPressed="HandleUploadBtnPressed" />
+		@if (_showImport) {
+			<button class="btn btn-outline-primary" @onclick="ImportComic">匯入</button>
+		}
+		<ul class="list-group">
+			@if (_importedTitles.Count > 0) {
+				foreach (var title in _importedTitles) {
+					<li class="list-group-item">@title</li>
+				}
+			}
+		</ul>
+	</div>
+	
+	
+	<div class="card card-body mb-3">
+		<h4 class="card-title">上傳影片</h4>
+		<FileUpload SaveDirectory="" />
+		<button class="btn btn-outline-primary" >匯入</button>
+	</div>
+	<div class="card card-body mb-3">
+		<h4 class="card-title">上傳音樂</h4>
+		<FileUpload SaveDirectory="" />
+		<button class="btn btn-outline-primary" >匯入</button>
+	</div>
+
+</div>
+
+
+@code {
+	@inject ComicService ComicService
+	@inject FileService FileService
+	@inject NavigationManager NavigationManager
+	private List<string> _uploadedFiles = [];
+	List<string> _importedTitles = [];
+	private string _taskFolder => FileService.TaskFolder;
+	private bool _showOk = false;
+	private bool _showImport = false;
+
+	private async Task ImportComic() {
+		_showOk = true;
+		_showImport = false;
+
+		ComicZipImporter importer = new(FileService.ComicFolder);
+		_uploadedFiles = Directory.GetFiles(_taskFolder).ToList();
+		foreach(var file in _uploadedFiles) {
+			if (Path.GetExtension(file) != ".zip") File.Delete(file);
+			Comic comic = importer.ImportComic(file);
+			await ComicService.CreateComic(comic);
+			_importedTitles.Add(comic.Folder);
+		}
+
+
+		foreach(var file in _uploadedFiles) {
+			File.Delete(file);
+		}
+	}
+
+	private void Okay() {
+		NavigationManager.NavigateTo("/rapid-upload", true);
+	}
+	private void HandleUploadBtnPressed(bool args)
+	{
+		_showImport = true;
+	}
+}

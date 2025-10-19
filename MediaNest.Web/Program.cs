@@ -7,6 +7,10 @@ using MediaNest.Web.Components;
 using MediaNest.Web.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.Extensions.FileProviders;
+using System.Text;
+
+Console.InputEncoding = Encoding.UTF8;
+Console.OutputEncoding = Encoding.UTF8;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -81,13 +85,14 @@ app.UseStaticFiles(new StaticFileOptions {  // for .vtt subtitle
     DefaultContentType = "text/vtt"
 });
 
-var appState = app.Services.GetRequiredService<FileService>();
-if (Directory.Exists(appState.AssetsFolder)) {
+var fileService = app.Services.GetRequiredService<FileService>();
+if (Directory.Exists(fileService.AssetsFolder)) {
     app.UseStaticFiles(new StaticFileOptions {
-        FileProvider = new PhysicalFileProvider(appState.AssetsFolder),
+        FileProvider = new PhysicalFileProvider(fileService.AssetsFolder),
         RequestPath = new PathString("/Assets"),
     });
 }
+fileService.DeleteEmptyAssetFolder();
 
 app.UseAuthentication();
 app.UseAuthorization();

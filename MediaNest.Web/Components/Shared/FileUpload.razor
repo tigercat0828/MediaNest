@@ -54,7 +54,7 @@
         foreach (var file in browserFiles) {
             var filePath = Path.Combine(saveFolder, file.Name);
             await using FileStream fs = new(filePath, FileMode.Create);
-            await file.OpenReadStream(maxAllowedSize: 50 * 1024 * 1024).CopyToAsync(fs);   // 10 MB max
+            await file.OpenReadStream(maxAllowedSize: (long)(5 * 1024) * (long)(1024 * 1024)).CopyToAsync(fs); // 1 GB
         }
         isUploadFinish = true;
         isReadyToUpload = false;
