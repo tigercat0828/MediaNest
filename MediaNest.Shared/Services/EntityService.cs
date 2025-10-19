@@ -1,20 +1,37 @@
 ﻿using MediaNest.Shared.Entities;
+using MongoDB.Bson;
 using MongoDB.Driver;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace MediaNest.Shared.Services; 
-public class EntityService<T, TList>(IMongoCollection<T> _entities, IMongoCollection<TList> _lists) 
-    where T: IEntity 
-    where TList : IEntity{
+public class EntityService<T, TList> where T: IEntity where TList : IEntity{
+
+    private readonly IMongoCollection<T> _entities;
+    private readonly IMongoCollection<TList> _lists;
+    public EntityService(IMongoCollection<T> entities, IMongoCollection<TList> lists) {
+        _entities = entities;
+        _lists = lists;
+    }
 
     public async Task<List<T>> GetAll() {
         return await _entities.Find(_ => true).ToListAsync();
     }
     public async Task<T> GetById(string id) {
         return await _entities.Find(m => m.Id == id).FirstOrDefaultAsync();
+    }
+    public async Task<List<T>> Search(string term) {
+        var escapedTerm = Regex.Escape(term);
+        // 模糊搜尋（加上 .* 讓字串前後可以有其他文字）
+        var pattern = $".*{escapedTerm}.*";
+        var titleFilter = Builders<T>.Filter.Regex("Title", new BsonRegularExpression(pattern, "i"));
+        var tagsFilter = Builders<T>.Filter.AnyIn("Tags", [term]);
+        var codeFilter = Builders<T>.Filter.Eq("Code", term);
+        var combinedFilter = titleFilter | codeFilter | tagsFilter ;
+        return await _entities.Find(combinedFilter).ToListAsync();
     }
     public async Task Create(T entity) {
         await _entities.InsertOneAsync(entity);

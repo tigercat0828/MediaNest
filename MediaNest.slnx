@@ -4,6 +4,7 @@
     <File Path="docker-compose.yml" />
     <File Path="mongo-init.js" />
   </Folder>
-  <Project Path="MediaNest.Shared/MediaNest.Shared.csproj" Id="11ce9ff2-d74a-4188-acc0-c9f57fda8bc6" />
-  <Project Path="MediaNest.Web/MediaNest.Web.csproj" Id="4f93d47d-faad-4c73-8f87-563089e0f159" />
+  <Project Path="../../../../../../../../Repository/MediaNest/MediaNest.Anvil/MediaNest.Anvil.csproj" Id="57ff4703-ab0d-4569-be47-5a3ca2f9ecca" />
+  <Project Path="../../../../../../../../Repository/MediaNest/MediaNest.Shared/MediaNest.Shared.csproj" Id="11ce9ff2-d74a-4188-acc0-c9f57fda8bc6" />
+  <Project Path="../../../../../../../../Repository/MediaNest/MediaNest.Web/MediaNest.Web.csproj" Id="4f93d47d-faad-4c73-8f87-563089e0f159" />
 </Solution>
