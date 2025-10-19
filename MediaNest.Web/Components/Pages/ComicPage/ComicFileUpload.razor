@@ -43,7 +43,7 @@
             StateHasChanged(); // TODO : streaming data
         }
         isUploadFinish = true;
-        message = "上傳完成!!";
+        message = $"上傳完成!! At {saveFolder}";
         browserFiles.Clear();
         await OnUploadButtonPressed.InvokeAsync(true);
     }

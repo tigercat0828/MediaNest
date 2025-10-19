@@ -18,7 +18,7 @@ var files = importer.GetAllZipFiles(targetPath);
 
 
 foreach(var file in files) {
-  await importer.ImportComic(file);
+    await importer.ImportComic(file);
 }
 
 
