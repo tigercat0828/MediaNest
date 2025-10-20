@@ -1,0 +1,55 @@
+﻿.floating-panel {
+    position: fixed;
+    bottom: 100px;
+    right: 20px; /* 調整與輸入框的距離 */
+}
+
+#scrollToTopBtn {
+    position: fixed;
+    bottom: 20px;
+    right: 80px;
+}
+
+#EditTagBtn {
+    position: fixed;
+    bottom: 20px;
+    right: 20px; /* 調整與輸入框的距離 */
+}
+
+/* 手機／平板：滿版顯示 */
+@media (max-width: 1440px) {
+    .comic-viewer {
+        width: 100vw;
+        position: relative;
+        left: 50%;
+        right: 50%;
+        margin-left: -50vw;
+        margin-right: -50vw;
+    }
+
+    .comic-img {
+        display: block;
+        width: 100vw; /* 佔滿整個螢幕寬 */
+        height: auto;
+        margin: 0 auto;
+        object-fit: contain;
+    }
+}
+
+/* 桌面端：與 container 寬度一致 */
+@media (min-width: 1440px) {
+    .comic-viewer {
+        width: 100%; /* 讓它跟 container 一樣寬 */
+        margin: 0 auto;
+        padding-left: 12px; /* Bootstrap container 預設 padding */
+        padding-right: 12px;
+    }
+
+    .comic-img {
+        display: block;
+        width: 100%; /* 滿 container 寬度 */
+        height: auto;
+        margin: 0 auto;
+        object-fit: contain;
+    }
+}

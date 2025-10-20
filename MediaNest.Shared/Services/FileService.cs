@@ -15,15 +15,6 @@ public class FileService {
         CreateFolder(TaskFolder);
     }
     public void DeleteEmptyAssetFolder() {
-        // comic
-        //var folders = Directory.GetDirectories(ComicFolder);
-        //foreach (var folder in folders) {
-        //    if (!Directory.EnumerateFileSystemEntries(folder).Any()) {
-        //        Directory.Delete(folder);
-        //        Console.WriteLine($"Delete {folder}");
-        //    }
-        //}
-
         deleteEmptyFolder(ComicFolder);
     }
     private void deleteEmptyFolder(string rootFolder) {

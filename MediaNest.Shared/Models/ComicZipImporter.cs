@@ -61,15 +61,14 @@ public class ComicZipImporter(string dstFolder) {
         try {
             ZipFile.ExtractToDirectory(zipFile, dstPath, overwriteFiles: true);
             Console.WriteLine($"✅ 解壓完成：{dstPath}");
-
+            /*
             var allFiles = Directory.GetFiles(dstPath, "*", SearchOption.AllDirectories);
             Console.WriteLine("📂 已解壓的檔案列表：");
             foreach (var file in allFiles) {
                 Console.WriteLine("  " + Path.GetRelativePath(dstPath, file));
             }
-
             Console.WriteLine($"\n🟢 共 {allFiles.Length} 個檔案");
-
+            */
         }
         catch (Exception ex) {
             Console.WriteLine($"❌ 解壓失敗：{ex.Message}");

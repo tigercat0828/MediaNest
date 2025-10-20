@@ -13,7 +13,6 @@
         @if (currentComic != null) {
             <PageTitle>@currentComic.Title</PageTitle>
             <div class="container">
-
                 <div class="row mt-3">
                     <div class="col-8">
                         <nav aria-label="breadcrumb">
@@ -49,7 +48,7 @@
             </div>
             <div class="comic-viewer">
                 @foreach (var image in images) {
-                    <img class="img-fluid mb-2" src="/Assets/Comics/@currentComic.Folder/@image" alt="@image" />
+                    <img class="comic-img mb-2" src="/Assets/Comics/@currentComic.Folder/@image" alt="@image" />
                 }
             </div>
             @if (doShowEditPanel) {
@@ -155,34 +154,6 @@
     }
 </script>
 <style>
-    .floating-panel {
-        position: fixed;
-        bottom: 100px;
-        right: 20px; /* 調整與輸入框的距離 */
-    }
+   
 
-    #scrollToTopBtn {
-        position: fixed;
-        bottom: 20px;
-        right: 80px;
-    }
-
-    #EditTagBtn {
-        position: fixed;
-        bottom: 20px;
-        right: 20px; /* 調整與輸入框的距離 */
-    }
-
-    .comic-viewer {
-        margin: 0;
-        padding: 0;
-    }
-
-    .comic-img {
-        display: block;
-        width: 100vw; /* 讓圖片寬度佔滿整個 viewport */
-        height: auto;
-        margin: 0 auto;
-        object-fit: contain; /* 保持比例不變 */
-    }
 </style>

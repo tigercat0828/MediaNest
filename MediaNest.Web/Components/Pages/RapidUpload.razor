@@ -2,6 +2,7 @@
 @using MediaNest.Shared.Entities
 @using MediaNest.Shared.Models
 @using System.Threading.Tasks
+@using MediaNest.Shared.Services.Background
 
 @rendermode InteractiveServer
 
@@ -42,8 +43,11 @@
 
 @code {
 	@inject ComicService ComicService
+	@inject EntityService<Music, MusicList> MusicService
 	@inject FileService FileService
 	@inject NavigationManager NavigationManager
+	@inject IBackgroundTaskQueue TaskQueue
+
 	private List<string> _uploadedFiles = [];
 	List<string> _importedTitles = [];
 	private string _taskFolder => FileService.TaskFolder;
@@ -51,24 +55,37 @@
 	private bool _showImport = false;
 
 	private async Task ImportComic() {
-		_showOk = true;
 		_showImport = false;
+		_showOk = false;
+		_importedTitles.Clear();
+		StateHasChanged();
 
-		ComicZipImporter importer = new(FileService.ComicFolder);
-		_uploadedFiles = Directory.GetFiles(_taskFolder).ToList();
-		foreach(var file in _uploadedFiles) {
-			if (Path.GetExtension(file) != ".zip") File.Delete(file);
-			Comic comic = importer.ImportComic(file);
-			await ComicService.CreateComic(comic);
-			_importedTitles.Add(comic.Folder);
+		_uploadedFiles = Directory.GetFiles(_taskFolder, "*.zip").ToList();
+
+		foreach (var file in _uploadedFiles) {
+			await TaskQueue.EnqueueTask(async token => {
+				try {
+					var importer = new ComicZipImporter(FileService.ComicFolder);
+					Comic comic = importer.ImportComic(file);
+					await ComicService.CreateComic(comic);
+					lock (_importedTitles)
+						_importedTitles.Add($"[{comic.Code}]{comic.Title}");
+					await InvokeAsync(StateHasChanged);
+					File.Delete(file);
+				}
+				catch (Exception ex) {
+					Console.WriteLine($"❌ 匯入失敗: {file} - {ex.Message}");
+				}
+			});
 		}
 
-
-		foreach(var file in _uploadedFiles) {
-			File.Delete(file);
-		}
+		_showOk = true;
+		await InvokeAsync(StateHasChanged);
 	}
-
+	private async Task ImportMusic() {
+		
+		
+	}
 	private void Okay() {
 		NavigationManager.NavigateTo("/rapid-upload", true);
 	}
