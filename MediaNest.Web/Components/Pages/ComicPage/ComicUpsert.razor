@@ -127,12 +127,13 @@
 
 @code {
     // TODO : uploader with authentication
-    [Inject] public NavigationManager Navigation { get; set; }
-    [Inject] public AuthenticationStateProvider AuthProvider { get; set; }
-    [Inject] public FileService FileService { get; set; }
-    [Inject] public ComicServiceLegacy ComicService { get; set; }
-    [Inject] public IBackgroundTaskQueue TaskQueue { get; set; }
+    [CascadingParameter] private Task<AuthenticationState> _authStateTask { get; set; }
     [Parameter] public string id { get; set; }
+
+    @inject NavigationManager Navigation
+    @inject FileService FileService 
+    @inject ComicService ComicService
+    @inject IBackgroundTaskQueue TaskQueue 
 
     private string _directory => FileService.ComicFolder;
     private bool _isEditMode = false;
@@ -143,9 +144,7 @@
     private string _bookmarkStr = "";
     private string _oldTitle = "";
     private bool _isUploadButtonPressed = false;
-
     private bool _showMoreOptionPanel = false;
-
 
     // 選中頁面功能
     private HashSet<string> _selectedImages = [];
@@ -156,7 +155,7 @@
 
     protected override async Task OnInitializedAsync() {
 
-        var authState = await AuthProvider.GetAuthenticationStateAsync();
+        var authState = await _authStateTask;
         if (authState.User.Identity?.IsAuthenticated ?? false) {
             if (id != null) {
                 _isEditMode = true;
@@ -178,19 +177,11 @@
         _currentComic.Characters = _characterStr.Split(",", StringSplitOptions.RemoveEmptyEntries).ToList();
         _currentComic.Uploader = ""; 
         if (_isEditMode) {
-            string newFolderPath = Path.Combine(FileService.AssetsFolder, "Comics", _currentComic.Folder);
-            string oldFolderPath = Path.Combine(FileService.AssetsFolder, "Comics", $"{_currentComic.Code[..3]}", $"[{_currentComic.Code}]{_oldTitle}");
-
-            string newThumbFolderPath = Path.Combine(FileService.AssetsFolder, "Comics", "Thumbs", _currentComic.Folder);
-            string oldThumbFolderPath = Path.Combine(FileService.AssetsFolder, "Comics","Thumbs", $"{_currentComic.Code[..3]}", $"[{_currentComic.Code}]{_oldTitle}");
-            if (oldFolderPath != newFolderPath) Directory.Move(oldFolderPath, newFolderPath);
-            if (oldThumbFolderPath != newThumbFolderPath && Directory.Exists(oldThumbFolderPath)) Directory.Move(oldThumbFolderPath, newThumbFolderPath);
-            await ComicService.UpdateComic(id, _currentComic);
+            await ComicService.UpdateComic(id, _currentComic, _oldTitle);
         }
         else {
-            await ComicService.CreateComic(_currentComic);
             await TaskQueue.EnqueueTask(async token => {
-                await ComicService.GeneratePreviewThumbs(_currentComic);
+                await ComicService.CreateComic(_currentComic);
             });
         }
         Navigation.NavigateTo($"/comic/{_currentComic.Id}");

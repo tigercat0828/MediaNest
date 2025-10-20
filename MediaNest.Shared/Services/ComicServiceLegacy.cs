@@ -72,11 +72,11 @@ public class ComicServiceLegacy(ComicListService _listService, FileService _file
 
         string sourceFolder = Path.Combine(_fileService.ComicFolder, comic.Folder);
         string thumbFolder = Path.Combine(_fileService.ComicFolder, "Thumbs", comic.Folder);
-        
+
         // 一次取所有檔案並依頁碼排序
         var allFiles = Directory.GetFiles(sourceFolder).OrderBy(ExtractPageNumber).ToList();
         var allThumbs = Directory.GetFiles(thumbFolder).OrderBy(ExtractPageNumber).ToList();
-       
+
 
 
         // bookmark = [1, 9, 27, 36]
@@ -98,7 +98,7 @@ public class ComicServiceLegacy(ComicListService _listService, FileService _file
 
             // 新資料夾位置
             string targetFolder = Path.Combine(_fileService.ComicFolder, subComic.Folder);
-            string targetThumbFolder = Path.Combine(_fileService.ComicFolder,"Thumbs", subComic.Folder);
+            string targetThumbFolder = Path.Combine(_fileService.ComicFolder, "Thumbs", subComic.Folder);
             Directory.CreateDirectory(targetFolder);
             Directory.CreateDirectory(targetThumbFolder);
 
@@ -153,6 +153,6 @@ public class ComicServiceLegacy(ComicListService _listService, FileService _file
         var resizer = new ImageResizer();
         string srcFolder = Path.Combine(_fileService.ComicFolder, comic.Folder);
         string dstFolder = Path.Combine(_fileService.ComicFolder, "Thumbs", comic.Folder);
-        resizer.ResizeFolder(srcFolder, dstFolder, 0.2f);
+        resizer.ResizeImageInFolder(srcFolder, dstFolder, 0.2f);
     }
 }

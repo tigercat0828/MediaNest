@@ -64,10 +64,9 @@
     [CascadingParameter] private Task<AuthenticationState> _authStateTask { get; set; }
     [Parameter] public string id { get; set; }
     [Parameter] public int page { get; set; } = 0;
-    [Inject] public JSRuntimeService JS { get; set; }
-    [Inject] public FileService FileService { get; set; }
-    [Inject] public ComicServiceLegacy ComicService { get; set; }
-
+    @inject JSRuntimeService JS 
+    @inject FileService FileService 
+    @inject ComicService ComicService
 
     private int _currentPage = 0;
     ComicViewMode _viewMode = ComicViewMode.Preview;

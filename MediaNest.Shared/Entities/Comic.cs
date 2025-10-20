@@ -1,12 +1,11 @@
-﻿using MediaNest.Shared.Entities;
-using MongoDB.Bson;
+﻿using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 using System.ComponentModel.DataAnnotations;
 
 namespace MediaNest.Shared.Entities;
 
 
-public class  Comic  : IEntity{
+public class Comic : IEntity {
     public Comic() {
         Code = Utility.GenerateSixDigitCode();
     }

@@ -1,9 +1,6 @@
 ﻿using MediaNest.Shared.Entities;
-using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.IO.Compression;
-using System.Text;
 using System.Text.RegularExpressions;
 
 namespace MediaNest.Shared.Models;
@@ -39,7 +36,7 @@ public class ComicZipImporter(string dstFolder) {
         }
         // generate thumbs
         string thumbFolder = Path.Combine(ComicFolder, "Thumbs", comic.Folder);
-        _resizer.ResizeFolder(imgFolder, thumbFolder, 0.2f);
+        _resizer.ResizeImageInFolder(imgFolder, thumbFolder, 0.2f);
 
         return comic;
     }

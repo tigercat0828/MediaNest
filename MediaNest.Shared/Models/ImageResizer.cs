@@ -5,7 +5,7 @@ namespace MediaNest.Shared.Models;
 public class ImageResizer {
     private static readonly string[] SupportedExtensions = { ".jpg", ".jpeg", ".png", ".webp" };
 
-    public void ResizeFolder(string srcFolder, string dstFolder, float ratio) {
+    public void ResizeImageInFolder(string srcFolder, string dstFolder, float ratio) {
         var imgFiles = GetImageFiles(srcFolder);
         Console.WriteLine($" Found {imgFiles.Length} files.");
         // ✅ 若資料夾沒有支援的圖片 → 跳過

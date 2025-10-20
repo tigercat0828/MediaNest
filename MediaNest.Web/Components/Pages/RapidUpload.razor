@@ -47,7 +47,8 @@
 
 
 @code {
-	@inject ComicServiceLegacy ComicService
+	//@inject ComicServiceLegacy ComicService
+	@inject ComicService ComicService
 	@inject FileService FileService
 	@inject NavigationManager NavigationManager
 	@inject IBackgroundTaskQueue TaskQueue
@@ -75,7 +76,7 @@
 				try {
 					var importer = new ComicZipImporter(FileService.ComicFolder);
 					Comic comic = importer.ImportComic(file);
-					await ComicService.CreateComic(comic);
+					await ComicService.CreateComic(comic, false);
 					lock (_importedTitles)
 						_importedTitles.Add($"[{comic.Code}]{comic.Title}");
 					File.Delete(file);

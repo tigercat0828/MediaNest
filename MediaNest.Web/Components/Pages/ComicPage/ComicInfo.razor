@@ -1,7 +1,6 @@
 ﻿@using MediaNest.Shared.Dtos
 @using MediaNest.Shared.Entities
 @using MediaNest.Web.Services
-@inject IWebHostEnvironment WebEnv
 @inject NavigationManager NavigationManager
 
 @if (Comic != null) {
@@ -98,16 +97,16 @@
     </div>
 }
 else {
-    <Spinner />
+    <LoadingSpinner />
 }
 
 @code {
     [Parameter] public Comic? Comic { get; set; }
     [Parameter] public int? PageCount { get; set; }   // total Page count
-    [Inject] public IToastService Toast { get; set; }
-    [Inject] public ComicServiceLegacy ComicService { get; set; }
-    [Inject] public ComicCartService ComicCartService { get; set; }
-    [Inject] public IToastService ToastService { get; set; }
+    @inject IToastService ToastService 
+    @inject ComicService ComicService
+    @inject ComicCartService ComicCartService
+    @inject NavigationManager NavigationManager
 
     // 讓父元件接收通知
     [Parameter] public EventCallback<int> OnBookmarkClicked { get; set; }

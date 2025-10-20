@@ -53,7 +53,6 @@ builder.Services.AddMongoCollection<VideoList>("VideoLists");
 // ========================================================================================
 builder.Services.AddScoped<ComicListService>();
 builder.Services.AddScoped<ComicCartService>();
-builder.Services.AddScoped<ComicServiceLegacy>();
 
 builder.Services.AddScoped<EntityRepository<Comic>>();
 builder.Services.AddScoped<EntityRepository<ComicList>>();

@@ -1,14 +1,11 @@
 ﻿using MediaNest.Shared.Entities;
 using MongoDB.Bson;
 using MongoDB.Driver;
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Text;
 using System.Text.RegularExpressions;
 
-namespace MediaNest.Shared.Services; 
-public class EntityRepository<T>(IMongoCollection<T> entities) where T: IEntity{
+namespace MediaNest.Shared.Services;
+
+public class EntityRepository<T>(IMongoCollection<T> entities) where T : IEntity {
     // entity
     public async Task<int> GetCount() {
         return (int)await entities.CountDocumentsAsync(_ => true);
@@ -24,7 +21,7 @@ public class EntityRepository<T>(IMongoCollection<T> entities) where T: IEntity{
                 .Limit(count)
                 .ToListAsync();
     }
-    public async Task<List<T>> GetRandom(int count) { 
+    public async Task<List<T>> GetRandom(int count) {
         return await entities.Aggregate().Sample(count).ToListAsync();
     }
     public async Task<T> GetById(string id) {

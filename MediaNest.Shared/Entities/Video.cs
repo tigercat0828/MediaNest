@@ -1,8 +1,9 @@
 ﻿using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 
-namespace MediaNest.Shared.Entities; 
-public class Video : IEntity{
+namespace MediaNest.Shared.Entities;
+
+public class Video : IEntity {
     public Video() {
         Code = Utility.GenerateSixDigitCode();
     }
@@ -17,7 +18,7 @@ public class Video : IEntity{
     public string Series { get; set; }
     public List<string> Figures { get; set; }
     public List<string> Tags { get; set; }
-    
+
     [BsonIgnore]
     public string Folder => Code[..3];
 
