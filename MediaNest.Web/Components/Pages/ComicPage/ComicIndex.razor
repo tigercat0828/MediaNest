@@ -98,7 +98,7 @@
     }
     private async Task GetTotalPage() {
         //int total = await ComicService.GetCount();
-        int total = await ComicService.GetCount();
+        int total = await ComicService.GetComicCount();
         _totalPage = (int)Math.Ceiling(total / (double)_elementPerPage);
     }
     private async Task GetComicsByPage(int page) {

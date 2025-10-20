@@ -62,14 +62,14 @@
 		_showDeleteButton = true;
 	}
 	private async Task ConfirmDelete() {
-		await ComicService.DeleteComicList(Id);
+		await ComicService.DeleteList(Id);
 		NavigationManager.NavigateTo("/comiclist");
 	}
 	protected override async Task OnInitializedAsync() {
 
 		_comicList = await ComicService.GetListById(Id);
 		foreach (var id in _comicList.ComicIds) {
-			var comic = await ComicService.GetById(id);
+			var comic = await ComicService.GetComicById(id);
 			if (comic != null) _comics.Add(comic);
 		}
 	}

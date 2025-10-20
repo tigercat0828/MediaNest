@@ -74,9 +74,8 @@ else {
     
     @inject NavigationManager NavigationManager
     @inject ComicCartService ComicCartService
-    
-    @inject ComicListService ComicListService
-    @inject ComicServiceLegacy ComicServicettt
+
+    @inject ComicService ComicService
 
     List<ComicDto> _comics = [];
 
@@ -87,10 +86,10 @@ else {
         await ComicCartService.InitializeAsync();
         if (Id != null) {
             _isEditMode = true;
+            _comicList = await ComicService.GetListById(Id);
             _tagStr = string.Join(",", _comicList.Tags);
-            _comicList = await ComicListService.GetComicListById(Id);
             foreach(var id in _comicList.ComicIds) {
-                Comic comic = await ComicServicettt.GetComicById(id);
+                Comic comic = await ComicService.GetComicById(id);
                 _comics.Add(new ComicDto {
                         Id = comic.Id,
                         Title = comic.Title,
@@ -137,14 +136,14 @@ else {
 
     private async Task HandleEditModeAsync() {
         if (_comicList.ComicIds.Count == 0) {
-            await ComicListService.DeleteComicList(Id);
+            await ComicService.DeleteList(Id);
             return;
         }
 
-        await ComicListService.UpdateComicList(Id, _comicList);
+        await ComicService.UpdateList(Id, _comicList);
     }
 
     private async Task HandleCreateModeAsync() {
-        await ComicListService.CreateComicList(_comicList);
+        await ComicService.CreateList(_comicList);
     }
 }

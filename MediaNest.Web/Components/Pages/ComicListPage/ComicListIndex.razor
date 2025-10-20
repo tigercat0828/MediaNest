@@ -101,7 +101,7 @@
         _coverComics.Clear();
         foreach (var comicList in _comicLists) {
             if (comicList.ComicIds.Count > 0) {
-                var comic = await ComicService.GetById(comicList.ComicIds[0]);
+                var comic = await ComicService.GetComicById(comicList.ComicIds[0]);
                 if (comic != null) _coverComics.Add(comic);
                 else _coverComics.Add(new Comic());
             }

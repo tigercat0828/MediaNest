@@ -2,7 +2,9 @@
 
 namespace MediaNest.Shared.Services;
 
-using MusicRepository = EntityRepository<Music, MusicList>;
-public class MusicService (MusicRepository _repository, FileService _service){
+public class MusicService (
+    EntityRepository<Music> _musicRepo,
+    EntityRepository<MusicList> _listRepo,
+    FileService _service) {
     
 }

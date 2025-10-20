@@ -55,9 +55,13 @@ builder.Services.AddScoped<ComicListService>();
 builder.Services.AddScoped<ComicCartService>();
 builder.Services.AddScoped<ComicServiceLegacy>();
 
-builder.Services.AddScoped<EntityRepository<Comic, ComicList>>();
-builder.Services.AddScoped<EntityRepository<Music, MusicList>>();
-builder.Services.AddScoped<EntityRepository<Video, VideoList>>();
+builder.Services.AddScoped<EntityRepository<Comic>>();
+builder.Services.AddScoped<EntityRepository<ComicList>>();
+builder.Services.AddScoped<EntityRepository<Music>>();
+builder.Services.AddScoped<EntityRepository<MusicList>>();
+builder.Services.AddScoped<EntityRepository<Video>>();
+builder.Services.AddScoped<EntityRepository<VideoList>>();
+
 builder.Services.AddScoped<ComicService>();
 
 // ========================================================================================

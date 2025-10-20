@@ -103,7 +103,7 @@
         var authState = await authProvider.GetAuthenticationStateAsync();
         if (authState.User.Identity?.IsAuthenticated ?? false) {
 
-            currentComic = await ComicService.GetById(id);
+            currentComic = await ComicService.GetComicById(id);
             charaStr = string.Join(',', currentComic.Characters);
             tagStr = string.Join(',', currentComic.Tags);
             resourceUrl = Path.Combine(FileService.AssetsFolder, currentComic.Folder);
