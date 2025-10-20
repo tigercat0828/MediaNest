@@ -93,8 +93,9 @@
 
     void LoadImageSrcs() {
         var folderName = Path.Combine(FileService.ComicFolder, "Thumbs", _comic.Folder);
-        foreach (var path in Directory.GetFiles(folderName)) {
-            _imageSrcs.Add(Path.GetFileName(path));
+        if (!Directory.Exists(folderName)) return;
+        foreach (var file in Directory.GetFiles(folderName)) {
+            _imageSrcs.Add(Path.GetFileName(file));
         }
     }
 

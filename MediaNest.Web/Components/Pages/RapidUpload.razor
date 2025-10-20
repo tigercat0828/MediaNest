@@ -10,11 +10,6 @@
 	<button class="btn btn-success mb-3" @onclick="Okay">Okay</button>
 }
 
-@if (_totalCount > 0) {
-	<p>匯入進度：@_completedCount / @_totalCount</p>
-	<p class="text-danger">等待上傳完成... 請勿離開頁面!</p>
-}
-
 <div class="container">
 	<div class="card card-body mb-3">
 		<h4 class="card-title">上傳漫畫</h4>
@@ -22,13 +17,6 @@
 		@if (_showImport) {
 			<button class="btn btn-outline-primary" @onclick="ImportComic">匯入</button>
 		}
-		<ul class="list-group">
-			@if (_importedTitles.Count > 0) {
-				foreach (var title in _importedTitles) {
-					<li class="list-group-item">@title</li>
-				}
-			}
-		</ul>
 	</div>
 	
 	
@@ -59,15 +47,12 @@
 	private bool _showOk = false;
 	private bool _showImport = false;
 
-	private int _totalCount;
-	private int _completedCount;
 	protected override void OnInitialized() {
-		FileService.ClearTaskFolder();	
 	}
+	
 	private async Task ImportComic() {
 		_showImport = false;
 		_showOk = false;
-		_importedTitles.Clear();
 		StateHasChanged();
 		_uploadedFiles = Directory.GetFiles(_taskFolder, "*.zip").ToList();
 
@@ -77,20 +62,14 @@
 					var importer = new ComicZipImporter(FileService.ComicFolder);
 					Comic comic = importer.ImportComic(file);
 					await ComicService.CreateComic(comic, false);
-					lock (_importedTitles)
-						_importedTitles.Add($"[{comic.Code}]{comic.Title}");
 					File.Delete(file);
-					Interlocked.Increment(ref _completedCount);
 				}
 				catch (Exception ex) {
 					Console.WriteLine($"❌ 匯入失敗: {file} - {ex.Message}");
-					Interlocked.Increment(ref _completedCount);
 				}
 			});
 		}
-
 		_showOk = true;
-		await InvokeAsync(StateHasChanged);
 	}
 	private async Task ImportMusic() {
 		
