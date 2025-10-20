@@ -53,10 +53,13 @@ builder.Services.AddMongoCollection<VideoList>("VideoLists");
 // ========================================================================================
 builder.Services.AddScoped<ComicListService>();
 builder.Services.AddScoped<ComicCartService>();
+builder.Services.AddScoped<ComicServiceLegacy>();
+
+builder.Services.AddScoped<EntityRepository<Comic, ComicList>>();
+builder.Services.AddScoped<EntityRepository<Music, MusicList>>();
+builder.Services.AddScoped<EntityRepository<Video, VideoList>>();
 builder.Services.AddScoped<ComicService>();
 
-builder.Services.AddScoped<EntityService<Music, MusicList>>();
-builder.Services.AddScoped<EntityService<Video, VideoList>>();;
 // ========================================================================================
 
 var app = builder.Build();

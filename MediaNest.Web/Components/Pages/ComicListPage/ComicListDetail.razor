@@ -2,7 +2,7 @@
 @using MediaNest.Shared.Entities
 @using MediaNest.Web.Components.Pages.ComicPage
 @using MediaNest.Web.Services
-@inject NavigationManager NavigationManager;
+
 @rendermode InteractiveServer
 @attribute [Authorize(Roles = "Admin,User")]
 
@@ -27,6 +27,13 @@
 				}
 			</div>
 		</div>
+		<div class="row mb-4">
+			<div class="col-12">
+				@foreach (var chars in _comicList.Tags) {
+					<a href="/comiclist/search/@chars" class="badge bg-light text-dark me-1">@chars</a>
+				}
+			</div>
+		</div>
 	}
 	<div class="row">
 		@if (_comics != null) {
@@ -46,9 +53,8 @@
 
 @code {
 	[Parameter] public string Id { get; set; }
-	[Inject] public ComicListService ComicListService { get; set; }
-	[Inject] public ComicService ComicService { get; set; }
-
+	@inject ComicService ComicService;
+	@inject NavigationManager NavigationManager;
 	private List<Comic> _comics = [];
 	private ComicList _comicList;
 	private bool _showDeleteButton = false;
@@ -56,15 +62,14 @@
 		_showDeleteButton = true;
 	}
 	private async Task ConfirmDelete() {
-		await ComicListService.DeleteComicList(Id);
+		await ComicService.DeleteComicList(Id);
 		NavigationManager.NavigateTo("/comiclist");
-
 	}
 	protected override async Task OnInitializedAsync() {
 
-		_comicList = await ComicListService.GetComicListById(Id);
+		_comicList = await ComicService.GetListById(Id);
 		foreach (var id in _comicList.ComicIds) {
-			var comic = await ComicService.GetComicById(id);
+			var comic = await ComicService.GetById(id);
 			if (comic != null) _comics.Add(comic);
 		}
 	}

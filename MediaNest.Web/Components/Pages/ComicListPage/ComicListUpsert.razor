@@ -68,15 +68,16 @@ else {
     </div>
 </div>
 
-
-
 @code {
     [Parameter] public string Id { get; set; }
-    [Inject] public NavigationManager NavigationManager { get; set; }
-    [Inject] public ComicListService ComicListService { get; set; }
-    [Inject] public ComicCartService ComicCartService { get; set; }
-    [Inject] public ComicService ComicService { get; set; }
     [SupplyParameterFromForm] public ComicList _comicList { get; set; } = new();
+    
+    @inject NavigationManager NavigationManager
+    @inject ComicCartService ComicCartService
+    
+    @inject ComicListService ComicListService
+    @inject ComicServiceLegacy ComicServicettt
+
     List<ComicDto> _comics = [];
 
     private bool _isEditMode = false;
@@ -89,7 +90,7 @@ else {
             _tagStr = string.Join(",", _comicList.Tags);
             _comicList = await ComicListService.GetComicListById(Id);
             foreach(var id in _comicList.ComicIds) {
-                Comic comic = await ComicService.GetComicById(id);
+                Comic comic = await ComicServicettt.GetComicById(id);
                 _comics.Add(new ComicDto {
                         Id = comic.Id,
                         Title = comic.Title,

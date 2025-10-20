@@ -14,6 +14,20 @@ public class FileService {
         AssetsFolder = Path.GetFullPath(_configuration["AssetsFolder"] ?? "/app/Assets");
         CreateFolder(TaskFolder);
     }
+    public void ClearTaskFolder() {
+        if (!Directory.Exists(TaskFolder))
+            return;
+
+        // 刪除所有檔案
+        foreach (string file in Directory.GetFiles(TaskFolder)) {
+            File.Delete(file);
+        }
+
+        // 刪除所有子資料夾（包含其內部檔案）
+        foreach (string dir in Directory.GetDirectories(TaskFolder)) {
+            Directory.Delete(dir, recursive: true);
+        }
+    }
     public void DeleteEmptyAssetFolder() {
         deleteEmptyFolder(ComicFolder);
     }

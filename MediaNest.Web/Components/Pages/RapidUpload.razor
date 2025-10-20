@@ -10,10 +10,15 @@
 	<button class="btn btn-success mb-3" @onclick="Okay">Okay</button>
 }
 
+@if (_totalCount > 0) {
+	<p>匯入進度：@_completedCount / @_totalCount</p>
+	<p class="text-danger">等待上傳完成... 請勿離開頁面!</p>
+}
+
 <div class="container">
 	<div class="card card-body mb-3">
 		<h4 class="card-title">上傳漫畫</h4>
-		<FileUpload SaveDirectory="@_taskFolder" OnUploadButtonPressed="HandleUploadBtnPressed" />
+		<FileUpload SaveDirectory="@_taskFolder" OnUploadButtonPressed="HandleUploadComicBtnPressed" />
 		@if (_showImport) {
 			<button class="btn btn-outline-primary" @onclick="ImportComic">匯入</button>
 		}
@@ -42,8 +47,8 @@
 
 
 @code {
-	@inject ComicService ComicService
-	@inject EntityService<Music, MusicList> MusicService
+	@inject ComicServiceLegacy ComicService
+	@inject EntityRepository<Music, MusicList> MusicService
 	@inject FileService FileService
 	@inject NavigationManager NavigationManager
 	@inject IBackgroundTaskQueue TaskQueue
@@ -54,12 +59,16 @@
 	private bool _showOk = false;
 	private bool _showImport = false;
 
+	private int _totalCount;
+	private int _completedCount;
+	protected override void OnInitialized() {
+		FileService.ClearTaskFolder();	
+	}
 	private async Task ImportComic() {
 		_showImport = false;
 		_showOk = false;
 		_importedTitles.Clear();
 		StateHasChanged();
-
 		_uploadedFiles = Directory.GetFiles(_taskFolder, "*.zip").ToList();
 
 		foreach (var file in _uploadedFiles) {
@@ -70,11 +79,12 @@
 					await ComicService.CreateComic(comic);
 					lock (_importedTitles)
 						_importedTitles.Add($"[{comic.Code}]{comic.Title}");
-					await InvokeAsync(StateHasChanged);
 					File.Delete(file);
+					Interlocked.Increment(ref _completedCount);
 				}
 				catch (Exception ex) {
 					Console.WriteLine($"❌ 匯入失敗: {file} - {ex.Message}");
+					Interlocked.Increment(ref _completedCount);
 				}
 			});
 		}
@@ -89,8 +99,7 @@
 	private void Okay() {
 		NavigationManager.NavigateTo("/rapid-upload", true);
 	}
-	private void HandleUploadBtnPressed(bool args)
-	{
+	private void HandleUploadComicBtnPressed(bool args) {
 		_showImport = true;
 	}
 }

@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace MediaNest.Shared.Entities;
 
-public class ComicList {
+public class ComicList : IEntity {
 
     [BsonId]
     [BsonRepresentation(BsonType.ObjectId)]
@@ -15,7 +15,11 @@ public class ComicList {
     public List<string> ComicIds { get; set; } = [];
     public List<string> Tags { get; set; } = [];
     public string Description { get; set; } = string.Empty;
-
     [BsonIgnore]
     public int Episodes => ComicIds.Count;
+    public static Dictionary<string, SearchFieldType> SearchableFields => new() {
+        {"Title", SearchFieldType.Regex },
+        {"Tags" ,  SearchFieldType.Contains},
+        {"Description" , SearchFieldType.Regex }
+    };
 }

@@ -86,9 +86,10 @@
 @code {
     [Parameter] public string id { get; set; }
     [Inject] public AuthenticationStateProvider authProvider { get; set; }
-    [Inject] public IJSRuntime JSRuntime { get; set; }
-    [Inject] public FileService FileService { get; set; }
-    [Inject] public ComicService ComicService { get; set; }
+    @inject IJSRuntime JSRuntime
+    @inject FileService FileService 
+    //[Inject] public ComicServiceLegacy ComicService { get; set; }
+    @inject ComicService ComicService
     Comic currentComic;
     List<string> images = [];
     bool doShowDeleteButton = false;
@@ -96,13 +97,13 @@
     string charaStr = string.Empty;
     string tagStr = string.Empty;
     string resourceUrl = string.Empty;
-    string folderName;
+    string folderName = string.Empty;
     protected override async Task OnInitializedAsync() {
 
         var authState = await authProvider.GetAuthenticationStateAsync();
         if (authState.User.Identity?.IsAuthenticated ?? false) {
 
-            currentComic = await ComicService.GetComicById(id);
+            currentComic = await ComicService.GetById(id);
             charaStr = string.Join(',', currentComic.Characters);
             tagStr = string.Join(',', currentComic.Tags);
             resourceUrl = Path.Combine(FileService.AssetsFolder, currentComic.Folder);
@@ -120,16 +121,13 @@
     private void ScrollToTop() {
         JSRuntime.InvokeVoidAsync("scrollToTop");
     }
-    // private async Task CopyLink() {
-    //     await ClipboardService.CopyToClipboard($"Z:/Assets/Comics/{currentComic.Foldername}");
-    // }
     private async Task OnSubmit() {
 
         var newTags = tagStr.Trim().Split(',', StringSplitOptions.RemoveEmptyEntries);
         var newCharacters = charaStr.Trim().Split(',', StringSplitOptions.RemoveEmptyEntries);
         currentComic.Tags = newTags.ToList();
         currentComic.Characters = newCharacters.ToList();
-        await ComicService.UpdateComic(id, currentComic);
+        await ComicService.UpdateComicWithoutFileOperation(id, currentComic);
         StateHasChanged();
     }
     private void ToggleEditPanel()
@@ -153,7 +151,4 @@
     window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 </script>
-<style>
-   
 
-</style>

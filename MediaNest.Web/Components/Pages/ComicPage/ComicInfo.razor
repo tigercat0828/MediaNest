@@ -105,7 +105,7 @@ else {
     [Parameter] public Comic? Comic { get; set; }
     [Parameter] public int? PageCount { get; set; }   // total Page count
     [Inject] public IToastService Toast { get; set; }
-    [Inject] public ComicService ComicService { get; set; }
+    [Inject] public ComicServiceLegacy ComicService { get; set; }
     [Inject] public ComicCartService ComicCartService { get; set; }
     [Inject] public IToastService ToastService { get; set; }
 

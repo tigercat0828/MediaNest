@@ -13,5 +13,13 @@ public class VideoList : IEntity {
 
     [Required]
     public string Title { get; set; } = string.Empty;
+    public List<string> Tags { get; set; } = [];
+    public string Desciption { get; set; } = string.Empty;
     public List<string> VideoIds { get; set; } = [];
+
+    public static Dictionary<string, SearchFieldType> SearchableFields => new() {
+        {"Title", SearchFieldType.Regex },
+        {"Tags" ,  SearchFieldType.Contains},
+        {"Description" , SearchFieldType.Regex }
+    };
 }

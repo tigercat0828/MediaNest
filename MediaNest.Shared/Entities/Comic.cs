@@ -1,11 +1,12 @@
-﻿using MongoDB.Bson;
+﻿using MediaNest.Shared.Entities;
+using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 using System.ComponentModel.DataAnnotations;
 
 namespace MediaNest.Shared.Entities;
 
 
-public class Comic {
+public class  Comic  : IEntity{
     public Comic() {
         Code = Utility.GenerateSixDigitCode();
     }
@@ -29,4 +30,15 @@ public class Comic {
     public string Code { get; set; } = "xxxxxx";
     [BsonIgnore]
     public string Folder => Path.Combine(Code[..3], $"[{Code}]{Title}");    // retrieve asset path (physical hierarchy directories)
+
+    public static Dictionary<string, SearchFieldType> SearchableFields => new() {
+
+        { "Title",       SearchFieldType.Regex },
+        { "SubTitle",    SearchFieldType.Regex },
+        { "Author",      SearchFieldType.Regex },
+        { "Series",      SearchFieldType.Regex },
+        { "Code",        SearchFieldType.Equals },
+        { "Tags",        SearchFieldType.Contains },
+        { "Characters",  SearchFieldType.Contains }
+    };
 }

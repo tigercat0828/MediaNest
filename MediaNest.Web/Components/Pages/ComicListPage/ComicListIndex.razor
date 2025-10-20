@@ -18,7 +18,7 @@
                     <div class="col-11">
                         <div class="input-group">
                             <button class="btn btn-outline-primary" @onclick="() => GetComicListsByPage(1)"><i class="bi bi-arrow-counterclockwise"></i></button>
-                            <button class="btn btn-outline-primary" @onclick="GetRandomComics"><i class="bi bi-shuffle"></i></button>
+                            <button class="btn btn-outline-primary" @onclick="GetRandomLists"><i class="bi bi-shuffle"></i></button>
                             <input type="text" class="form-control" placeholder="輸入關鍵字進行搜尋..." @bind-value="SearchText" @onkeydown="OnKeyDown" />
                             <button class="btn btn-outline-primary" @onclick="HandleSearch">搜尋</button>
                         </div>
@@ -50,7 +50,7 @@
                         </div>
                     }
                     else {
-                        <Spinner />
+                        <LoadingSpinner />
                     }
                 </div>
                 @* ================================================================ *@
@@ -70,9 +70,7 @@
 @code {
     [CascadingParameter] private Task<AuthenticationState> _authStateTask { get; set; }
     [Parameter] public string SearchText { get; set; }
-    [Inject] public ComicService ComicService { get; set; }
-    [Inject] public ComicListService ComicListService { get; set; }
-
+    @inject ComicService ComicService
     private List<ComicList> _comicLists = [];
     private List<Comic> _coverComics = [];
     private int _elementPerPage = 30;
@@ -103,13 +101,14 @@
         _coverComics.Clear();
         foreach (var comicList in _comicLists) {
             if (comicList.ComicIds.Count > 0) {
-                var comic = await ComicService.GetComicById(comicList.ComicIds[0]);
-                _coverComics.Add(comic);
+                var comic = await ComicService.GetById(comicList.ComicIds[0]);
+                if (comic != null) _coverComics.Add(comic);
+                else _coverComics.Add(new Comic());
             }
         }
     }
     private async Task GetTotalPage() {
-        int total = await ComicListService.GetCount();
+        int total = await ComicService.GetListCount();
         _totalPage = (int)Math.Ceiling(total / (double)_elementPerPage);
     }
 
@@ -124,10 +123,10 @@
 
         page = Math.Clamp(page, 1, _totalPage);
         _currentPage = page;
-        _comicLists = await ComicListService.GetComicLists(page, _elementPerPage);
+        _comicLists = await ComicService.GetLists(page, _elementPerPage);
     }
-    private async Task GetRandomComics() {
-        _comicLists = await ComicListService.GetRamdomComicLists(_elementPerPage);
+    private async Task GetRandomLists() {
+        _comicLists = await ComicService.GetRandomLists(_elementPerPage);
     }
     private async Task HandleSearch() {
 
@@ -135,7 +134,7 @@
             await GetComicListsByPage(1);
         }
         else {
-            _comicLists = await ComicListService.GetRamdomComicLists(_elementPerPage);
+            _comicLists = await ComicService.SearchList(SearchText);
         }
     }
     private async Task OnKeyDown(KeyboardEventArgs e) {
