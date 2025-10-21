@@ -23,11 +23,8 @@ public class Video : IEntity {
     public List<string> Tags { get; set; }
 
     [BsonIgnore]
-    public string filename => Code[..3];
-    [BsonIgnore]
-    public string Cover => Path.Combine($"[{Code}]{Title}", "cover.jpg");
-
-    // public string Folder => Path.Combine(Code[..3], $"[{Code}]{Title}");    // retrieve asset path (physical hierarchy directories)
+    public string Filename => $"[{Code}]{Title}";
+    //public string Filename => Path.Combine($"{ Code[..3]}",$"[{Code}]{Title}");
 
 
     public static Dictionary<string, SearchFieldType> SearchableFields => new() {

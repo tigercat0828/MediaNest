@@ -1,118 +1,127 @@
 ﻿@page "/comic/view/{id}"
+@page "/comic/view/{id}/{page:int}"
+
+@using System.Threading.Tasks
 @rendermode InteractiveServer
 @attribute [Authorize(Roles = "Admin,User")]
-@inject NavigationManager NavigationManager
-@using MediaNest.Shared.Entities
-@using MediaNest.Web.Services
 
-<AuthorizeView Roles="Admin,User">
-    <NotAuthorized>
-        <AccessDenied />
-    </NotAuthorized>
-    <Authorized>
-        @if (currentComic != null) {
-            <PageTitle>@currentComic.Title</PageTitle>
-            <div class="container">
-                <div class="row mt-3">
-                    <div class="col-8">
-                        <nav aria-label="breadcrumb">
-                            <ol class="breadcrumb">
-                                <li class="breadcrumb-item"><a href="/">Home</a></li>
-                                <li class="breadcrumb-item"><a href="/comic">Comics</a></li>
-                                <li class="breadcrumb-item active" aria-current="page">@currentComic.Code</li>
-                            </ol>
-                        </nav>
-                    </div>
-                    <div class="col-4 d-flex justify-content-end">
-                        <a class="btn btn-primary me-1" href="/comic/edit/@currentComic.Id">編輯</a>
-                    </div>
-                </div>
 
-                <div class="row">
-                    <h3>@currentComic.Title</h3>
-                </div> 
-                @*tag*@
-                <div class="row mb-4">
-                    <div class="col-12">
-                        <span class="badge bg-dark">@currentComic.Code</span>
-                        <a href= "/comic/search/@currentComic.Series"    class="badge bg-primary me-1">@currentComic.Series</a>
-                        <a href= "/comic/search/@currentComic.Author"    class="badge bg-warning me-1">@currentComic.Author</a>
-                        @foreach (var chara in currentComic.Characters) {
-                            <a href="/comic/search/@chara" class="badge bg-success me-1">@chara</a>
-                        }
-                        @foreach (var tag in currentComic.Tags) {
-                            <a href="/comic/search/@tag" class="badge bg-secondary me-1">@tag</a>
-                        }
-                    </div>
-                </div>
+@if (currentComic != null) {
+    <PageTitle>@currentComic.Title</PageTitle>
+    <div class="container">
+        <div class="row mt-3">
+            <div class="col-8">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="/">Home</a></li>
+                        <li class="breadcrumb-item"><a href="/comic">Comics</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">@currentComic.Code</li>
+                    </ol>
+                </nav>
             </div>
-            <div class="comic-viewer">
-                @foreach (var image in images) {
-                    <img class="comic-img mb-2" src="/Assets/Comics/@currentComic.Folder/@image" alt="@image" />
+            <div class="col-4 d-flex justify-content-end">
+                <a class="btn btn-primary me-1" href="/comic/edit/@currentComic.Id">編輯</a>
+            </div>
+        </div>
+
+        <div class="row">
+            <h3>@currentComic.Title</h3>
+        </div> 
+        @*tag*@
+        <div class="row mb-4">
+            <div class="col-12">
+                <span class="badge bg-dark">@currentComic.Code</span>
+                <a href= "/comic/search/@currentComic.Series"    class="badge bg-primary me-1">@currentComic.Series</a>
+                <a href= "/comic/search/@currentComic.Author"    class="badge bg-warning me-1">@currentComic.Author</a>
+                @foreach (var chara in currentComic.Characters) {
+                    <a href="/comic/search/@chara" class="badge bg-success me-1">@chara</a>
+                }
+                @foreach (var tag in currentComic.Tags) {
+                    <a href="/comic/search/@tag" class="badge bg-secondary me-1">@tag</a>
                 }
             </div>
-            @if (doShowEditPanel) {
-                <div class="floating-panel">
-                    <div class="input-group mb-3">
-                        <span class="input-group-text">系列</span>
-                        <input type="text" class="form-control" @bind-value="currentComic.Series" >
-                    </div>
-                    <div class="input-group mb-3">
-                        <span class="input-group-text">角色</span>
-                        <input type="text" class="form-control" @bind-value="charaStr" >
-                    </div>
-                    <div class="input-group mb-3">
-                        <span class="input-group-text">Tag</span>
-                        <input type="text" class="form-control" @bind-value="tagStr" >
-                    </div>
-                    <button id="submitButton" class="btn btn-outline-success" @onclick="OnSubmit"><i class="bi bi-check2-circle"></i></button>
-                </div>
+        </div>
+        <div class="comic-viewer">
+            @foreach (var image in _currentImages) {
+                <img class="comic-img mb-2" src="/Assets/Comics/@currentComic.Folder/@image" alt="@image" />
             }
-        }
-        else {
-            <LoadingSpinner />
-        }
-        <button id="EditTagBtn" class="btn btn-success" @onclick="ToggleEditPanel" >
-            <i class="bi bi-info-circle"></i>
-        </button>
-        <button id="scrollToTopBtn" class="btn btn-primary" @onclick="ScrollToTop" >
-            <i class="bi bi-chevron-bar-up"></i>
-        </button>
-
-    </Authorized>
-</AuthorizeView>
+        </div>
+    </div>
+   
+    <div class="d-flex justify-content-center mt-3 mb-5">
+        <Pagination
+            TotalPages="_totalPage"
+            CurrentPage="_currentPage"
+            OnPageChanged="HandlePageChanged" />
+    </div>
+    @if (doShowEditPanel) {
+        <div class="floating-panel">
+            <div class="input-group mb-3">
+                <span class="input-group-text">系列</span>
+                <input type="text" class="form-control" @bind-value="currentComic.Series" >
+            </div>
+            <div class="input-group mb-3">
+                <span class="input-group-text">角色</span>
+                <input type="text" class="form-control" @bind-value="charaStr" >
+            </div>
+            <div class="input-group mb-3">
+                <span class="input-group-text">Tag</span>
+                <input type="text" class="form-control" @bind-value="tagStr" >
+            </div>
+            <button id="submitButton" class="btn btn-outline-success" @onclick="OnSubmit"><i class="bi bi-check2-circle"></i></button>
+        </div>
+    }
+}
+else {
+    <LoadingSpinner />
+}
+<button id="EditTagBtn" class="btn btn-success" @onclick="ToggleEditPanel" >
+    <i class="bi bi-info-circle"></i>
+</button>
+<button id="scrollToTopBtn" class="btn btn-primary" @onclick="ScrollToTop" >
+    <i class="bi bi-chevron-bar-up"></i>
+</button>
 
 
 @code {
     [Parameter] public string id { get; set; }
-    [Inject] public AuthenticationStateProvider authProvider { get; set; }
+    [Parameter] public int page { get; set; }
     @inject IJSRuntime JSRuntime
+    @inject NavigationManager NavigationManager
     @inject FileService FileService 
-    //[Inject] public ComicServiceLegacy ComicService { get; set; }
     @inject ComicService ComicService
+    const int PAGE_SIZE = 20;
     Comic currentComic;
-    List<string> images = [];
+
     bool doShowDeleteButton = false;
     bool doShowEditPanel = false;
     string charaStr = string.Empty;
     string tagStr = string.Empty;
-    string resourceUrl = string.Empty;
-    string folderName = string.Empty;
+    
+    List<string?> _sourceImages = [];
+    List<string?> _currentImages = [];
+    int _totalPage = 0;
+    int _currentPage = 1;
+    
+
     protected override async Task OnInitializedAsync() {
 
-        var authState = await authProvider.GetAuthenticationStateAsync();
-        if (authState.User.Identity?.IsAuthenticated ?? false) {
+        currentComic = await ComicService.GetComicById(id);
+        charaStr = string.Join(',', currentComic.Characters);
+        tagStr = string.Join(',', currentComic.Tags);
+        var folder = Path.Combine(FileService.ComicFolder, currentComic.Folder);
+        _sourceImages = Directory.GetFiles(folder).Select(Path.GetFileName).ToList();
+        _totalPage = (int)MathF.Ceiling(_sourceImages.Count / PAGE_SIZE);
 
-            currentComic = await ComicService.GetComicById(id);
-            charaStr = string.Join(',', currentComic.Characters);
-            tagStr = string.Join(',', currentComic.Tags);
-            resourceUrl = Path.Combine(FileService.AssetsFolder, currentComic.Folder);
-            folderName = Path.Combine(FileService.AssetsFolder, "Comics", currentComic.Folder);
-            foreach (var path in Directory.GetFiles(folderName)) {
-                images.Add(Path.GetFileName(path));
-            }
-        }
-
+        _currentPage = page;
+        _currentImages = _sourceImages
+            .Skip((_currentPage - 1) * PAGE_SIZE)
+            .Take(PAGE_SIZE)
+            .ToList();
+        // await HandlePageChanged(page);
+    }
+	private async Task HandlePageChanged(int page) {
+        NavigationManager.NavigateTo($"/comic/view/{id}/{page}", true);
     }
 
     private void ShowDeleteButton() {
@@ -130,8 +139,7 @@
         await ComicService.UpdateComicWithoutFileOperation(id, currentComic);
         StateHasChanged();
     }
-    private void ToggleEditPanel()
-    {
+    private void ToggleEditPanel() {
         doShowEditPanel = !doShowEditPanel;
     }
 }
