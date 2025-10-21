@@ -1,6 +1,7 @@
 ﻿using MediaNest.Shared.Entities;
 using System.Globalization;
 using System.IO.Compression;
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace MediaNest.Shared.Models;
@@ -56,16 +57,35 @@ public class ComicZipImporter(string dstFolder) {
         Directory.CreateDirectory(dstPath);
         // unzip file
         try {
-            ZipFile.ExtractToDirectory(zipFile, dstPath, overwriteFiles: true);
-            Console.WriteLine($"✅ 解壓完成：{dstPath}");
-            /*
-            var allFiles = Directory.GetFiles(dstPath, "*", SearchOption.AllDirectories);
-            Console.WriteLine("📂 已解壓的檔案列表：");
-            foreach (var file in allFiles) {
-                Console.WriteLine("  " + Path.GetRelativePath(dstPath, file));
+            // ZipFile.ExtractToDirectory(zipFile, dstPath, overwriteFiles: true);
+
+            using var fs = new FileStream(zipFile, FileMode.Open, FileAccess.Read);
+            using var archive = new ZipArchive(fs, ZipArchiveMode.Read, false, Encoding.GetEncoding("UTF-8"));
+
+            int count = 0;
+            foreach (var entry in archive.Entries) {
+                // 只處理檔案，略過資料夾 entry
+                if (string.IsNullOrEmpty(entry.Name))
+                    continue;
+
+                // Console.WriteLine($" unzip : {entry.FullName}");
+
+                string destinationPath = Path.Combine(dstPath, entry.FullName);
+                string? dir = Path.GetDirectoryName(destinationPath);
+                if (!string.IsNullOrEmpty(dir))
+                    Directory.CreateDirectory(dir);
+
+                try {
+                    using var entryStream = entry.Open();
+                    using var outputStream = File.Create(destinationPath);
+                    entryStream.CopyTo(outputStream);
+                    count++;
+                }
+                catch (Exception ex) {
+                    Console.WriteLine($"⚠️ 跳過 {entry.FullName}：{ex.Message}");
+                }
             }
-            Console.WriteLine($"\n🟢 共 {allFiles.Length} 個檔案");
-            */
+            Console.WriteLine($"✅ 解壓完成 ({count} 個檔案)：{dstPath}");
         }
         catch (Exception ex) {
             Console.WriteLine($"❌ 解壓失敗：{ex.Message}");

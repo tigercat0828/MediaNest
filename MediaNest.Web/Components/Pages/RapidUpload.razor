@@ -3,7 +3,7 @@
 @using MediaNest.Shared.Models
 @using System.Threading.Tasks
 @using MediaNest.Shared.Services.Background
-
+@attribute [Authorize (Roles = "Admin,User")];
 @rendermode InteractiveServer
 
 @if (_showOk) {
@@ -11,52 +11,92 @@
 }
 
 <div class="container">
-	<div class="card card-body mb-3">
-		<h4 class="card-title">上傳漫畫</h4>
-		<FileUpload SaveDirectory="@_taskFolder" OnUploadButtonPressed="HandleUploadComicBtnPressed" />
-		@if (_showImport) {
-			<button class="btn btn-outline-primary" @onclick="ImportComic">匯入</button>
-		}
+
+	<div class="row mb-3">
+		<div class="card card-body">
+			<h4 class="card-title">上傳漫畫(.zip only)</h4>
+			<FileUploadProgress 
+				SaveDirectory="@FileService.TaskFolder"
+				OnUploadFinished="HandleUploadComicFinish"
+				OnUploadBtnPressed="HandleUploadBtnPressed" 
+				Extension=".zip"/>
+
+			@if (_showImportComicBtn) {
+				<button class="btn btn-outline-primary" @onclick="ImportComic">匯入</button>
+			}
+		</div>
 	</div>
-	
-	
-	<div class="card card-body mb-3">
-		<h4 class="card-title">上傳影片</h4>
-		<FileUpload SaveDirectory="" />
-		<button class="btn btn-outline-primary" >匯入</button>
-	</div>
-	<div class="card card-body mb-3">
-		<h4 class="card-title">上傳音樂</h4>
-		<FileUpload SaveDirectory="" />
-		<button class="btn btn-outline-primary" >匯入</button>
+	<div class="row mb-3">
+		<div class="card card-body">
+			<h4 class="card-title">上傳音樂(.mp3 only)</h4>
+			<FileUploadProgress 
+				SaveDirectory="@FileService.TaskFolder"
+				OnUploadFinished="HandleUploadMusicFinish"
+				OnUploadBtnPressed="HandleUploadBtnPressed"
+				Extension=".mp3" />
+			@if (_showImportMusicBtn) {
+				<button class="btn btn-outline-primary" @onclick="ImportMusic">匯入</button>
+			}
+		</div>
 	</div>
 
+	<div class="row mb-3">
+		<div class="card card-body">
+			<h4 class="card-title">上傳影片(.mp4 only)</h4>
+			<FileUploadProgress 
+				SaveDirectory="@FileService.TaskFolder"
+				OnUploadFinished="HandleUploadVideoFinish"
+				OnUploadBtnPressed="HandleUploadBtnPressed"
+				Extension=".mp4" />
+
+			@if (_showImportVideoBtn) {
+				<button class="btn btn-outline-primary" @onclick="ImportVideo">匯入</button>
+			}
+		</div>
+	</div>
+
+	<div class="row mb-3">
+		<ul class="list-group">
+			@foreach (var file in _uploadedFiles) {
+				<li class="list-group-item">@file</li>
+			}
+		</ul>
+		<button class="btn btn-danger" @onclick="ClearTaskFolder">Clear Upload</button>
+	</div>
 </div>
 
 
 @code {
 	//@inject ComicServiceLegacy ComicService
-	@inject ComicService ComicService
 	@inject FileService FileService
+	@inject ComicService ComicService
+	@inject VideoService VideoService
+	@inject MusicService MusicService
 	@inject NavigationManager NavigationManager
 	@inject IBackgroundTaskQueue TaskQueue
 
+	private List<string> _targetFiles = [];
 	private List<string> _uploadedFiles = [];
-	List<string> _importedTitles = [];
-	private string _taskFolder => FileService.TaskFolder;
 	private bool _showOk = false;
-	private bool _showImport = false;
+
+
+	private bool _showImportComicBtn = false;
+	private bool _showImportMusicBtn = false;
+	private bool _showImportVideoBtn = false;
+
 
 	protected override void OnInitialized() {
 	}
-	
+	private void ClearTaskFolder() {
+		FileService.ClearTaskFolder();
+	}
 	private async Task ImportComic() {
-		_showImport = false;
+		_showImportComicBtn = false;
 		_showOk = false;
 		StateHasChanged();
-		_uploadedFiles = Directory.GetFiles(_taskFolder, "*.zip").ToList();
+		_targetFiles = Directory.GetFiles(FileService.TaskFolder, "*.zip").ToList();
 
-		foreach (var file in _uploadedFiles) {
+		foreach (var file in _targetFiles) {
 			await TaskQueue.EnqueueTask(async token => {
 				try {
 					var importer = new ComicZipImporter(FileService.ComicFolder);
@@ -73,12 +113,39 @@
 	}
 	private async Task ImportMusic() {
 		
+		_showImportMusicBtn = false;
+		_showOk = false;
+		_targetFiles = Directory.GetFiles(FileService.TaskFolder, "*.mp3").ToList();
+
+		foreach (var file in _targetFiles) {
+			await TaskQueue.EnqueueTask(async token => {
+				try {
+					await MusicService.CreateMusic(file);
+				}
+				catch (Exception ex) {
+					Console.WriteLine($"❌ 匯入失敗: {file} - {ex.Message}");
+				}
+			});
+		}
+		_showOk = true;
+	}
+	private async Task ImportVideo() {
 		
+	
 	}
 	private void Okay() {
 		NavigationManager.NavigateTo("/rapid-upload", true);
 	}
-	private void HandleUploadComicBtnPressed(bool args) {
-		_showImport = true;
+	private void HandleUploadComicFinish(bool arg) {
+		_showImportComicBtn = true;
+	}
+	private void HandleUploadMusicFinish(bool arg) {
+		_showImportMusicBtn = true;
+	}
+	private void HandleUploadVideoFinish(bool arg) {
+		_showImportVideoBtn = true;
+	}
+	private void HandleUploadBtnPressed(bool arg) {
+		_uploadedFiles =FileService.ListEntries(FileService.TaskFolder);
 	}
 }

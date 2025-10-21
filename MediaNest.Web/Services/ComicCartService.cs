@@ -5,7 +5,7 @@ using Microsoft.JSInterop;
 using System.Text.Json;
 
 namespace MediaNest.Web.Services {
-    public class ComicCartService(ComicListService _comicListService, IJSRuntime JS) {
+    public class ComicCartService(ComicService _comicService, IJSRuntime JS) {
         private const string StorageKey_Comics = "MediaNest.CartComics";
         private const string StorageKey_ComicList = "MediaNest.CartComicList";
 
@@ -23,13 +23,13 @@ namespace MediaNest.Web.Services {
             foreach (var comic in SelectedComics) {
                 comicList.ComicIds.Add(comic.Id);
             }
-            await _comicListService.CreateComicList(comicList);
+            await _comicService.CreateList(comicList);
         }
         public async Task UpdateComicList() {
             var id = SelectedComicList.Id;
             var ids = SelectedComics.Select(x => x.Id);
             SelectedComicList.ComicIds.AddRange(ids);
-            await _comicListService.UpdateComicList(id, SelectedComicList);
+            await _comicService.UpdateList(id, SelectedComicList);
         }
 
         public async Task InitializeAsync() {

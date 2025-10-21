@@ -8,11 +8,14 @@ public class Video : IEntity {
         Code = Utility.GenerateSixDigitCode();
     }
 
-
     [BsonId]
     [BsonRepresentation(BsonType.ObjectId)]
     public string Id { get; set; } = string.Empty;
-    public string Title { get; set; }
+    public string Title {
+        get => _title;
+        set { _title = Utility.SanitizeTitle(value); }
+    }
+    private string _title = string.Empty;
     public string Code { get; set; } = string.Empty;
     public string Author { get; set; }
     public string Series { get; set; }
@@ -20,7 +23,12 @@ public class Video : IEntity {
     public List<string> Tags { get; set; }
 
     [BsonIgnore]
-    public string Folder => Code[..3];
+    public string filename => Code[..3];
+    [BsonIgnore]
+    public string Cover => Path.Combine($"[{Code}]{Title}", "cover.jpg");
+
+    // public string Folder => Path.Combine(Code[..3], $"[{Code}]{Title}");    // retrieve asset path (physical hierarchy directories)
+
 
     public static Dictionary<string, SearchFieldType> SearchableFields => new() {
         {"Title", SearchFieldType.Regex },

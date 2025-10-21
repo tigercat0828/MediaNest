@@ -13,6 +13,11 @@ public class FileService {
     public FileService(IConfiguration _configuration) {
         AssetsFolder = Path.GetFullPath(_configuration["AssetsFolder"] ?? "/app/Assets");
         CreateFolder(TaskFolder);
+        CreateFolder(ComicFolder);
+        CreateFolder(MusicFolder);
+        CreateFolder(VideoFolder);
+        CreateFolder(ImageFolder);
+
     }
     public void ClearTaskFolder() {
         if (!Directory.Exists(TaskFolder))
@@ -69,5 +74,12 @@ public class FileService {
     }
     public void CreateFolder(string path) {
         Directory.CreateDirectory(path);
+    }
+    public void MoveFile(string srcPath, string destPath) {
+        File.Move(srcPath, destPath);
+    }
+    public List<string> ListEntries(string path) {
+        var paths = Directory.EnumerateFileSystemEntries(path);
+        return [.. paths.Select(Path.GetFileName)];
     }
 }

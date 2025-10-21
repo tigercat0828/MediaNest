@@ -12,7 +12,6 @@ window.Utils = {
     },
     CopyTextToClipBoard: function (text) {
         navigator.clipboard.writeText(text);
-        //toastr.success('Content copied to clipboard!');
         alert('Text copied to clipboard');
     },
 };

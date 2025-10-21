@@ -1,4 +1,3 @@
-using Blazored.Toast;
 using MediaNest.Shared.Database;
 using MediaNest.Shared.Entities;
 using MediaNest.Shared.Services;
@@ -15,7 +14,7 @@ Console.OutputEncoding = Encoding.UTF8;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddRazorComponents().AddInteractiveServerComponents();
-builder.Services.AddBlazoredToast();
+
 builder.Services.AddScoped<JSRuntimeService>();
 // ========================================================================================
 // Background Task Queue
@@ -51,9 +50,6 @@ builder.Services.AddMongoCollection<VideoList>("VideoLists");
 // ========================================================================================
 // Main MediaNest Service
 // ========================================================================================
-builder.Services.AddScoped<ComicListService>();
-builder.Services.AddScoped<ComicCartService>();
-
 builder.Services.AddScoped<EntityRepository<Comic>>();
 builder.Services.AddScoped<EntityRepository<ComicList>>();
 builder.Services.AddScoped<EntityRepository<Music>>();
@@ -62,6 +58,10 @@ builder.Services.AddScoped<EntityRepository<Video>>();
 builder.Services.AddScoped<EntityRepository<VideoList>>();
 
 builder.Services.AddScoped<ComicService>();
+builder.Services.AddScoped<ComicCartService>();
+
+builder.Services.AddScoped<MusicService>();
+builder.Services.AddScoped<VideoService>();
 
 // ========================================================================================
 

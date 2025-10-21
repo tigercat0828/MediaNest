@@ -1,5 +1,61 @@
-﻿<h3>MusicIndex</h3>
+﻿@page "/music"
+@page "/music/{SearchText}"
+@rendermode InteractiveServer
+
+<div class="container">
+	<ul class="list-group">
+		@foreach (var music in _musics) {
+			<li class="list-group-item d-flex justify-content-between align-items-center">
+				<div>
+					@music.Title
+					@foreach (var tag in music.Performers) {
+						<a href="/comic/search/@tag" class="badge bg-light text-dark me-1">@tag</a>
+					}
+					@foreach (var tag in music.Tags) {
+						<a href="/comic/search/@tag" class="badge bg-light text-dark me-1">@tag</a>
+					}
+				</div>
+				<!-- ✅ 右側容器 -->
+				<div class="d-flex align-items-center">
+					@{
+						string src = $"/Assets/Musics/{music.Filename}.mp3";
+					}
+					<audio src="@src" controls preload="metadata" class="me-2" />
+
+					<div class="btn-group" role="group">
+						<button class="btn btn-outline-primary" @onclick="() => UpdateMusic(music)">
+							<i class="bi bi-floppy"></i>
+						</button>
+						<button class="btn btn-outline-danger" @onclick="() => DeleteMusic(music)">
+							<i class="bi bi-trash"></i>
+						</button>
+					</div>
+				</div>
+			</li>
+		}
+	</ul>
+
+</div>
+
 
 @code {
-
+	[Parameter] public string? SearchText { get; set; }
+	@inject MusicService MusicService
+	List<Music> _musics = [];
+	protected override async Task OnInitializedAsync() {
+		if (SearchText != null) {
+			_musics = await MusicService.Search(SearchText);
+		}
+		else {
+			_musics = await MusicService.GetAllMusic();
+		}
+	}
+	private async Task UpdateMusic(Music music) {
+		await MusicService.UpdateMusic(music.Id, music, music.Title);
+	}
+	private async Task DeleteMusic(Music music) {
+		await MusicService.DeleteMusic(music.Id);
+		_musics = await MusicService.GetAllMusic();
+	}
 }
+                                  

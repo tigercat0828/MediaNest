@@ -1,0 +1,97 @@
+﻿<div class="input-group">
+    <InputFile OnChange="SelectFiles" class="form-control" multiple accept="@Extension" />
+    <button class="btn btn-primary" @onclick="UploadFile" disabled="@(browserFiles.Count == 0)">
+        上傳
+    </button>
+</div>
+
+<div class="card card-body mt-3">
+    <div style="color:@(isUploadFinish ? "green" : "cadetblue")">
+        @message
+    </div>
+
+    @if (browserFiles.Count > 0) {
+        <ol>
+            @foreach (var info in uploadInfos) {
+                <li>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span>@info.File.Name</span>
+                        <span>@info.Progress% </span>
+                    </div>
+                    <div class="progress my-1" style="height: 12px;">
+                        <div class="progress-bar" role="progressbar"
+                             style="width:@info.Progress%"
+                             aria-valuenow="@info.Progress"
+                             aria-valuemin="0" aria-valuemax="100">
+                        </div>
+                    </div>
+                </li>
+            }
+        </ol>
+    }
+</div>
+
+@code {
+    [Parameter] public string SaveDirectory { get; set; } = string.Empty;
+    [Parameter] public string SaveSubFolder { get; set; } = string.Empty;
+    [Parameter] public string Extension { get; set; } = string.Empty;
+    [Parameter] public EventCallback<bool> OnUploadFinished { get; set; }
+    [Parameter] public EventCallback<bool> OnUploadBtnPressed { get; set; }
+    private bool isUploadFinish;
+    private string message = "";
+
+    private List<IBrowserFile> browserFiles = new();
+    private List<FileUploadInfo> uploadInfos = new();
+
+    private class FileUploadInfo {
+        public IBrowserFile File { get; set; } = default!;
+        public int Progress { get; set; } = 0;
+    }
+
+    protected void SelectFiles(InputFileChangeEventArgs e) {
+        message = "";
+        browserFiles.Clear();
+        uploadInfos.Clear();
+
+        browserFiles = [.. e.GetMultipleFiles(maximumFileCount: 1000)];
+        uploadInfos = browserFiles.Select(f => new FileUploadInfo { File = f }).ToList();
+    }
+
+    protected async Task UploadFile() {
+        await OnUploadBtnPressed.InvokeAsync(true);
+        if (string.IsNullOrEmpty(SaveDirectory))
+            return;
+
+        isUploadFinish = false;
+        message = "檔案上傳中...";
+        StateHasChanged();
+
+        var saveFolder = Path.Combine(SaveDirectory, SaveSubFolder);
+        Directory.CreateDirectory(saveFolder);
+
+        foreach (var info in uploadInfos) {
+            var file = info.File;
+            var filePath = Path.Combine(saveFolder, file.Name);
+
+            await using FileStream fs = new(filePath, FileMode.Create);
+            await using Stream readStream = file.OpenReadStream(maxAllowedSize: (long)(5 * 1024) * (long)(1024 * 1024)); // 5GB
+
+            byte[] buffer = new byte[81920]; // 80KB
+            long totalRead = 0;
+            int bytesRead;
+            while ((bytesRead = await readStream.ReadAsync(buffer)) > 0) {
+                await fs.WriteAsync(buffer.AsMemory(0, bytesRead));
+                totalRead += bytesRead;
+                info.Progress = (int)((double)totalRead / file.Size * 100);
+                await InvokeAsync(StateHasChanged);
+            }
+
+            info.Progress = 100;
+            await InvokeAsync(StateHasChanged);
+        }
+
+        isUploadFinish = true;
+        message = "✅ 上傳完成!!";
+        await OnUploadFinished.InvokeAsync(true);
+    }
+}
