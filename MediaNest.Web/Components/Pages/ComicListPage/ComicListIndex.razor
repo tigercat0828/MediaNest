@@ -42,10 +42,11 @@
                                 string source = "/images/placeholder.jpg";
                                 int index = i; 
                                 if (_comicLists[index].ComicIds.Count > 0) {
-                                    source = $"/Assets/Comics/{_coverComics[index].Folder}/001.jpg";
+                                    source = $"/Assets/Comics/Thumbs/{_coverComics[index].Folder}/001.jpg";
                                     link = $"/comiclist/{_comicLists[index].Id}";
                                 }
-                                <ComicCover Link="@link" Source="@source" Title="@_comicLists[i].Title" />
+                                <ImageCover Link="@link" Source="@source" Title="@_comicLists[i].Title" 
+                                            WidthRem="15rem" HeightPx="300px" />
                             }
                         </div>
                     }
