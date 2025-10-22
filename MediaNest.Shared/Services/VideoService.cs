@@ -75,7 +75,7 @@ public class VideoService(EntityRepository<Video> _videoRepo,
     private async Task GenerateVideoCoverAsync(string videoPath, string coverPath, int second = 3) {
 
         var psi = new ProcessStartInfo {
-            FileName = "ffmpeg.exe",
+            FileName = "ffmpeg",
             Arguments = $"-ss {second} -i \"{videoPath}\" -frames:v 1 -q:v 2 \"{coverPath}\" -y",
             RedirectStandardError = true,
             RedirectStandardOutput = true,
