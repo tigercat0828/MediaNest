@@ -17,24 +17,16 @@ public class Video : IEntity {
     }
     private string _title = string.Empty;
     public string Code { get; set; } = string.Empty;
-    public string Author { get; set; }
-    public string Series { get; set; }
-    public List<string> Figures { get; set; }
-    public List<string> Tags { get; set; }
+    public string Author { get; set; } = string.Empty;
+    public List<string> Tags { get; set; } = [];
 
     [BsonIgnore]
-    public string Filename => $"[{Code}]{Title}";
-    //public string Filename => Path.Combine($"{ Code[..3]}",$"[{Code}]{Title}");
-
+    public string Folder => Path.Combine($"{Code[..3]}", $"[{Code}]{Title}");
 
     public static Dictionary<string, SearchFieldType> SearchableFields => new() {
         {"Title", SearchFieldType.Regex },
         {"Code" ,  SearchFieldType.Equals},
         {"Author" , SearchFieldType.Regex },
-        {"Series", SearchFieldType.Regex  },
-        {"Figures", SearchFieldType.Contains },
         {"Tag", SearchFieldType.Contains },
     };
-
-
 }

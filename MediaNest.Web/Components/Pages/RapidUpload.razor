@@ -26,34 +26,35 @@
 			}
 		</div>
 	</div>
-	<div class="row mb-3">
-		<div class="card card-body">
-			<h4 class="card-title">上傳音樂(.mp3 only)</h4>
-			<FileUploadProgress 
-				SaveDirectory="@FileService.TaskFolder"
-				OnUploadFinished="HandleUploadMusicFinish"
-				OnUploadBtnPressed="HandleUploadBtnPressed"
-				Extension=".mp3" />
-			@if (_showImportMusicBtn) {
-				<button class="btn btn-outline-primary" @onclick="ImportMusic">匯入</button>
-			}
-		</div>
-	</div>
 
 	<div class="row mb-3">
 		<div class="card card-body">
 			<h4 class="card-title">上傳影片(.mp4 only)</h4>
-			<FileUploadProgress 
-				SaveDirectory="@FileService.TaskFolder"
-				OnUploadFinished="HandleUploadVideoFinish"
-				OnUploadBtnPressed="HandleUploadBtnPressed"
-				Extension=".mp4" />
+			<FileUploadProgress SaveDirectory="@FileService.TaskFolder"
+								OnUploadFinished="HandleUploadVideoFinish"
+								OnUploadBtnPressed="HandleUploadBtnPressed"
+								Extension=".mp4" />
 
 			@if (_showImportVideoBtn) {
 				<button class="btn btn-outline-primary" @onclick="ImportVideo">匯入</button>
 			}
 		</div>
 	</div>
+
+	<div class="row mb-3">
+		<div class="card card-body">
+			<h4 class="card-title">上傳音樂(.mp3 only)</h4>
+			<FileUploadProgress SaveDirectory="@FileService.TaskFolder"
+								OnUploadFinished="HandleUploadMusicFinish"
+								OnUploadBtnPressed="HandleUploadBtnPressed"
+								Extension=".mp3" />
+			@if (_showImportMusicBtn) {
+				<button class="btn btn-outline-primary" @onclick="ImportMusic">匯入</button>
+			}
+		</div>
+	</div>
+
+
 
 	<div class="row mb-3">
 		<ul class="list-group">
@@ -131,7 +132,21 @@
 	}
 	private async Task ImportVideo() {
 		
-	
+		_showImportVideoBtn = false;
+		_showOk = false;
+		_targetFiles = Directory.GetFiles(FileService.TaskFolder, "*.mp4").ToList();
+
+		foreach (var file in _targetFiles) {
+			await TaskQueue.EnqueueTask(async token => {
+				try {
+					await VideoService.CreateVideo(file);
+				}
+				catch (Exception ex) {
+					Console.WriteLine($"❌ 匯入失敗: {file} - {ex.Message}");
+				}
+			});
+		}
+		_showOk = true;
 	}
 	private void Okay() {
 		NavigationManager.NavigateTo("/rapid-upload", true);

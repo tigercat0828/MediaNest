@@ -1,7 +1,5 @@
 ﻿@page "/comic/view/{id}"
 @page "/comic/view/{id}/{page:int}"
-
-@using System.Threading.Tasks
 @rendermode InteractiveServer
 @attribute [Authorize(Roles = "Admin,User")]
 
@@ -34,7 +32,7 @@
                 <a href= "/comic/search/@currentComic.Series"    class="badge bg-primary me-1">@currentComic.Series</a>
                 <a href= "/comic/search/@currentComic.Author"    class="badge bg-warning me-1">@currentComic.Author</a>
                 @foreach (var chara in currentComic.Characters) {
-                    <a href="/comic/search/@chara" class="badge bg-success me-1">@chara</a>
+                    <a href="/comic/search/@chara" class="badge bg-secondary me-1">@chara</a>
                 }
                 @foreach (var tag in currentComic.Tags) {
                     <a href="/comic/search/@tag" class="badge bg-secondary me-1">@tag</a>
@@ -49,11 +47,28 @@
     </div>
    
     <div class="d-flex justify-content-center mt-3 mb-5">
+ 
+        <div class="btn-group" role="group" aria-label="Basic example">
+            @if (page != 1) {
+                <button class="btn btn-outline-secondary" @onclick="GoLastPage">
+                    <i class="bi bi-caret-left-fill"></i>
+                </button>
+            }
+            @if (page != _totalPage) {
+                <button class="btn btn-outline-secondary" @onclick="GoNextPage">
+                    <i class="bi bi-caret-right-fill"></i>
+                </button>
+            }
+        </div>
+    </div>
+
+    <div class="d-flex justify-content-center mt-3 mb-5">
         <Pagination
             TotalPages="_totalPage"
             CurrentPage="_currentPage"
             OnPageChanged="HandlePageChanged" />
     </div>
+
     @if (doShowEditPanel) {
         <div class="floating-panel">
             <div class="input-group mb-3">
@@ -111,7 +126,7 @@ else {
         tagStr = string.Join(',', currentComic.Tags);
         var folder = Path.Combine(FileService.ComicFolder, currentComic.Folder);
         _sourceImages = Directory.GetFiles(folder).Select(Path.GetFileName).ToList();
-        _totalPage = (int)MathF.Ceiling(_sourceImages.Count / PAGE_SIZE);
+        _totalPage = (int)MathF.Ceiling(_sourceImages.Count / (float)PAGE_SIZE);
 
         _currentPage = page;
         _currentImages = _sourceImages
@@ -142,6 +157,12 @@ else {
     private void ToggleEditPanel() {
         doShowEditPanel = !doShowEditPanel;
     }
+    private void GoNextPage() {
+        NavigationManager.NavigateTo($"/comic/view/{id}/{page+1}", true);
+    }
+    private void GoLastPage() {
+        NavigationManager.NavigateTo($"/comic/view/{id}/{page-1}", true);
+    }
 }
 
 <script>
@@ -156,7 +177,7 @@ else {
     };
 
     function scrollToTop() {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 </script>
 

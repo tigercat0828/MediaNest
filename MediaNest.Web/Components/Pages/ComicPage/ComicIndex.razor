@@ -1,69 +1,57 @@
 ﻿@page "/comic"
 @page "/comic/search/{SearchText}"
 @using MediaNest.Shared.Dtos
-@using MediaNest.Shared.Entities
 @using MediaNest.Web.Services
 @rendermode InteractiveServer
 @attribute [Authorize(Roles= "Admin,User")]
-<AuthorizeView>
-    <Authorized>
-        <div class="container-fluid">
-            @if (context.User.IsInRole("Pending")) {
-                <div class="alert alert-info mt-2">
-                    <AccessDenied />
-                </div>
-            }
-            else if (context.User.IsInRole("Admin") || context.User.IsInRole("User")) {
-                <div class="row mb-3">
-                    <div class="col-11">
-                        <div class="input-group">
-                            <button class="btn btn-outline-primary" @onclick="ToggleSelectMode"><i class="bi bi-check-all"></i></button>
-                            <button class="btn btn-outline-primary" @onclick="()=> GetComicsByPage(1)"><i class="bi bi-arrow-counterclockwise"></i></button>
-                            <button class="btn btn-outline-primary" @onclick="GetRandomComics"><i class="bi bi-shuffle"></i></button>
-                            <input type="text" class="form-control" placeholder="輸入關鍵字進行搜尋..." @bind-value="SearchText" />
-                            <button class="btn btn-outline-primary" @onclick="HandleSearch" @onkeydown="OnKeyDown">搜尋</button>
-                        </div>
-                    </div>
-                    <div class="col-1">
-                        <a class="btn btn-success" href="/comic/create">新建</a>
-                    </div>
-                </div>
-                @* ================================================================ *@
-                @* pagination *@
-                <div class="row mb-1 mt-1">
-                    <Pagination TotalPages="_totalPage" CurrentPage="_currentPage" OnPageChanged="SetPage" />
-                </div>
-                @* ================================================================ *@
-                @* Comic Covers *@
-                <div class="row">
-                    @if (_comics != null) {
-                        @foreach (var comic in _comics) {
-                            string link = $"/comic/{comic.Id}";
-                            string source = $"/Assets/Comics/{comic.Folder}/001.jpg";
-                            <ComicCover Link="@link" Title="@comic.Title" Source="@source" 
-                                        ShowAddButton="_isSelectMode"        
-                                        OnAddClicked="() => AddToCart(comic)" />    
-                            
-                        }
-                    }
-                    else {
-                        <LoadingSpinner />
-                    }
-                </div>
 
-                @* ================================================================ *@
-                @* pagination *@
-                    <div class="row mb-1 mt-1">
-                    <Pagination TotalPages="_totalPage" CurrentPage="_currentPage" OnPageChanged="SetPage" />
-                </div>
-                @* ================================================================ *@
-                }
+<div class="container-fluid">
+    <div class="row mb-3">
+        <div class="col-11">
+            <div class="input-group">
+                <button class="btn btn-outline-primary" @onclick="ToggleSelectMode"><i class="bi bi-check-all"></i></button>
+                <button class="btn btn-outline-primary" @onclick="()=> GetComicsByPage(1)"><i class="bi bi-arrow-counterclockwise"></i></button>
+                <button class="btn btn-outline-primary" @onclick="GetRandomComics"><i class="bi bi-shuffle"></i></button>
+                <input type="text" class="form-control" placeholder="輸入關鍵字進行搜尋..." @bind-value="SearchText" />
+                <button class="btn btn-outline-primary" @onclick="HandleSearch" @onkeydown="OnKeyDown">搜尋</button>
+            </div>
         </div>
-    </Authorized>
-    <NotAuthorized>
-        <AccessDenied />
-    </NotAuthorized>
-</AuthorizeView>
+        <div class="col-1">
+            <a class="btn btn-success" href="/comic/create">新建</a>
+        </div>
+    </div>
+    @* ================================================================ *@
+    @* pagination *@
+    <div class="row mb-1 mt-1">
+        <Pagination TotalPages="_totalPage" CurrentPage="_currentPage" OnPageChanged="SetPage" />
+    </div>
+    @* ================================================================ *@
+    @* Comic Covers *@
+    <div class="row">
+        @if (_comics != null) {
+            @foreach (var comic in _comics) {
+                string link = $"/comic/{comic.Id}";
+                string source = $"/Assets/Comics/{comic.Folder}/001.jpg";
+                <ImageCover Link="@link" Title="@comic.Title" Source="@source" 
+                            ShowAddButton="_isSelectMode"        
+                            OnAddClicked="() => AddToCart(comic)" 
+                            WidthRem="15rem" HeightPx="300px"
+                            />    
+            }
+        }
+        else {
+            <LoadingSpinner />
+        }
+    </div>
+
+    @* ================================================================ *@
+    @* pagination *@
+        <div class="row mb-1 mt-1">
+        <Pagination TotalPages="_totalPage" CurrentPage="_currentPage" OnPageChanged="SetPage" />
+    </div>
+    @* ================================================================ *@
+</div>
+
 
 @code {
     [CascadingParameter] private Task<AuthenticationState> _authStateTask { get; set; }
@@ -81,19 +69,16 @@
     }
 
     protected override async Task OnInitializedAsync() {
-        var authState = await _authStateTask;
-        if (authState.User.Identity?.IsAuthenticated ?? false) {
-            if (!string.IsNullOrEmpty(SearchText)) {
-                await HandleSearch();
+        if (!string.IsNullOrEmpty(SearchText)) {
+            await HandleSearch();
+        }
+        else {
+            await GetTotalPage();
+            if (_totalPage <= 0) {
+                _comics = [];
+                return;
             }
-            else {
-                await GetTotalPage();
-                if (_totalPage <= 0) {
-                    _comics = [];
-                    return;
-                }
-                await GetComicsByPage(1);
-            }
+            await GetComicsByPage(1);
         }
     }
     private async Task GetTotalPage() {
@@ -102,11 +87,6 @@
         _totalPage = (int)Math.Ceiling(total / (double)_elementPerPage);
     }
     private async Task GetComicsByPage(int page) {
-        if (_totalPage <= 0) {
-            _comics = [];
-            return;
-        }
-
         page = Math.Clamp(page, 1, _totalPage);
         _currentPage = page;
 
@@ -122,8 +102,10 @@
         else
             _comics = await ComicService.SearchComic(SearchText);
     }
+
     private async Task OnKeyDown(KeyboardEventArgs e) {
         if (e.Key == "Enter") {
+            Console.WriteLine("enter");
             await HandleSearch();
         }
     }

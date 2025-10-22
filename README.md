@@ -62,17 +62,17 @@ docker compose up -d
 
 ## 🛠️ Tech Stack
 
-- Aspire (.Net 9)
-    - Blazor Server 
-    - ASP.NET core WebAPI
+- Blazor Server 
+- ASP.NET core WebAPI
 - MongoDB (document-based storage for users, albums, metadata)
 - Bootstrap 5 (UI components & responsive layout)
 
 ## 📋 Prerequisites
 Before running the project, make sure you have:
 
--  .NET 9 Runtime
+-  .NET 10 Runtime
 -  A running MongoDB service
 
 ## 🛳️ Roadmap
 - Video service (upload & stream videos)
+- Musci service

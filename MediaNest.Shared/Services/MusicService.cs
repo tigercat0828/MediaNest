@@ -6,12 +6,6 @@ public class MusicService(EntityRepository<Music> _musicRepo, EntityRepository<M
     public async Task<List<Music>> GetAllMusic() => await _musicRepo.GetAll();
     public async Task<List<Music>> Search(string term) => await _musicRepo.Search(term);
     public async Task<List<Music>> GetPage(int page, int count) => await _musicRepo.GetByPage(page, count);
-    public async Task CreateMusic(Music music) {
-        await _musicRepo.Create(music);
-        var srcPath = Path.Combine(_fileService.TaskFolder, music.Filename);
-        var dstPath = Path.Combine(_fileService.MusicFolder, music.Filename);
-        _fileService.MoveFile(srcPath, dstPath);
-    }
     public async Task CreateMusic(string srcFile) {
         Music music = new() {
             Title = Path.GetFileNameWithoutExtension(srcFile)

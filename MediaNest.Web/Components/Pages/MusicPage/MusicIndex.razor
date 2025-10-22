@@ -1,6 +1,7 @@
 ﻿@page "/music"
 @page "/music/{SearchText}"
 @rendermode InteractiveServer
+@attribute [Authorize(Roles= "Admin,User")]
 
 <div class="container">
 	<ul class="list-group">
