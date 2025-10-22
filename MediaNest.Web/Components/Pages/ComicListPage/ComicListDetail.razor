@@ -41,7 +41,8 @@
 				@foreach (var comic in _comics) {
 					string link = $"/comic/{comic.Id}";
 					string source = $"/Assets/Comics/Thumbs/{comic.Folder}/001.jpg";
-					<ComicCover Link="@link" Title="@comic.Title" Source="@source" />
+					<ImageCover Link="@link" Title="@comic.Title" Source="@source" 
+								WidthRem="15rem" HeightPx="300px" />
 				}
 			</div>
 		}
