@@ -3,7 +3,7 @@ services:
         build:
             context: .
             dockerfile: MediaNest.Web/Dockerfile
-        container_name: medianest_blazor
+        container_name: MediaNest_Blazor
         environment:
             - DOTNET_ENVIRONMENT=Docker
             - AssetsFolder=/app/Assets

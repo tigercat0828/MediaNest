@@ -6,9 +6,14 @@ USER $APP_UID
 WORKDIR /app
 EXPOSE 8080
 
-# install FFMPEG
-RUN apt-get update && apt-get install -y --no-install-recommends ffmpeg && rm -rf /var/lib/apt/lists/*
+# 切換為 root 安裝 ffmpeg
+USER root
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends ffmpeg && \
+    rm -rf /var/lib/apt/lists/*
 
+# 安裝完畢後回到原本使用者
+USER $APP_UID
 
 # 此階段是用來組建服務專案
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
