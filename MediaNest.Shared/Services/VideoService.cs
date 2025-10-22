@@ -46,19 +46,30 @@ public class VideoService(EntityRepository<Video> _videoRepo,
         await _videoRepo.Delete(id);
     }
     public async Task UpdateVideo(string id, Video updated, string oldTitle) {
-        await _videoRepo.Update(id, updated);
-        if (oldTitle == updated.Title) return;
-
+        if (oldTitle == updated.Title) {
+            await _videoRepo.Update(id, updated);
+            return;
+        }
 
         string oldDir = Path.Combine(_fileService.VideoFolder, $"[{updated.Code}]{oldTitle}");
         string newDir = Path.Combine(_fileService.VideoFolder, updated.Folder);
 
+        // 1. 確保舊資料夾存在
+        if (!Directory.Exists(oldDir))
+            throw new DirectoryNotFoundException($"找不到舊資料夾: {oldDir}");
+
+        // 2. 改資料夾名稱
         Directory.Move(oldDir, newDir);
 
+        // 3. 改影片檔名稱
         string oldFile = Path.Combine(newDir, $"{oldTitle}.mp4");
         string newFile = Path.Combine(newDir, $"{updated.Title}.mp4");
 
-        File.Move(oldFile, newFile);
+        if (File.Exists(oldFile)) {
+            File.Move(oldFile, newFile);
+        }
+
+        await _videoRepo.Update(id, updated);
     }
 
     private async Task GenerateVideoCoverAsync(string videoPath, string coverPath, int second = 3) {

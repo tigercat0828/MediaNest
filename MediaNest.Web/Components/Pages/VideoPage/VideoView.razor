@@ -5,6 +5,7 @@
 @if(_video != null) {
 	<PageTitle>@_video.Title</PageTitle>
 
+
 	<div class="container">
 		<div class="row mt-3">
 			<div class="col-8">
@@ -54,11 +55,42 @@
 			<track src="subtitles-zh.vtt" kind="subtitles" srclang="zh" label="繁體中文">
 			Your browser does not support the video tag. *@
 		</video>
+		<div class="row mb-3">
+			<div class="col-1">
+				<button class="btn btn-outline-primary mt-3" @onclick="ToggleEditPanel">
+					@(_showEditPanel ? "Close" : "Edit")
+				</button>
+			</div>
+		</div>
+		<div class="row">
+			@if (_showEditPanel && _video != null) {
+				<div class="card card-body">
+					<EditForm Model="_video">
+						<div class="mb-3">
+							<label>Title</label>
+							<InputText class="form-control" @bind-Value="_video.Title" />
+						</div>
+						<div class="mb-3">
+							<label>Author</label>
+							<InputText class="form-control" @bind-Value="_video.Author" />
+						</div>
+						<div class="mb-3">
+							<label>Tags</label>
+							<InputText class="form-control" @bind-Value="_tagStr" />
+						</div>
+						<button class="btn btn-success" @onclick="UpdateVideo">Save</button>
+					</EditForm>
+				</div>
+			}
+		</div>
+		
 	</div>
 }
 else {
 	<LoadingSpinner />
 }
+
+
 @code {
 	[Parameter] public string? id { get; set; }
 	@inject VideoService VideoService
@@ -66,8 +98,15 @@ else {
 	private Video? _video;
 
 	private bool _showDeleteConfirm = false;
+	
+	private bool _showEditPanel = false;
+	private string? _oldTitle;
+	private string? _tagStr;
+
 	protected override async Task OnInitializedAsync() {
 		_video = await VideoService.GetById(id);
+		_tagStr = string.Join(", ", _video.Tags);
+		_oldTitle = _video.Title;
 	}
 	private async Task DeleteVideo() {
 		await VideoService.DeleteVideo(id);
@@ -75,5 +114,14 @@ else {
 	}
 	private void ToggleShowDeleteBtn() {
 		_showDeleteConfirm = !_showDeleteConfirm;
+	}
+
+	private void ToggleEditPanel() {
+		_showEditPanel = !_showEditPanel;
+	}
+	private async Task UpdateVideo() {
+		_video.Tags = _tagStr.Split(',', StringSplitOptions.RemoveEmptyEntries).ToList();
+		await VideoService.UpdateVideo(id, _video, _oldTitle);
+		_showEditPanel = false;
 	}
 }
