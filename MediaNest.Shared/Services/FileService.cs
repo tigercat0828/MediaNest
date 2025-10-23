@@ -19,6 +19,25 @@ public class FileService {
         CreateFolder(ImageFolder);
 
     }
+
+    public void FixLongFileNamesInTaskFolder() {
+        const int MaxLength = 200; // Linux 單一路徑元件上限為 255 bytes，留安全餘裕
+
+        foreach (string file in Directory.GetFiles(TaskFolder)) {
+            string fileName = Path.GetFileName(file);
+            string ext = Path.GetExtension(file);
+            string nameWithoutExt = Path.GetFileNameWithoutExtension(file);
+            
+            // 檢查名稱長度
+            if (fileName.Length > MaxLength) {
+                // 截斷主檔名，保留副檔名
+                string truncated = nameWithoutExt[..200];
+                string newName = truncated + ext;
+                string newPath = Path.Combine(TaskFolder, newName);
+                File.Move(file, newPath);
+            }
+        }
+    }
     public void ClearTaskFolder() {
         if (!Directory.Exists(TaskFolder))
             return;

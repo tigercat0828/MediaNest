@@ -41,13 +41,12 @@
 
 		</div>
 
-
-		<video controls width="640" height="360" poster="cover.jpg">
-			@{
-				string src = $"/Assets/Videos/{_video.Folder}/{_video.Title}.mp4";
-			}
-			<source src="@src" type="video/mp4">
-
+		@{
+			string videoSrc = $"/Assets/Videos/{_video.Folder}/{_video.Title}.mp4";
+			string coverSrc = $"/Assets/Videos/{_video.Folder}/cover.jpg";
+		}
+		<video controls width="640" height="360" poster="@coverSrc">
+			<source src="@videoSrc" type="video/mp4">
 		@* 	<!-- English subtitles -->
 			<track src="subtitles-en.vtt" kind="subtitles" srclang="en" label="English" default>
 
