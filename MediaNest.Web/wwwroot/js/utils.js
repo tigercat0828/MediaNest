@@ -15,3 +15,17 @@ window.Utils = {
         alert('Text copied to clipboard');
     },
 };
+
+window.UploadWarn = {
+    enable: function () {
+        window.addEventListener("beforeunload", uploadWarn._handler);
+    },
+    disable: function () {
+        window.removeEventListener("beforeunload", uploadWarn._handler);
+    },
+    _handler: function (e) {
+        e.preventDefault();
+        e.returnValue = "檔案仍在上傳中，確定要離開嗎？";
+        return e.returnValue;
+    }
+};

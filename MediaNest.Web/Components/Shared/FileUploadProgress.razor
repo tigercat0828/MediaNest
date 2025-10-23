@@ -12,7 +12,7 @@
     </div>
 
     @if (browserFiles.Count > 0) {
-        <ol>
+        <ol class="mb-1">
             @foreach (var info in uploadInfos) {
                 <li>
                     <div class="d-flex justify-content-between align-items-center">
@@ -29,6 +29,14 @@
                 </li>
             }
         </ol>
+        @if (skippedFile.Count > 0) { 
+            <p class="text-danger mt-2">檔案名稱過長(>200 bytes)</p>
+            <ol>
+            @foreach (var name in skippedFile) {
+                <li>@name</li>
+            }
+        </ol>
+        }
     }
 </div>
 
@@ -38,11 +46,13 @@
     [Parameter] public string Extension { get; set; } = string.Empty;
     [Parameter] public EventCallback<bool> OnUploadFinished { get; set; }
     [Parameter] public EventCallback<bool> OnUploadBtnPressed { get; set; }
+	@inject IJSRuntime JSRuntime
     private bool isUploadFinish;
     private string message = "";
 
     private List<IBrowserFile> browserFiles = new();
     private List<FileUploadInfo> uploadInfos = new();
+    private List<string> skippedFile = [];
 
     private class FileUploadInfo {
         public IBrowserFile File { get; set; } = default!;
@@ -53,18 +63,17 @@
         message = "";
         browserFiles.Clear();
         uploadInfos.Clear();
-
+        skippedFile.Clear();
         var allFiles = e.GetMultipleFiles(maximumFileCount: 1000);
         const int MaxNameLength = 200; // 🟢 新增：檔名長度上限
 
         var validFiles = new List<IBrowserFile>();
-        var skippedNames = new List<string>();
 
         foreach (var file in allFiles) {
             // 🟢 改為 UTF8 bytes 檢查
             byte[] nameBytes = Encoding.UTF8.GetBytes(file.Name);
             if (nameBytes.Length > 200) {
-                skippedNames.Add($"{file.Name} ({nameBytes.Length} bytes)");
+                skippedFile.Add($"{file.Name} ({nameBytes.Length} bytes)");
                 continue;
             }
             validFiles.Add(file);
@@ -72,11 +81,6 @@
 
         browserFiles = validFiles;
         uploadInfos = validFiles.Select(f => new FileUploadInfo { File = f }).ToList();
-
-        if (skippedNames.Count > 0) { // 🟢 新增：提示訊息
-            message = "⚠️ 下列檔名過長，已略過：\n" +
-                      string.Join("\n", skippedNames.Select(n => $"• {n}"));
-        }
     }
 
     protected async Task UploadFile() {
@@ -86,6 +90,7 @@
 
         isUploadFinish = false;
         message = "檔案上傳中...";
+        await JSRuntime.InvokeVoidAsync("UploadWarn.enable"); // 🟢 開啟離開警告
         StateHasChanged();
 
         var saveFolder = Path.Combine(SaveDirectory, SaveSubFolder);
@@ -114,6 +119,7 @@
 
         isUploadFinish = true;
         message = "✅ 上傳完成!!";
+        await JSRuntime.InvokeVoidAsync("UploadWarn.disable"); // 🟢 關閉警告
         await OnUploadFinished.InvokeAsync(true);
     }
 }
