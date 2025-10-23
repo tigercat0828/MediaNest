@@ -1,4 +1,5 @@
-﻿<div class="input-group">
+﻿@using System.Text
+<div class="input-group">
     <InputFile OnChange="SelectFiles" class="form-control" multiple accept="@Extension" />
     <button class="btn btn-primary" @onclick="UploadFile" disabled="@(browserFiles.Count == 0)">
         上傳
@@ -60,9 +61,10 @@
         var skippedNames = new List<string>();
 
         foreach (var file in allFiles) {
-            Console.WriteLine($"{file.Name} {file.Name.Length} {file.Size /1024} KB");
-            if (file.Name.Length > MaxNameLength) { // 🟢 新增：超長則略過
-                skippedNames.Add(file.Name);
+            // 🟢 改為 UTF8 bytes 檢查
+            byte[] nameBytes = Encoding.UTF8.GetBytes(file.Name);
+            if (nameBytes.Length > 200) {
+                skippedNames.Add($"{file.Name} ({nameBytes.Length} bytes)");
                 continue;
             }
             validFiles.Add(file);
