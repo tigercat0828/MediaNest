@@ -15,7 +15,12 @@
         alert('Text copied to clipboard');
     },
     confirmNavigate: function () {
-        return confirm("檔案仍在上傳中，確定要離開此頁面嗎？");
+        confirmNavigate: function () {
+            return new Promise(resolve => {
+                const result = confirm("檔案仍在上傳中，確定要離開此頁面嗎？");
+                resolve(result);
+            });
+        }
     }
 };
 
