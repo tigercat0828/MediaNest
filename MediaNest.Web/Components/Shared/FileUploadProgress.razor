@@ -53,8 +53,28 @@
         browserFiles.Clear();
         uploadInfos.Clear();
 
-        browserFiles = [.. e.GetMultipleFiles(maximumFileCount: 1000)];
-        uploadInfos = browserFiles.Select(f => new FileUploadInfo { File = f }).ToList();
+        var allFiles = e.GetMultipleFiles(maximumFileCount: 1000);
+        const int MaxNameLength = 200; // 🟢 新增：檔名長度上限
+
+        var validFiles = new List<IBrowserFile>();
+        var skippedNames = new List<string>();
+
+        foreach (var file in allFiles) {
+            Console.WriteLine($"{file.Name} {file.Name.Length} {file.Size /1024} KB");
+            if (file.Name.Length > MaxNameLength) { // 🟢 新增：超長則略過
+                skippedNames.Add(file.Name);
+                continue;
+            }
+            validFiles.Add(file);
+        }
+
+        browserFiles = validFiles;
+        uploadInfos = validFiles.Select(f => new FileUploadInfo { File = f }).ToList();
+
+        if (skippedNames.Count > 0) { // 🟢 新增：提示訊息
+            message = "⚠️ 下列檔名過長，已略過：\n" +
+                      string.Join("\n", skippedNames.Select(n => $"• {n}"));
+        }
     }
 
     protected async Task UploadFile() {

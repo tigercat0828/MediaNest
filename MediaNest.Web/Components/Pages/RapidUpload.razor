@@ -90,9 +90,9 @@
 	}
 	private void ClearTaskFolder() {
 		FileService.ClearTaskFolder();
+		NavigationManager.NavigateTo("/rapid-upload", true);
 	}
 	private async Task ImportComic() {
-		FileService.FixLongFileNamesInTaskFolder();
 		_showImportComicBtn = false;
 		_showOk = false;
 		StateHasChanged();
@@ -113,7 +113,6 @@
 		_showOk = true;
 	}
 	private async Task ImportMusic() {
-		FileService.FixLongFileNamesInTaskFolder();
 		_showImportMusicBtn = false;
 		_showOk = false;
 		_targetFiles = Directory.GetFiles(FileService.TaskFolder, "*.mp3").ToList();
@@ -131,7 +130,6 @@
 		_showOk = true;
 	}
 	private async Task ImportVideo() {
-		FileService.FixLongFileNamesInTaskFolder();
 		_showImportVideoBtn = false;
 		_showOk = false;
 		_targetFiles = Directory.GetFiles(FileService.TaskFolder, "*.mp4").ToList();
