@@ -105,7 +105,6 @@
             return;
 
         isUploadFinish = false;
-        await JS.InvokeVoidAsync("UploadWarn.enable"); // 🟢 開啟離開警告
         message = "檔案上傳中...";
         StateHasChanged();
 
@@ -133,7 +132,6 @@
         }
         isUploadFinish = true;
         message = "✅ 上傳完成!!";
-        await JS.InvokeVoidAsync("UploadWarn.disable"); // 🟢 關閉離開警告
         await OnUploadFinished.InvokeAsync(true);
     }
 }
