@@ -1,4 +1,4 @@
-window.Utils = {
+﻿window.Utils = {
     ShowAlert: function (message) {
         alert(message);
     },
@@ -14,18 +14,21 @@ window.Utils = {
         navigator.clipboard.writeText(text);
         alert('Text copied to clipboard');
     },
+    confirmNavigate: function () {
+        return confirm("檔案仍在上傳中，確定要離開此頁面嗎？");
+    }
 };
 
 window.UploadWarn = {
     enable: function () {
-        window.addEventListener("beforeunload", uploadWarn._handler);
+        window.addEventListener("beforeunload", UploadWarn._handler);
     },
     disable: function () {
-        window.removeEventListener("beforeunload", uploadWarn._handler);
+        window.removeEventListener("beforeunload", UploadWarn._handler);
     },
     _handler: function (e) {
         e.preventDefault();
-        e.returnValue = "�ɮפ��b�W�Ǥ��A�T�w�n���}�ܡH";
+        e.returnValue = "檔案仍在上傳中，確定要離開此頁面嗎？";
         return e.returnValue;
     }
 };
