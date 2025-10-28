@@ -15,9 +15,12 @@ public class MusicList : IEntity {
     public List<string> Tags { get; set; } = [];
     public string Description { get; set; } = string.Empty;
 
+    public string Code { get; set; } = string.Empty;
     public static Dictionary<string, SearchFieldType> SearchableFields => new() {
         {"Title", SearchFieldType.Regex },
         {"Tags" ,  SearchFieldType.Contains},
         {"Description" , SearchFieldType.Regex }
     };
+
+    
 }

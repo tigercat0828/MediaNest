@@ -6,9 +6,6 @@ namespace MediaNest.Shared.Entities;
 
 
 public class Comic : IEntity {
-    public Comic() {
-        Code = Utility.GenerateSixDigitCode();
-    }
     [BsonId]
     [BsonRepresentation(BsonType.ObjectId)]
     public string Id { get; set; } = string.Empty;
@@ -26,7 +23,7 @@ public class Comic : IEntity {
     public List<string> Characters { get; set; } = [];
     public List<int> Bookmarks { get; set; } = [];
     public string Uploader { get; set; } = string.Empty;
-    public string Code { get; set; } = "xxxxxx";
+    public string Code { get; set; } = Utility.GenerateSixDigitCode();
 
     [BsonIgnore]
     public string Folder => Path.Combine(Code[..3], $"[{Code}]{Title}");    // retrieve asset path (physical hierarchy directories)
