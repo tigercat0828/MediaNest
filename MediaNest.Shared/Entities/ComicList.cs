@@ -15,6 +15,7 @@ public class ComicList : IEntity {
     public List<string> ComicIds { get; set; } = [];
     public List<string> Tags { get; set; } = [];
     public string Description { get; set; } = string.Empty;
+    public string Code { get; set; }
     [BsonIgnore]
     public int Episodes => ComicIds.Count;
     public static Dictionary<string, SearchFieldType> SearchableFields => new() {
@@ -22,4 +23,5 @@ public class ComicList : IEntity {
         {"Tags" ,  SearchFieldType.Contains},
         {"Description" , SearchFieldType.Regex }
     };
+
 }

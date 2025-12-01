@@ -14,6 +14,7 @@ public class VideoList : IEntity {
     public List<string> Tags { get; set; } = [];
     public string Desciption { get; set; } = string.Empty;
     public List<string> VideoIds { get; set; } = [];
+    public string Code { get; set; }
 
     public static Dictionary<string, SearchFieldType> SearchableFields => new() {
         {"Title", SearchFieldType.Regex },
