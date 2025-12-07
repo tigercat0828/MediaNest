@@ -1,4 +1,5 @@
-﻿using MongoDB.Bson;
+﻿using MediaNest.Shared.Entities.Interfaces;
+using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 using System.ComponentModel.DataAnnotations;
 
@@ -22,5 +23,5 @@ public class MusicList : IEntity {
         {"Description" , SearchFieldType.Regex }
     };
 
-    
+
 }
