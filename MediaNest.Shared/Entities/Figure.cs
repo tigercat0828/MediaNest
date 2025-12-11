@@ -1,8 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿namespace MediaNest.Shared.Entities {
+    public class Figure {
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public string Series { get; set; }
 
-namespace MediaNest.Shared.Entities {
-    internal class Figure {
     }
 }
+

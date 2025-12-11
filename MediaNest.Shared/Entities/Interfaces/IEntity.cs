@@ -1,4 +1,4 @@
-﻿namespace MediaNest.Shared.Entities;
+﻿namespace MediaNest.Shared.Entities.Interfaces;
 
 public enum SearchFieldType {
     Regex, Equals, Contains

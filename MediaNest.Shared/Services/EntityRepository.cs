@@ -1,4 +1,4 @@
-﻿using MediaNest.Shared.Entities;
+﻿using MediaNest.Shared.Entities.Interfaces;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using System.Text.RegularExpressions;
