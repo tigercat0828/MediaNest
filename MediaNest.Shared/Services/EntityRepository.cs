@@ -5,7 +5,7 @@ using System.Text.RegularExpressions;
 
 namespace MediaNest.Shared.Services;
 
-public class EntityRepository<T>(IMongoCollection<T> entities) where T : IEntity {
+public class EntityRepository<T>(IMongoCollection<T> entities) where T : IRepoEntity {
     // entity
     public async Task<int> GetCount() {
         return (int)await entities.CountDocumentsAsync(_ => true);
@@ -27,6 +27,10 @@ public class EntityRepository<T>(IMongoCollection<T> entities) where T : IEntity
     public async Task<T> GetById(string id) {
         return await entities.Find(m => m.Id == id).FirstOrDefaultAsync();
     }
+    public async Task<T> GetByField(string term, string field) {
+        var filter = Builders<T>.Filter.Eq(field, term);
+        return await entities.Find(filter).FirstOrDefaultAsync();
+    }
     public async Task<List<T>> Search(string term) {
         var escapedTerm = Regex.Escape(term);
         // 模糊搜尋（加上 .* 讓字串前後可以有其他文字）
@@ -35,7 +39,7 @@ public class EntityRepository<T>(IMongoCollection<T> entities) where T : IEntity
 
         foreach (var (field, type) in T.SearchableFields) {
             FilterDefinition<T>? filter = type switch {
-                SearchFieldType.Regex => Builders<T>.Filter.Regex(field, new BsonRegularExpression(pattern, "i")),
+                SearchFieldType.Like => Builders<T>.Filter.Regex(field, new BsonRegularExpression(pattern, "i")),
                 SearchFieldType.Equals => Builders<T>.Filter.Eq(field, term),
                 SearchFieldType.Contains => Builders<T>.Filter.AnyIn(field, [term]),
                 _ => null

@@ -41,9 +41,12 @@ builder.Services.AddSingleton<FileService>();
 builder.Services.Configure<MongoDbConfig>(builder.Configuration.GetSection("MongoDB"));
 builder.Services.AddMongoClient();
 builder.Services.AddMongoCollection<Account>("Accounts");
+builder.Services.AddMongoCollection<UserConfig>("UserConfigs");
+
 builder.Services.AddMongoCollection<Comic>("Comics");
 builder.Services.AddMongoCollection<Music>("Musics");
 builder.Services.AddMongoCollection<Video>("Videos");
+builder.Services.AddMongoCollection<Figure>("Figures");
 builder.Services.AddMongoCollection<ComicList>("ComicLists");
 builder.Services.AddMongoCollection<MusicList>("MusicLists");
 builder.Services.AddMongoCollection<VideoList>("VideoLists");
@@ -56,13 +59,16 @@ builder.Services.AddScoped<EntityRepository<Music>>();
 builder.Services.AddScoped<EntityRepository<MusicList>>();
 builder.Services.AddScoped<EntityRepository<Video>>();
 builder.Services.AddScoped<EntityRepository<VideoList>>();
-
-builder.Services.AddScoped<ComicService>();
-builder.Services.AddScoped<ComicCartService>();
+builder.Services.AddScoped<EntityRepository<Figure>>();
 
 builder.Services.AddScoped<MusicService>();
 builder.Services.AddScoped<VideoService>();
+builder.Services.AddScoped<ComicService>();
+builder.Services.AddScoped<FigureService>();
 
+builder.Services.AddScoped<UserConfigService>();
+
+builder.Services.AddScoped<ComicCartService>(); // front-end service
 // ========================================================================================
 
 var app = builder.Build();

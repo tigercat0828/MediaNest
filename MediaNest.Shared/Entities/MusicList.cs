@@ -5,7 +5,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace MediaNest.Shared.Entities;
 
-public class MusicList : IEntity {
+public class MusicList : IRepoEntity {
     [BsonId]
     [BsonRepresentation(BsonType.ObjectId)]
     public string Id { get; set; } = string.Empty;
@@ -17,10 +17,10 @@ public class MusicList : IEntity {
     public string Description { get; set; } = string.Empty;
 
     public string Code { get; set; } = string.Empty;
-    public static Dictionary<string, SearchFieldType> SearchableFields => new() {
-        {"Title", SearchFieldType.Regex },
-        {"Tags" ,  SearchFieldType.Contains},
-        {"Description" , SearchFieldType.Regex }
+    public static IReadOnlyDictionary<string, SearchFieldType> SearchableFields { get; set; } = new Dictionary<string, SearchFieldType>() {
+        {nameof(Title), SearchFieldType.Like },
+        {nameof(Tags) ,  SearchFieldType.Contains},
+        {nameof(Description) , SearchFieldType.Like }
     };
 
 

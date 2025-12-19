@@ -4,7 +4,7 @@ using MongoDB.Bson.Serialization.Attributes;
 
 namespace MediaNest.Shared.Entities;
 
-public class Video : IEntity {
+public class Video : IRepoEntity {
     public Video() {
         Code = Utility.GenerateSixDigitCode();
     }
@@ -24,10 +24,11 @@ public class Video : IEntity {
     [BsonIgnore]
     public string Folder => Path.Combine($"{Code[..3]}", $"[{Code}]{Title}");
 
-    public static Dictionary<string, SearchFieldType> SearchableFields => new() {
-        {"Title", SearchFieldType.Regex },
-        {"Code" ,  SearchFieldType.Equals},
-        {"Author" , SearchFieldType.Regex },
-        {"Tag", SearchFieldType.Contains },
+    public static IReadOnlyDictionary<string, SearchFieldType> SearchableFields { get; set; } = new Dictionary<string, SearchFieldType>() {
+
+        {nameof(Title), SearchFieldType.Like },
+        {nameof(Code) ,  SearchFieldType.Equals},
+        {nameof(Author) , SearchFieldType.Like },
+        {nameof(Tags), SearchFieldType.Contains },
     };
 }

@@ -4,7 +4,7 @@ using MongoDB.Bson.Serialization.Attributes;
 
 namespace MediaNest.Shared.Entities;
 
-public class Anime : IEntity {
+public class Anime : IRepoEntity {
 
     [BsonId]
     [BsonRepresentation(BsonType.ObjectId)]
@@ -16,9 +16,9 @@ public class Anime : IEntity {
     private string _title = string.Empty;
     public string Code { get; set; } = Utility.GenerateSixDigitCode();
     public List<string> Tags { get; set; } = [];
-    public static Dictionary<string, SearchFieldType> SearchableFields => new() {
-        { "Title",       SearchFieldType.Regex },
-        { "Code",        SearchFieldType.Equals },
-        { "Tags",        SearchFieldType.Contains }
+    public static IReadOnlyDictionary<string, SearchFieldType> SearchableFields { get; set; } = new Dictionary<string, SearchFieldType>() {
+        { nameof(Title),       SearchFieldType.Like },
+        { nameof(Code),        SearchFieldType.Equals },
+        { nameof(Tags),        SearchFieldType.Contains }
     };
 }

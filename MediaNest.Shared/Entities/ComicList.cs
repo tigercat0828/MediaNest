@@ -5,7 +5,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace MediaNest.Shared.Entities;
 
-public class ComicList : IEntity {
+public class ComicList : IRepoEntity {
 
     [BsonId]
     [BsonRepresentation(BsonType.ObjectId)]
@@ -19,10 +19,10 @@ public class ComicList : IEntity {
     public string Code { get; set; }
     [BsonIgnore]
     public int Episodes => ComicIds.Count;
-    public static Dictionary<string, SearchFieldType> SearchableFields => new() {
-        {"Title", SearchFieldType.Regex },
-        {"Tags" ,  SearchFieldType.Contains},
-        {"Description" , SearchFieldType.Regex }
+    public static IReadOnlyDictionary<string, SearchFieldType> SearchableFields { get; set; } = new Dictionary<string, SearchFieldType>() {
+        {nameof(Title), SearchFieldType.Like },
+        {nameof(Tags) ,  SearchFieldType.Contains},
+        {nameof(Description) , SearchFieldType.Like }
     };
 
 }

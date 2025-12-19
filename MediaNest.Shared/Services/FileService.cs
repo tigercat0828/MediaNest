@@ -4,6 +4,8 @@ namespace MediaNest.Shared.Services;
 
 public class FileService {
     public string AssetsFolder { get; private set; }
+    public string UserConfigFolder => Path.Combine(AssetsFolder, "Users");
+    public string FigureFolder => Path.Combine(AssetsFolder, "Figures");
     public string ComicFolder => Path.Combine(AssetsFolder, "Comics");
     public string VideoFolder => Path.Combine(AssetsFolder, "Videos");
     public string MusicFolder => Path.Combine(AssetsFolder, "Musics");
@@ -12,12 +14,14 @@ public class FileService {
 
     public FileService(IConfiguration _configuration) {
         AssetsFolder = Path.GetFullPath(_configuration["AssetsFolder"] ?? "/app/Assets");
+        CreateFolder(UserConfigFolder);
         CreateFolder(TaskFolder);
+
         CreateFolder(ComicFolder);
         CreateFolder(MusicFolder);
         CreateFolder(VideoFolder);
         CreateFolder(ImageFolder);
-
+        CreateFolder(FigureFolder);
     }
 
     public void ClearTaskFolder() {

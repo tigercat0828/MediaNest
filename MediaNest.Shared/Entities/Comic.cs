@@ -6,7 +6,8 @@ using System.ComponentModel.DataAnnotations;
 namespace MediaNest.Shared.Entities;
 
 
-public class Comic : IEntity {
+public class Comic : IRepoEntity {
+
     [BsonId]
     [BsonRepresentation(BsonType.ObjectId)]
     public string Id { get; set; } = string.Empty;
@@ -29,14 +30,13 @@ public class Comic : IEntity {
     [BsonIgnore]
     public string Folder => Path.Combine(Code[..3], $"[{Code}]{Title}");    // retrieve asset path (physical hierarchy directories)
 
-    public static Dictionary<string, SearchFieldType> SearchableFields => new() {
-
-        { "Title",       SearchFieldType.Regex },
-        { "SubTitle",    SearchFieldType.Regex },
-        { "Author",      SearchFieldType.Regex },
-        { "Series",      SearchFieldType.Regex },
-        { "Code",        SearchFieldType.Equals },
-        { "Tags",        SearchFieldType.Contains },
-        { "Characters",  SearchFieldType.Contains }
+    public static IReadOnlyDictionary<string, SearchFieldType> SearchableFields { get; set; } = new Dictionary<string, SearchFieldType>() {
+        { nameof(Title),       SearchFieldType.Like },
+        { nameof(SubTitle),    SearchFieldType.Like },
+        { nameof(Author),      SearchFieldType.Like },
+        { nameof(Series),      SearchFieldType.Like },
+        { nameof(Code),        SearchFieldType.Equals },
+        { nameof(Tags),        SearchFieldType.Contains },
+        { nameof(Characters),  SearchFieldType.Contains }
     };
 }
