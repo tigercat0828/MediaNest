@@ -9,9 +9,11 @@
 
 <PageTitle>Home</PageTitle>
 
+
 @code {
 	[CascadingParameter] private Task<AuthenticationState> _authStateTask { get; set; }
 	[Inject] public IJSRuntime JS { get; set; }
+	[Inject] public BulletinService BulletinService { get; set; }
 	public async Task Halo() {
 		var authState = await _authStateTask;
 		var message = authState.User.Identity.Name;

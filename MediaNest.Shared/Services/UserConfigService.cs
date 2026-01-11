@@ -3,7 +3,7 @@ using MongoDB.Driver;
 namespace MediaNest.Shared.Services;
 
 public class UserConfigService(IMongoCollection<UserConfig> _userConfigs, FileService _fileService) {
-
+    private const string BackgroundImageFolder = "Background";
     private FilterDefinition<UserConfig> UserFilter(string username) =>
         Builders<UserConfig>.Filter.Eq(c => c.Username, username);
 
@@ -20,7 +20,7 @@ public class UserConfigService(IMongoCollection<UserConfig> _userConfigs, FileSe
     public async Task UploadBackgroundImage(string username, string fileName) {
         // 1. 處理檔案移動
         string sourcePath = Path.Combine(_fileService.TaskFolder, fileName);
-        string userFolder = Path.Combine(_fileService.UserConfigFolder, username, "background");
+        string userFolder = Path.Combine(_fileService.UserConfigFolder, username, BackgroundImageFolder);
 
         if (!Directory.Exists(userFolder)) Directory.CreateDirectory(userFolder);
 
@@ -40,7 +40,7 @@ public class UserConfigService(IMongoCollection<UserConfig> _userConfigs, FileSe
         // 2. 嘗試從硬碟刪除檔案 (需從 URL 反推檔案名稱)
         try {
             string fileName = Path.GetFileName(url);
-            string filePath = Path.Combine(_fileService.UserConfigFolder, username, "background", fileName);
+            string filePath = Path.Combine(_fileService.UserConfigFolder, username, BackgroundImageFolder, fileName);
             if (File.Exists(filePath)) File.Delete(filePath);
         }
         catch {

@@ -44,12 +44,12 @@ builder.Services.AddMongoCollection<Account>("Accounts");
 builder.Services.AddMongoCollection<UserConfig>("UserConfigs");
 
 builder.Services.AddMongoCollection<Comic>("Comics");
-builder.Services.AddMongoCollection<Music>("Musics");
-builder.Services.AddMongoCollection<Video>("Videos");
-builder.Services.AddMongoCollection<Figure>("Figures");
 builder.Services.AddMongoCollection<ComicList>("ComicLists");
+builder.Services.AddMongoCollection<Music>("Musics");
 builder.Services.AddMongoCollection<MusicList>("MusicLists");
+builder.Services.AddMongoCollection<Video>("Videos");
 builder.Services.AddMongoCollection<VideoList>("VideoLists");
+builder.Services.AddMongoCollection<Figure>("Figures");
 // ========================================================================================
 // Main MediaNest Service
 // ========================================================================================

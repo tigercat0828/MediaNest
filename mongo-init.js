@@ -2,13 +2,26 @@
 // 切換到 MediaNest DB
 db = db.getSiblingDB('MediaNest');
 
-// 建立 Accounts collection
 if (!db.getCollectionNames().includes("Accounts")) {
     db.createCollection("Accounts");
     print("✅ Accounts collection created");
 }
 
-// 建立 Comics collection
+if (!db.getCollectionNames().includes("UserConfigs")) {
+    db.createCollection("UserConfigs");
+    print("✅ UserConfigs collection created");
+}
+
+if (!db.getCollectionNames().includes("Bulletins")) {
+    db.createCollection("Bulletins");
+    print("✅ Bulletins collection created");
+}
+
+if (!db.getCollectionNames().includes("Figures")) {
+    db.createCollection("Figures");
+    print("✅ Figures collection created");
+}
+
 if (!db.getCollectionNames().includes("Comics")) {
     db.createCollection("Comics");
     print("✅ Comics collection created");
@@ -38,4 +51,3 @@ if (!db.getCollectionNames().includes("MusicsList")) {
     db.createCollection("MusicsList");
     print("✅ MusicsList collection created");
 }
-
