@@ -16,6 +16,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents().AddInteractiveServerComponents();
 
 builder.Services.AddScoped<JSRuntimeService>();
+
+builder.Services.AddSingleton<FileService>();
 // ========================================================================================
 // Background Task Queue
 // ========================================================================================
@@ -37,12 +39,10 @@ builder.Services.AddScoped<AuthService>();
 // ========================================================================================
 // MongoDB 
 // ========================================================================================
-builder.Services.AddSingleton<FileService>();
 builder.Services.Configure<MongoDbConfig>(builder.Configuration.GetSection("MongoDB"));
 builder.Services.AddMongoClient();
 builder.Services.AddMongoCollection<Account>("Accounts");
 builder.Services.AddMongoCollection<UserConfig>("UserConfigs");
-
 builder.Services.AddMongoCollection<Comic>("Comics");
 builder.Services.AddMongoCollection<ComicList>("ComicLists");
 builder.Services.AddMongoCollection<Music>("Musics");
@@ -50,6 +50,8 @@ builder.Services.AddMongoCollection<MusicList>("MusicLists");
 builder.Services.AddMongoCollection<Video>("Videos");
 builder.Services.AddMongoCollection<VideoList>("VideoLists");
 builder.Services.AddMongoCollection<Figure>("Figures");
+builder.Services.AddMongoCollection<BulletinItem>("Bulletins");
+
 // ========================================================================================
 // Main MediaNest Service
 // ========================================================================================
@@ -60,11 +62,14 @@ builder.Services.AddScoped<EntityRepository<MusicList>>();
 builder.Services.AddScoped<EntityRepository<Video>>();
 builder.Services.AddScoped<EntityRepository<VideoList>>();
 builder.Services.AddScoped<EntityRepository<Figure>>();
+builder.Services.AddScoped<EntityRepository<BulletinItem>>();
 
 builder.Services.AddScoped<MusicService>();
 builder.Services.AddScoped<VideoService>();
 builder.Services.AddScoped<ComicService>();
 builder.Services.AddScoped<FigureService>();
+
+builder.Services.AddScoped<BulletinService>();
 
 builder.Services.AddScoped<UserConfigService>();
 

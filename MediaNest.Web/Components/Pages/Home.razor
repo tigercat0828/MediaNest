@@ -1,22 +1,54 @@
 ﻿@page "/"
+@using System.Security.AccessControl
 @rendermode InteractiveServer
+
+<PageTitle>Home</PageTitle>
 
 <AuthorizeView>
 	<Authorized>
 		<button @onclick="Halo">Halo</button>
+		<div class="container">
+			<ul class="list-group">
+				@foreach(var item in items)  {
+					<li class="list-group-item">
+						<div class="ms-2 me-auto">
+							<div class="fw-bold">@item.Title</div>
+							@item.Content
+						</div>
+					</li>	
+				}
+			</ul>
+		</div>
 	</Authorized>
 </AuthorizeView>
 
-<PageTitle>Home</PageTitle>
+
 
 
 @code {
-	[CascadingParameter] private Task<AuthenticationState> _authStateTask { get; set; }
-	[Inject] public IJSRuntime JS { get; set; }
-	[Inject] public BulletinService BulletinService { get; set; }
-	public async Task Halo() {
-		var authState = await _authStateTask;
-		var message = authState.User.Identity.Name;
-		await JS.InvokeVoidAsync("alert", message);
+    [CascadingParameter] private Task<AuthenticationState> _authStateTask { get; set; }
+    [Inject] public IJSRuntime JS { get; set; }
+    [Inject] public BulletinService BulletinService { get; set; }
+    private List<BulletinItem> items;
+    public async Task Halo() {
+        var authState = await _authStateTask;
+        var message = authState.User.Identity.Name;
+        await JS.InvokeVoidAsync("alert", message);
+    }
+    protected override async Task OnInitializedAsync()
+    {
+        // items = await BulletinService.GetBulletinsByPage(1, 10);
+		items = FakeData();
+    }
+
+	private List<BulletinItem> FakeData(){
+		return Enumerable.Range(1, 10).Select(i => new BulletinItem
+        {
+            Id = Guid.NewGuid().ToString(),
+            Title = $"Titile {i}",
+            Content = $"Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
+            LastUpdate = DateTime.Now.AddDays(-i),
+            Pinned = i % 3 == 0
+        }).ToList();
 	}
 }
