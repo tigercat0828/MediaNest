@@ -1,99 +1,38 @@
 ﻿@page "/settings"
 @using MediaNest.Shared.Dtos
 @rendermode InteractiveServer
-@attribute [Authorize(Roles = "Admin,User,Pending")]
-<div class="container">
+@attribute [Authorize]
 
-	<AuthorizeView>
-		<Authorized>
-			<div class="row mb-3">
-				<h3>Function</h3>
-				<ul>
-					<li>
-						<a href="/change-password">Change Password</a>
-					</li>
-				</ul>
-			</div>
-			@if (context.User.IsInRole("Admin")) {
-				<div class="row">
-					@if (_users.Count > 0) {
-						<div class="card card-body mb-3">
-							<table class="table">
-								<thead>
-									<tr>
-										<th>Username</th>
-										<th>Role</th>
-										<th>Actions</th>
-									</tr>
-								</thead>
-								<tbody>
-									@foreach (var user in _users) {
-										<tr>
-											<td>@user.Username</td>
-											<td>
-												<select class="form-select form-select-sm" @bind="user.Role">
-													<option value="Pending">Pending</option>
-													<option value="User">User</option>
-													<option value="Admin">Admin</option>
-												</select>
-											</td>
-											<td>
-												<button class="btn btn-sm btn-primary" @onclick="() => UpdateRole(user)">Save</button>
-												<button class="btn btn-sm btn-danger" @onclick="() => ShowCheckDeleteButton(user.Username)">Delete</button>
-												@if (_showDeleteConfirmForUser == user.Username) {
-													<button class="btn btn-sm btn-warning ms-2" @onclick="() => DeleteAccount(user.Username)">Confirm</button>
-													<button class="btn btn-sm btn-secondary ms-1" @onclick="CancelDelete">Cancel</button>
-												}
-											</td>
-										</tr>
-									}
-								</tbody>
-							</table>
-						</div>
-					}
-				</div>
-			}
-		</Authorized>
-		<NotAuthorized>
-			<AccessDenied />
-		</NotAuthorized>
-	</AuthorizeView>
+<div class="container">
+    <div class="row mb-3">
+        <h3>Function</h3>
+        <ul>
+            <li>
+                <a href="/change-password">Change Password</a>
+            </li>
+            <li>
+                <a href="/userconfig">User Setting</a>
+            </li>
+            @if (_currentUserRole == "Admin") {
+                <li> 
+                    <a href="/account-management">Account Management</a>
+                </li>
+            }
+        </ul>
+    </div>
 </div>
 
 @code {
-	@inject AuthService AuthService
-	[CascadingParameter] private Task<AuthenticationState> _authStateTask { get; set; }
-	
-	private List<AccountDto> _users = [];
-	private string _showDeleteConfirmForUser;
+    [CascadingParameter] private Task<AuthenticationState> _authStateTask { get; set; }
+    private string _currentUserRole;
 
-	protected override async Task OnInitializedAsync() {
-		var authState = await _authStateTask;
-		if (authState.User.IsInRole(Roles.Admin)) {
-			_users =  await AuthService.GetAllUserAsync();
-		}
-	}
-	private async Task UpdateRole(AccountDto user) {
-		var response = await AuthService.UpdateRoleAsync(user.Username, user.Role);
-		if (response.Count > 0) {
-			_users = await AuthService.GetAllUserAsync();
-			return;
-		}
-	}
-	private void ShowCheckDeleteButton(string username) {
-		_showDeleteConfirmForUser = username;
-	}
-	private void CancelDelete() {
-		_showDeleteConfirmForUser = null!;
-	}
-	private async Task DeleteAccount(string username) {
-		var response = await AuthService.DeleteAsync(username);
-		if (response.Count > 0) {
-			_users = await AuthService.GetAllUserAsync();
-			return;
-		}
-		_showDeleteConfirmForUser = null!;
-	}
-
-	
+    protected override async Task OnInitializedAsync() {
+        var authState = await _authStateTask;
+        var user = authState.User;
+        if (user.Identity.IsAuthenticated)
+        {
+            // **保持你的邏輯：僅做角色字串賦值**
+            _currentUserRole = user.IsInRole("Admin") ? "Admin" : "Other";
+        }
+    }
 }

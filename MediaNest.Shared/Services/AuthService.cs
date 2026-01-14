@@ -6,6 +6,7 @@ using System.Security.Claims;
 
 namespace MediaNest.Shared.Services;
 
+// TODO cache the user 
 public class AuthService(IMongoCollection<Account> _accounts) {
     private readonly PasswordHasher<Account> _passwordHasher = new();
     public async Task<List<AccountDto>> GetAllUserAsync() {

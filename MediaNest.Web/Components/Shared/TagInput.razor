@@ -1,0 +1,244 @@
+﻿@using System.Threading.Tasks
+@rendermode InteractiveServer
+
+
+    <div class="tag-input-container">
+        @* 外層容器：點擊時會觸發 FocusInput 讓內層 input 取得焦點 *@
+        <div class="tag-input-wrapper" @onclick="FocusInput">
+            @* 遍歷顯示目前已新增的標籤 *@
+            @foreach (var tag in Tags)
+            {
+                <div class="blazor-tag">
+                    <span>@tag</span>
+                    @* stopPropagation：防止點擊刪除時觸發外層的 FocusInput *@
+                    <i class="tag-close-icon" @onclick="() => RemoveTag(tag)" @onclick:stopPropagation>×</i>
+                </div>
+            }
+
+            @* 輸入框：綁定 _inputValue 並監聽按鍵事件 *@
+            <input @ref="inputElement"
+                   type="text"
+                   class="main-input"
+                   placeholder="@(Tags.Any() ? "" : "輸入標籤...")"
+                   value="@_inputValue"
+                   @oninput="OnInputChange"
+               
+                   @onkeydown="HandleKeyDown"
+                   @onkeydown:preventDefault="shouldPreventDefault"
+                   @onblur="HideDropdownWithDelay" />
+        </div>
+
+        @* 當有符合條件的建議字詞時，顯示下拉選單 *@
+        @if (filteredTips.Any())
+        {
+            <ul class="suggestion-dropdown">
+                @for (int i = 0; i < filteredTips.Count; i++)
+                {
+                    var index = i;
+                    var suggestion = filteredTips[i];
+                    @* 判斷是否為目前鍵盤選中的項目，若是則加上 active 樣式 *@
+                    <li class="@(index == selectedSuggestionIndex ? "active" : "")"
+                        @onclick="() => SelectSuggestion(suggestion)">
+                        @suggestion
+                    </li>
+                }
+            </ul>
+        }
+    </div>
+
+@code {
+    [Parameter] public List<string> Tags { get; set; } = []; // 儲存已選取的標籤
+    [Parameter] public EventCallback<List<string>> TagsChanged { get; set; } // 雙向綁定支援
+
+    private string _inputValue = "";      // 目前輸入框的內容
+    private bool shouldPreventDefault = false; // 控制是否阻擋瀏覽器預設行為
+    private ElementReference inputElement;     // 用於操作 DOM 元素（如 Focus）
+
+    [Parameter] public List<string> TipWords { get; set; } = [];
+    private List<string> filteredTips = []; // 過濾後的建議清單
+    private int selectedSuggestionIndex = -1;  // 鍵盤選取的索引 (-1 表示未選取)
+
+    private void OnInputChange(ChangeEventArgs e)
+    {
+        _inputValue = e.Value?.ToString() ?? "";
+
+        if (string.IsNullOrWhiteSpace(_inputValue))
+        {
+            filteredTips.Clear();
+        }
+        else
+        {
+            filteredTips = TipWords
+                .Where(w => w.Contains(_inputValue, StringComparison.OrdinalIgnoreCase) && !Tags.Contains(w))
+                .ToList();
+        }
+        selectedSuggestionIndex = -1;
+    }
+    /// <summary>
+    /// 處理特殊按鍵邏輯
+    /// </summary>
+    private async Task HandleKeyDown(KeyboardEventArgs e)
+    {
+        shouldPreventDefault = false;
+
+        // 處理向下鍵：移動下拉選單選取項
+        if (e.Key == "ArrowDown" && filteredTips.Any())
+        {
+            shouldPreventDefault = true;
+            selectedSuggestionIndex = Math.Min(selectedSuggestionIndex + 1, filteredTips.Count - 1);
+        }
+        // 處理向上鍵
+        else if (e.Key == "ArrowUp" && filteredTips.Any())
+        {
+            shouldPreventDefault = true;
+            selectedSuggestionIndex = Math.Max(selectedSuggestionIndex - 1, 0);
+        }
+        // 處理確認鍵 (Enter 或 逗號)
+        else if (e.Key == "Enter" || e.Key == ",")
+        {
+            shouldPreventDefault = true;
+
+            // 如果目前有透過方向鍵選中建議項目，優先選取該項目
+            if (selectedSuggestionIndex >= 0 && selectedSuggestionIndex < filteredTips.Count)
+            {
+                await AddTag(filteredTips[selectedSuggestionIndex]);
+            }
+            else
+            {
+                await AddTag(_inputValue);
+            }
+        }
+        // 處理刪除鍵：當輸入框為空時，刪除最後一個標籤
+        else if (e.Key == "Backspace" && string.IsNullOrEmpty(_inputValue) && Tags.Any())
+        {
+            Tags.RemoveAt(Tags.Count - 1);
+            await TagsChanged.InvokeAsync(Tags);
+        }
+    }
+
+    /// <summary>
+    /// 將字串加入標籤清單並重置狀態
+    /// </summary>
+    private async Task AddTag(string value)
+    {
+        var trimmed = value?.Replace(",", "").Trim();
+        if (!string.IsNullOrWhiteSpace(trimmed) && !Tags.Contains(trimmed))
+        {
+            Tags.Add(trimmed);
+            await TagsChanged.InvokeAsync(Tags);
+        }
+        _inputValue = "";      // 清空輸入框
+        filteredTips.Clear();  // 隱藏選單
+        selectedSuggestionIndex = -1;
+    }
+
+    // 點擊下拉選單項目的事件
+    private async Task SelectSuggestion(string word) => await AddTag(word);
+
+    // 移除指定標籤
+    private async Task RemoveTag(string tag)
+    {
+        Tags.Remove(tag);
+        await TagsChanged.InvokeAsync(Tags);
+    } 
+
+    // 強制讓輸入框獲得焦點
+    private async Task FocusInput() => await inputElement.FocusAsync();
+
+    /// <summary>
+    /// 失去焦點時隱藏選單。使用 Delay 是為了確保點擊選單項目的事件能先執行。
+    /// </summary>
+    private async Task HideDropdownWithDelay()
+    {
+        await Task.Delay(150);
+        filteredTips.Clear();
+    }
+}
+
+<style>
+    /* 1. 最外層包裝：建立定位基準 */
+    .tag-input-container {
+        position: relative; /* 重要：作為下拉選單 (.suggestion-dropdown) 的定位基準點 */
+        width: 100%;
+    }
+
+    /* 2. 標籤與輸入框的容器：模擬 Input 外觀 */
+    .tag-input-wrapper {
+        display: flex; /* 啟用彈性佈局，讓標籤與輸入框橫向排列 */
+        flex-wrap: wrap; /* 重要：標籤過多時自動換行 */
+        gap: 6px; /* 標籤與標籤之間的固定間距 */
+        padding: 6px 12px;
+        border: 1px solid #dee2e6;
+        border-radius: 6px;
+        background-color: #fff;
+        cursor: text; /* 讓滑鼠移上去時顯示「文字輸入」圖標 */
+        transition: border-color 0.2s; /* 讓邊框顏色變化更平滑 */
+    }
+
+    /* 當容器內的任何元素（如 input）獲得焦點時，改變外框樣式 */
+    .tag-input-wrapper:focus-within {
+        border-color: #86b7fe; /* 變更為藍色邊框 */
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25); /* 增加藍色發光效果 */
+    }
+
+    /* 3. 單個標籤（Pill）的樣式 */
+    .blazor-tag {
+        display: inline-flex; /* 讓標籤內容垂直居中 */
+        align-items: center;
+        background-color: #e9ecef; /* 淺灰色背景 */
+        color: #495057;
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-size: 0.875rem;
+    }
+
+    /* 標籤內的刪除按鈕 (x) */
+    .tag-close-icon {
+        margin-left: 6px; /* 與文字保持間距 */
+        cursor: pointer; /* 顯示可點擊的手型 */
+        color: #adb5bd;
+    }
+
+    /* 滑鼠移到刪除按鈕上時變紅 */
+    .tag-close-icon:hover {
+        color: #dc3545;
+    }
+
+    /* 4. 核心輸入框：隱藏原生樣式以融入容器 */
+    .main-input {
+        flex: 1; /* 重要：自動佔滿該行剩餘的所有空間 */
+        border: none; /* 去除原生邊框 */
+        outline: none; /* 去除選取時的預設藍框 */
+        min-width: 60px; /* 確保至少有空間可以輸入 */
+        height: 28px;
+    }
+
+    /* 5. 下拉建議選單：漂浮在輸入框下方 */
+    .suggestion-dropdown {
+        position: absolute; /* 絕對定位，脫離文檔流 */
+        top: 100%; /* 定位於父容器底部 (100% 位移) */
+        left: 0;
+        right: 0;
+        background: white;
+        border: 1px solid #dee2e6;
+        border-radius: 4px;
+        margin-top: 4px; /* 與輸入框保持一點間隙 */
+        padding: 0;
+        list-style: none; /* 去除 ul 預設清單點 */
+        z-index: 1000; /* 確保選單浮在其他元素之上 */
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1); /* 增加陰影使其有浮空感 */
+    }
+
+    /* 下拉選單中的每一項 */
+    .suggestion-dropdown li {
+        padding: 8px 12px;
+        cursor: pointer;
+        transition: background 0.1s;
+    }
+
+    /* 滑鼠懸停或透過鍵盤選中時的樣式 */
+    .suggestion-dropdown li:hover, .suggestion-dropdown li.active {
+        background-color: #f8f9fa; /* 淺灰色背景 */
+        color: #0d6efd; /* 文字變藍色 */
+    }
+</style>

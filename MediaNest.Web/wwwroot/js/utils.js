@@ -14,6 +14,5 @@
         navigator.clipboard.writeText(text);
         alert('Text copied to clipboard');
     },
-
 };
 

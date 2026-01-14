@@ -1,0 +1,88 @@
+﻿@page "/account-management"
+@using MediaNest.Shared.Dtos
+@rendermode InteractiveServer
+@attribute [Authorize(Roles = "Admin")]
+
+<div class="container">
+    <div class="row">
+        <h3>Account Management</h3>
+        @if (_users.Count > 0) {
+            <div class="card card-body mb-3">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Username</th>
+                            <th>Role</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var user in _users) {
+                            <tr>
+                                <td>@user.Username</td>
+                                <td>
+                                    <select class="form-select form-select-sm" @bind="user.Role">
+                                        <option value="Pending">Pending</option>
+                                        <option value="User">User</option>
+                                        <option value="Admin">Admin</option>
+                                    </select>
+                                </td>
+                                <td>
+                                    <button class="btn btn-sm btn-primary" @onclick="() => UpdateRole(user)">Save</button>
+                                    <button class="btn btn-sm btn-danger" @onclick="() => ShowCheckDeleteButton(user.Username)">Delete</button>
+                                    @if (_showDeleteConfirmForUser == user.Username) {
+                                        <button class="btn btn-sm btn-warning ms-2" @onclick="() => DeleteAccount(user.Username)">Confirm</button>
+                                        <button class="btn btn-sm btn-secondary ms-1" @onclick="CancelDelete">Cancel</button>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+    @* **高亮：新增返回按鈕便於操作** *@
+    <a href="/settings" class="btn btn-secondary">Back to Settings</a>
+</div>
+
+@code {
+    @inject AuthService AuthService
+    [CascadingParameter] private Task<AuthenticationState> _authStateTask { get; set; }
+    
+    private List<AccountDto> _users = [];
+    private string _showDeleteConfirmForUser;
+
+    protected override async Task OnInitializedAsync() {
+        var authState = await _authStateTask;
+        // **保持你的邏輯：僅在身分確認後讀取資料**
+        if (authState.User.IsInRole("Admin")) {
+            _users = await AuthService.GetAllUserAsync();
+        }
+    }
+
+    private async Task UpdateRole(AccountDto user) {
+        var response = await AuthService.UpdateRoleAsync(user.Username, user.Role);
+        if (response.Count > 0) {
+            _users = await AuthService.GetAllUserAsync();
+            return;
+        }
+    }
+
+    private void ShowCheckDeleteButton(string username) {
+        _showDeleteConfirmForUser = username;
+    }
+
+    private void CancelDelete() {
+        _showDeleteConfirmForUser = null!;
+    }
+
+    private async Task DeleteAccount(string username) {
+        var response = await AuthService.DeleteAsync(username);
+        if (response.Count > 0) {
+            _users = await AuthService.GetAllUserAsync();
+            return;
+        }
+        _showDeleteConfirmForUser = null!;
+    }
+}

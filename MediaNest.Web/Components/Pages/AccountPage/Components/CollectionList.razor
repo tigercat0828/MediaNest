@@ -1,0 +1,48 @@
+﻿<div class="list-group mb-3">
+    @foreach (var col in Collections)
+    {
+        <div class="list-group-item">
+            <div class="d-flex justify-content-between align-items-center">
+                <strong>@col.Title <span class="badge bg-info text-dark">@col.Type</span></strong>
+                <button class="btn btn-sm btn-outline-danger" @onclick="() => Collections.Remove(col)">移除</button>
+            </div>
+            <div class="small text-muted">標籤: @string.Join(", ", col.IncludedTags)</div>
+        </div>
+    }
+</div>
+
+<div class="p-3 border rounded bg-light">
+    <h6>@EditorTitle</h6>
+    <input type="text" class="form-control form-control-sm mb-2" placeholder="標題" @bind="newItem.Title" />
+    <select class="form-select form-select-sm mb-2" @bind="newItem.Type">
+        @foreach (var type in Enum.GetValues<CollectionType>())
+        {
+            <option value="@type">@type</option>
+        }
+    </select>
+    <div class="mb-2">
+        <TagInput @bind-Tags="newItem.IncludedTags"/>
+    </div>
+    <button class="btn btn-sm btn-primary w-100" @onclick="AddItem">確認新增</button>
+</div>
+
+@code {
+    [Parameter] public string EditorTitle { get; set; } = "";
+    [Parameter] public List<EntityCollection> Collections { get; set; } = new();
+
+    private EntityCollection newItem = new() { IncludedTags = new() };
+
+    private void AddItem()
+    {
+        if (!string.IsNullOrWhiteSpace(newItem.Title))
+        {
+            Collections.Add(new EntityCollection
+            {
+                Title = newItem.Title,
+                Type = newItem.Type,
+                IncludedTags = newItem.IncludedTags.ToList()
+            });
+            newItem = new EntityCollection { IncludedTags = new() };
+        }
+    }
+}

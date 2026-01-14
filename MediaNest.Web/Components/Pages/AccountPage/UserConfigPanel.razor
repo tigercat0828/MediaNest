@@ -1,0 +1,87 @@
+﻿@page "/userconfig"
+@rendermode InteractiveServer
+@using MediaNest.Shared.Entities
+@using MediaNest.Web.Components.Pages.AccountPage.Components;
+@attribute [Authorize(Roles="Admin,User")]
+
+@if (_config == null)
+{
+    <LoadingSpinner />
+}
+else
+{
+    <div class="container mt-4 mb-5">
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">使用者配置管理 - @_config.Username</h4>
+            </div>
+            <div class="card-body">
+            
+                @* 1. 基本資訊 *@
+                <section class="mb-4">
+                    <h5 class="border-bottom pb-2"><i class="bi bi-person-gear"></i> 基本設定</h5>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">首頁標題</label>
+                            <input type="text" class="form-control" @bind="_config.HomeTitle" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">背景圖片</label>
+                            <TagInput @bind-Tags="_config.BackgroundImageUrls" />
+                        </div>
+                    </div>
+                </section>
+
+                @* 2. 常用標籤 (使用剛才封裝的元件) *@
+                <section class="mb-4">
+                    <h5 class="border-bottom pb-2"><i class="bi bi-tags"></i> 常用標籤管理</h5>
+                    <p class="text-muted small">這些標籤將出現在你的快捷篩選欄中。</p>
+                    <TagInput @bind-Tags="_config.CommonTags" TipWords="_config.CommonTags" />
+                </section>
+
+                @* 3. 收藏夾配置 (Menu & Home) *@
+                <section class="mb-4">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5 class="border-bottom pb-2">側邊欄固定 (Menu)</h5>
+                            <CollectionList EditorTitle="新增菜單項目" Collections="_config.MenuPinnedCollections" />
+                        </div>
+                        <div class="col-md-6">
+                            <h5 class="border-bottom pb-2">首頁固定 (Home)</h5>
+                            <CollectionList EditorTitle="新增首頁卡片" Collections="_config.HomePinnedCollections" />
+                        </div>
+                    </div>
+                </section>
+
+                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                    <button class="btn btn-secondary me-md-2" @onclick="Reset">取消修改</button>
+                    <button class="btn btn-success" @onclick="SaveConfig">
+                        <i class="bi bi-cloud-arrow-up"></i> 儲存配置
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+@code {
+    
+    @inject UserConfigService UserConfigService
+    [CascadingParameter] private Task<AuthenticationState> _authStateTask { get; set; }
+    private string _username = null!;
+    private UserConfig _config = null!;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await _authStateTask;
+        _username = authState.User.Identity.Name;
+        _config = await UserConfigService.GetUserConfig(_username);
+    }
+
+    private async Task SaveConfig()
+    {
+        await UserConfigService.UpdateConfig(_username, _config);
+    }
+
+    private void Reset() { /* 重新讀取邏輯 */ }
+}
+
