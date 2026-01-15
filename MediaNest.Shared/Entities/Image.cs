@@ -11,6 +11,7 @@ public class Image : IRepoEntity {
     public string Title { get; set; }
     public string Code { get; set; }
     public List<string> Tags { get; set; } = [];
+    public List<string> Urls { get; set; } = [];
     public static IReadOnlyDictionary<string, SearchFieldType> SearchableFields { get; set; } = new Dictionary<string, SearchFieldType>() {
         {nameof(Title) , SearchFieldType.Like },
         {nameof(Code), SearchFieldType.Equals },

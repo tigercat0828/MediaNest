@@ -47,7 +47,12 @@ if (!db.getCollectionNames().includes("Musics")) {
     print("✅ Musics collection created");
 }
 
-if (!db.getCollectionNames().includes("MusicsList")) {
-    db.createCollection("MusicsList");
-    print("✅ MusicsList collection created");
+if (!db.getCollectionNames().includes("MusicLists")) {
+    db.createCollection("MusicLists");
+    print("✅ MusicLists collection created");
+}
+
+if (!db.getCollectionNames().includes("Images")) {
+    db.createCollection("MusicLists");
+    print("✅ Images collection created");
 }

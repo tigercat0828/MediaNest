@@ -2,7 +2,7 @@ using MediaNest.Shared.Entities;
 
 namespace MediaNest.Shared.Services;
 
-public class BulletinService(EntityRepository<BulletinItem> _items) {
+public class BulletinService(EntityRepository<BulletinItem> _items ) {
     public async Task<BulletinItem> GetBulletin(string id) {
         return await _items.GetById(id);
     }

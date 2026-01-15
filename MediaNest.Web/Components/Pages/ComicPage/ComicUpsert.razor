@@ -8,8 +8,6 @@
 @using MediaNest.Shared.Services
 @using MediaNest.Shared.Services.Background
 
-
-
 <AuthorizeView Roles="Admin,User">
     <NotAuthorized>
         <div class="alert alert-info mt-2">
@@ -34,7 +32,7 @@
                             <InputText class="form-control" @bind-Value="_currentComic.Title" />
                         </div>
 
-                        <button class="btn btn-outline-secondary mb-3" @onclick="ToggleMoreOptionPanel">
+                        <button type="button" class="btn btn-outline-secondary mb-3" @onclick="ToggleMoreOptionPanel">
                             @(_showMoreOptionPanel ? "Hide Options" : "More Options")
                         </button>
 
@@ -51,7 +49,7 @@
                                 </div>
                                 <div class="col-6">
                                     <label>Tags</label>
-                                    <InputText class="form-control" @bind-Value="_tagStr" />
+                                    <TagInput @bind-Tags="_currentComic.Tags" />
                                 </div>
                             </div>
 
@@ -62,13 +60,14 @@
                                 </div>
                                 <div class="col-6">
                                     <label>Figures</label>
-                                    <InputText class="form-control" @bind-Value="_characterStr" />
+                                    <TagInput @bind-Tags="_currentComic.Characters" />
+
                                 </div>
                             </div>
 
                             <div class="mb-3">
                                 <label>Bookmarks</label>
-                                <InputText class="form-control" @bind-Value="_bookmarkStr" disable />
+                                <TagInput @bind-Tags="_bookmarkStrs" />
                             </div>
                         }
 
@@ -79,7 +78,7 @@
                         }
                         <div>
                             @if (_isUploadButtonPressed || _isEditMode) {
-                                <button class="btn btn-success" @onclick="HandleUpsertGame">完成</button>
+                                <button type="button" class="btn btn-success" @onclick="HandleUpsertGame">完成</button>
                             }
                         </div>
                     </EditForm>
@@ -139,9 +138,7 @@
     private bool _isEditMode = false;
     private Comic _currentComic = new();
 
-    private string _tagStr = "";
-    private string _characterStr = "";
-    private string _bookmarkStr = "";
+    private List<string> _bookmarkStrs = [];
     private string _oldTitle = "";
     private bool _isUploadButtonPressed = false;
     private bool _showMoreOptionPanel = false;
@@ -161,9 +158,7 @@
                 _isEditMode = true;
                 _showMoreOptionPanel = true;
                 _currentComic = await ComicService.GetComicById(id);
-                _tagStr = string.Join(",", _currentComic.Tags);
-                _characterStr = string.Join(",", _currentComic.Characters);
-                _bookmarkStr = string.Join(",", _currentComic.Bookmarks);
+                _bookmarkStrs = _currentComic.Bookmarks.Select(x => x.ToString()).ToList();
                 _oldTitle = _currentComic.Title;
                 LoadImageSrcs();
             }
@@ -173,8 +168,6 @@
     private async Task HandleUpsertGame() {
                 
 
-        _currentComic.Tags = _tagStr.Split(",", StringSplitOptions.RemoveEmptyEntries).ToList();
-        _currentComic.Characters = _characterStr.Split(",", StringSplitOptions.RemoveEmptyEntries).ToList();
         _currentComic.Uploader = ""; 
         if (_isEditMode) {
             await ComicService.UpdateComic(id, _currentComic, _oldTitle);
@@ -271,10 +264,9 @@
 
         // 排序，確保 bookmark 順序正確
         _currentComic.Bookmarks = _currentComic.Bookmarks.Distinct().OrderBy(x => x).ToList();
-
+        _bookmarkStrs = _currentComic.Bookmarks.Select(x => x.ToString()).ToList();
         // 更新文字框同步
-        _bookmarkStr = string.Join(",", _currentComic.Bookmarks);
-
+        _currentComic.Bookmarks = _bookmarkStrs.Select(int.Parse).ToList();
         // 清空選中狀態
         _selectedImages.Clear();
         StateHasChanged();

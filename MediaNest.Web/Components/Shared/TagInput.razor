@@ -2,7 +2,7 @@
 @rendermode InteractiveServer
 
 
-    <div class="tag-input-container">
+<div class="tag-input-container" @onkeydown:stopPropagation>
         @* 外層容器：點擊時會觸發 FocusInput 讓內層 input 取得焦點 *@
         <div class="tag-input-wrapper" @onclick="FocusInput">
             @* 遍歷顯示目前已新增的標籤 *@

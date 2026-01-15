@@ -6,12 +6,6 @@ USER $APP_UID
 WORKDIR /app
 EXPOSE 8080
 
-# 切換為 root 安裝 ffmpeg
-USER root
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends ffmpeg && \
-    rm -rf /var/lib/apt/lists/*
-
 # 安裝完畢後回到原本使用者
 USER $APP_UID
 

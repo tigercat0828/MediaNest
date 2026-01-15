@@ -55,13 +55,15 @@
                         <a class="btn btn-outline-light" href="/login">Login</a>
                     </NotAuthorized>
                     <Authorized>
-                        <a class="btn btn-outline-light" href="/logout">Logout</a>
+                        <button class="btn btn-outline-light" @onclick="BeginLogout">Logout</button>
                     </Authorized>
                 </AuthorizeView>
             </div>
         </div>
     </div>
 </nav>
+
+@inject NavigationManager NavigationManager
 
 @code {
     private bool collapseNavMenu = true;
@@ -70,6 +72,11 @@
 
     private void ToggleNavMenu() {
         collapseNavMenu = !collapseNavMenu;
+    }
+    
+    private void BeginLogout()
+    {
+        NavigationManager.NavigateTo("/logout", forceLoad: true);
     }
     // TODO https://www.youtube.com/watch?v=BY6qqVZixOw
 }

@@ -74,12 +74,12 @@ else
     {
         var authState = await _authStateTask;
         _username = authState.User.Identity.Name;
-        _config = await UserConfigService.GetUserConfig(_username);
+        _config = await UserConfigService.GetCurrentUserConfig();
     }
 
     private async Task SaveConfig()
     {
-        await UserConfigService.UpdateConfig(_username, _config);
+        await UserConfigService.UpdateConfig(_config);
     }
 
     private void Reset() { /* 重新讀取邏輯 */ }

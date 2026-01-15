@@ -7,48 +7,143 @@
 <AuthorizeView>
 	<Authorized>
 		<button @onclick="Halo">Halo</button>
+        <button class="btn btn-success" @onclick="CreateItem">Create Bulletin</button>
 		<div class="container">
 			<ul class="list-group">
-				@foreach(var item in items)  {
-					<li class="list-group-item">
-						<div class="ms-2 me-auto">
-							<div class="fw-bold">@item.Title</div>
-							@item.Content
-						</div>
-					</li>	
-				}
+                @if (items != null) {
+                    @foreach(var item in items)  {
+					    <li class="list-group-item">
+						    <div class="d-flex justify-content-between align-items-center">
+                                <div class="ms-2 me-auto">
+							        <div class="fw-bold">@item.Title</div>
+							        @item.Content
+                                </div>
+                                <button class="btn btn-primary btn-sm" @onclick="() => EditItem(item)">Edit</button>
+                                <button class="btn btn-danger btn-sm ms-2" @onclick="() => DeleteItem(item)">Delete</button>
+						    </div>
+					    </li>	
+                        }
+                    }
+                else{
+                    <LoadingSpinner />
+                }
 			</ul>
 		</div>
+        
+        <Modal @ref="editModal">
+            <Title>
+                @if (string.IsNullOrEmpty(editingItem?.Id))
+                {
+                    <span>Create Bulletin</span>
+                }
+                else
+                {
+                    <span>Edit Bulletin</span>
+                }
+            </Title>
+            <Body>
+                @if (editingItem != null)
+                {
+                    <div class="mb-3">
+                        <label class="form-label">Title</label>
+                        <input type="text" class="form-control" @bind="editingItem.Title" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Code</label>
+                        <input type="text" class="form-control" @bind="editingItem.Code" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Content</label>
+                        <textarea class="form-control" @bind="editingItem.Content"></textarea>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" @bind="editingItem.Pinned" id="pinnedCheck">
+                        <label class="form-check-label" for="pinnedCheck">
+                            Pinned
+                        </label>
+                    </div>
+                }
+            </Body>
+            <Footer>
+                <button type="button" class="btn btn-secondary" @onclick="() => editModal.Close()">Close</button>
+                <button type="button" class="btn btn-primary" @onclick="SaveBulletin">Save changes</button>
+            </Footer>
+        </Modal>
+
 	</Authorized>
 </AuthorizeView>
 
-
-
-
 @code {
+    @inject BulletinService BulletinService
+    @inject IJSRuntime JS 
     [CascadingParameter] private Task<AuthenticationState> _authStateTask { get; set; }
-    [Inject] public IJSRuntime JS { get; set; }
-    [Inject] public BulletinService BulletinService { get; set; }
+    
     private List<BulletinItem> items;
+    private BulletinItem editingItem;
+    private Modal editModal;
+    
     public async Task Halo() {
         var authState = await _authStateTask;
         var message = authState.User.Identity.Name;
         await JS.InvokeVoidAsync("alert", message);
     }
+
     protected override async Task OnInitializedAsync()
     {
-        // items = await BulletinService.GetBulletinsByPage(1, 10);
-		items = FakeData();
+        await LoadBulletins();
     }
 
-	private List<BulletinItem> FakeData(){
-		return Enumerable.Range(1, 10).Select(i => new BulletinItem
+    private async Task LoadBulletins()
+    {
+        items = await BulletinService.GetBulletinsByPage(1, 5);
+    }
+
+    private void EditItem(BulletinItem item)
+    {
+        // Clone the item to avoid modifying the list directly before saving
+        editingItem = new BulletinItem
         {
-            Id = Guid.NewGuid().ToString(),
-            Title = $"Titile {i}",
-            Content = $"Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
-            LastUpdate = DateTime.Now.AddDays(-i),
-            Pinned = i % 3 == 0
-        }).ToList();
-	}
+            Id = item.Id,
+            Title = item.Title,
+            Code = item.Code,
+            Content = item.Content,
+            LastUpdate = item.LastUpdate,
+            Pinned = item.Pinned
+        };
+        editModal.Open();
+    }
+
+    private void CreateItem()
+    {
+        editingItem = new BulletinItem() {
+            Code = MediaNest.Shared.Utility.GenerateSixDigitCode()
+        };
+        editModal.Open();
+    }
+
+    private async Task SaveBulletin()
+    {
+        if (editingItem != null)
+        {
+            if (string.IsNullOrEmpty(editingItem.Id))
+            {
+                await BulletinService.CreateBulletin(editingItem);
+            }
+            else
+            {
+                await BulletinService.UpdateBulletin(editingItem.Id, editingItem);
+            }
+            editModal.Close();
+            await LoadBulletins();
+        }
+    }
+
+    private async Task DeleteItem(BulletinItem item)
+    {
+        if (await JS.InvokeAsync<bool>("confirm", $"Are you sure you want to delete '{item.Title}'?"))
+        {
+            await BulletinService.DeleteBulletin(item.Id);
+            await LoadBulletins();
+        }
+    }
 }

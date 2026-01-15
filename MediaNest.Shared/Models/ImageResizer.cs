@@ -3,7 +3,7 @@
 namespace MediaNest.Shared.Models;
 
 public class ImageResizer {
-    private static readonly string[] SupportedExtensions = { ".jpg", ".jpeg", ".png", ".webp" };
+    private static readonly string[] SupportedExtensions = [ ".jpg", ".jpeg", ".png", ".webp" ];
 
     public void ResizeImageInFolder(string srcFolder, string dstFolder, float ratio) {
         var imgFiles = GetImageFiles(srcFolder);

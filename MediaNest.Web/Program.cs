@@ -4,6 +4,7 @@ using MediaNest.Shared.Services;
 using MediaNest.Shared.Services.Background;
 using MediaNest.Web.Components;
 using MediaNest.Web.Services;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.Extensions.FileProviders;
 using System.Text;
@@ -113,9 +114,15 @@ fileService.DeleteEmptyAssetFolder();
 
 app.UseAuthentication();
 app.UseAuthorization();
-
 app.UseAntiforgery();
+
 app.MapStaticAssets();
 app.MapRazorComponents<App>().AddInteractiveServerRenderMode();
+
+app.MapGet("/logout", async (HttpContext context) =>
+{
+    await context.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+    return Results.Redirect("/login");
+});
 
 app.Run();
