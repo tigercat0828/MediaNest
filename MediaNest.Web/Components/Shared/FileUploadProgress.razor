@@ -1,5 +1,6 @@
 ﻿@using System.Text
 @using System.Threading.Tasks
+@implements IAsyncDisposable
 <div class="input-group">
     <InputFile OnChange="SelectFiles" class="form-control" multiple accept="@Extension" />
     <button class="btn btn-primary" @onclick="UploadFile" disabled="@(browserFiles.Count == 0)">
@@ -50,6 +51,8 @@
     [Parameter] public EventCallback<bool> OnUploadBtnPressed { get; set; }
 	@inject IJSRuntime JS
 	@inject NavigationManager NavigationManager
+    @using MediaNest.Shared.Services
+    @inject FileService FileService
     private bool isUploadFinish;
     private bool isUploading;
     private string message = "";
@@ -57,6 +60,7 @@
     private List<IBrowserFile> browserFiles = new();
     private List<FileUploadInfo> uploadInfos = new();
     private List<string> skippedFile = [];
+    private IDisposable? registration;
 
     private class FileUploadInfo {
         public IBrowserFile File { get; set; } = default!;
@@ -64,7 +68,11 @@
     }
     protected override void OnAfterRender(bool firstRender) {
         if (firstRender)
-            NavigationManager.RegisterLocationChangingHandler(OnLocationChanging);
+            registration = NavigationManager.RegisterLocationChangingHandler(OnLocationChanging);
+    }
+
+    public async ValueTask DisposeAsync() {
+        registration?.Dispose();
     }
 
     private async ValueTask OnLocationChanging(LocationChangingContext context) {
@@ -104,34 +112,37 @@
         if (string.IsNullOrEmpty(SaveDirectory))
             return;
 
+        isUploading = true;
         isUploadFinish = false;
         message = "檔案上傳中...";
         StateHasChanged();
 
-        var saveFolder = Path.Combine(SaveDirectory, SaveSubFolder);
-        Directory.CreateDirectory(saveFolder);
+        try {
+            var saveFolder = Path.Combine(SaveDirectory, SaveSubFolder);
+            Directory.CreateDirectory(saveFolder);
 
-        foreach (var info in uploadInfos) {
-            var file = info.File;
-            var filePath = Path.Combine(saveFolder, file.Name);
+            foreach (var info in uploadInfos) {
+                var file = info.File;
+                var filePath = Path.Combine(saveFolder, file.Name);
 
-            await using FileStream fs = new(filePath, FileMode.Create);
-            await using Stream readStream = file.OpenReadStream(maxAllowedSize: (long)(5 * 1024) * (long)(1024 * 1024)); // 5GB
+                await using Stream readStream = file.OpenReadStream(maxAllowedSize: (long)(5 * 1024) * (long)(1024 * 1024)); // 5GB
 
-            byte[] buffer = new byte[81920]; // 80KB
-            long totalRead = 0;
-            int bytesRead;
-            while ((bytesRead = await readStream.ReadAsync(buffer)) > 0) {
-                await fs.WriteAsync(buffer.AsMemory(0, bytesRead));
-                totalRead += bytesRead;
-                info.Progress = (int)((double)totalRead / file.Size * 100);
-                await InvokeAsync(StateHasChanged);
+                await FileService.SaveStreamAsync(readStream, filePath, file.Size, async (progress) => {
+                    info.Progress = progress;
+                    await InvokeAsync(StateHasChanged);
+                });
             }
-            info.Progress = 100;
-            await InvokeAsync(StateHasChanged);
+            isUploadFinish = true;
+            message = "✅ 上傳完成!!";
+            await OnUploadFinished.InvokeAsync(true);
         }
-        isUploadFinish = true;
-        message = "✅ 上傳完成!!";
-        await OnUploadFinished.InvokeAsync(true);
+        catch (Exception ex) {
+            message = $"❌ 上傳失敗: {ex.Message}";
+            await JS.InvokeVoidAsync("Utils.ShowAlert", $"上傳發生錯誤: {ex.Message}");
+        }
+        finally {
+            isUploading = false;
+            StateHasChanged();
+        }
     }
 }

@@ -1,12 +1,18 @@
 ﻿using MediaNest.Shared.Entities;
+using Microsoft.AspNetCore.Components.Authorization;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using System.Text.RegularExpressions;
 
+
 namespace MediaNest.Shared.Services;
 
-public class ComicListService(IMongoCollection<ComicList> _listCollection) {
+public class ComicListService(
+    IMongoCollection<ComicList> _listCollection,
+    AuthenticationStateProvider authStateProvider
+    ) : BaseService(authStateProvider) {
     public async Task CreateComicList(List<string> comicIds, string title) {
+        if (!await AuthorizeAsync(UserRole.User)) return;
         ComicList list = new() {
             Title = title,
             ComicIds = comicIds
@@ -14,6 +20,7 @@ public class ComicListService(IMongoCollection<ComicList> _listCollection) {
         await _listCollection.InsertOneAsync(list);
     }
     public async Task CreateComicList(ComicList list) {
+        if (!await AuthorizeAsync(UserRole.User)) return;
         await _listCollection.InsertOneAsync(list);
     }
     public async Task<List<ComicList>> SearchComicList(string term) {
@@ -50,9 +57,11 @@ public class ComicListService(IMongoCollection<ComicList> _listCollection) {
             .ToListAsync();
     }
     public async Task UpdateComicList(string id, ComicList list) {
+        if (!await AuthorizeAsync(UserRole.User)) return;
         await _listCollection.ReplaceOneAsync(x => x.Id == id, list);
     }
     public async Task DeleteComicList(string id) {
+        if (!await AuthorizeAsync(UserRole.User)) return;
         await _listCollection.DeleteOneAsync(list => list.Id == id);
     }
     public async Task<bool> CheckExists(string id) {

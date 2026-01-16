@@ -1,5 +1,6 @@
 ﻿using MediaNest.Shared.Dtos;
 using MediaNest.Shared.Entities;
+using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using MongoDB.Driver;
 using System.Security.Claims;
@@ -7,7 +8,9 @@ using System.Security.Claims;
 namespace MediaNest.Shared.Services;
 
 // TODO cache the user 
-public class AuthService(IMongoCollection<Account> _accounts) {
+public class AuthService(
+    IMongoCollection<Account> _accounts, 
+    AuthenticationStateProvider _authStateProvider) : BaseService(_authStateProvider) {
     private readonly PasswordHasher<Account> _passwordHasher = new();
     public async Task<List<AccountDto>> GetAllUserAsync() {
         var users = await _accounts
@@ -55,6 +58,7 @@ public class AuthService(IMongoCollection<Account> _accounts) {
         return response;
     }
     public async Task<AuthResponse> DeleteAsync(string username) {
+        if (!await AuthorizeAsync(UserRole.Admin)) return new AuthResponse { Message = "Unauthorized" };
         var response = new AuthResponse();
         var user = await _accounts.Find(u => u.Username == username).FirstOrDefaultAsync();
         if (user.Role == Roles.Admin) {
@@ -66,6 +70,7 @@ public class AuthService(IMongoCollection<Account> _accounts) {
         return response;
     }
     public async Task<AuthResponse> UpdateRoleAsync(string username, string role) {
+        if (!await AuthorizeAsync(UserRole.Admin)) return new AuthResponse { Message = "Unauthorized" };
         var update = Builders<Account>.Update.Set(u => u.Role, role);
         var result = await _accounts.UpdateOneAsync(u => u.Username == username, update);
         return new AuthResponse {
@@ -74,7 +79,9 @@ public class AuthService(IMongoCollection<Account> _accounts) {
         };
     }
 
-    public async Task<AuthResponse> ChangePassword(string username, string oldPassword, string newPassword) {
+    public async Task<AuthResponse> ChangePassword(string oldPassword, string newPassword) {
+        var username = await GetCurrentUsernameAsync();
+        if (username == null) return new AuthResponse { Message = "Unauthorized" };
         var user = await _accounts.Find(u => u.Username == username).FirstOrDefaultAsync();
 
         var verify = _passwordHasher.VerifyHashedPassword(user, user.HashedPassword, oldPassword);
@@ -116,8 +123,23 @@ public class AuthResponse {
     public int Count { get; set; }      // modified count
 }
 
+public enum UserRole {
+    Visitor = 0,
+    Pending = 1,
+    User = 2,
+    Admin = 3
+}
+
 public static class Roles {
+    public const string Visitor = "Visitor";
     public const string Pending = "Pending";
-    public const string Admin = "Admin";
     public const string User = "User";
+    public const string Admin = "Admin";
+
+    public static UserRole ToEnum(string role) => role switch {
+        Admin => UserRole.Admin,
+        User => UserRole.User,
+        Pending => UserRole.Pending,
+        _ => UserRole.Visitor
+    };
 }

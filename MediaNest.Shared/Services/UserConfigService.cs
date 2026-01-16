@@ -4,10 +4,9 @@ using MongoDB.Driver;
 using System.Threading.Tasks;
 namespace MediaNest.Shared.Services;
 public class UserConfigService(
-    IMongoCollection<UserConfig> _userConfigs, 
+    IMongoCollection<UserConfig> _userConfigs,
     FileService _fileService,
-    AuthenticationStateProvider _authStateProvider) 
-    : BaseService(_authStateProvider) {
+    AuthenticationStateProvider _authStateProvider) : BaseService(_authStateProvider) {
 
     private const string BackgroundImageFolder = "Background";
     private UserConfig _currentUserConfig = null;
@@ -15,6 +14,7 @@ public class UserConfigService(
     private FilterDefinition<UserConfig> UserFilter(string username) => Builders<UserConfig>.Filter.Eq(c => c.Username, username);
     public async Task<UserConfig> GetCurrentUserConfig(){
         string username = await GetCurrentUsernameAsync();
+        if (username == null) return null;
         var config = await _userConfigs.Find(UserFilter(username)).FirstOrDefaultAsync();
         if (config == null)
         {
@@ -24,6 +24,7 @@ public class UserConfigService(
     }
     public async Task UpdateConfig(UserConfig updatedConfig) {
         string username = await GetCurrentUsernameAsync();
+        if (username == null) return;
         updatedConfig.Username = username;
         var filter = UserFilter(username);
         await _userConfigs.ReplaceOneAsync(filter, updatedConfig);
@@ -43,6 +44,7 @@ public class UserConfigService(
     {
         // 1. 處理檔案移動
         string username = await GetCurrentUsernameAsync();
+        if (username == null) return;
         string sourcePath = Path.Combine(_fileService.TaskFolder, fileName);
         string userFolder = Path.Combine(_fileService.UserConfigFolder, username, BackgroundImageFolder);
 
@@ -63,7 +65,9 @@ public class UserConfigService(
             throw;
         }
     }
-    public async Task DeleteBackgroundImage(string username, string url) {
+    public async Task DeleteBackgroundImage(string url) {
+        string username = await GetCurrentUsernameAsync();
+        if (username == null) return;
         // 1. 從資料庫移除 URL
         var update = Builders<UserConfig>.Update.Pull(c => c.BackgroundImageUrls, url);
         await _userConfigs.UpdateOneAsync(UserFilter(username), update);

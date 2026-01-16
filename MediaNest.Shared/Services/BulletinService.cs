@@ -1,8 +1,13 @@
 using MediaNest.Shared.Entities;
+using MediaNest.Shared.Models;
+using Microsoft.AspNetCore.Components.Authorization;
 
 namespace MediaNest.Shared.Services;
 
-public class BulletinService(EntityRepository<BulletinItem> _items ) {
+public class BulletinService(
+    EntityRepository<BulletinItem> _items,
+    AuthenticationStateProvider authStateProvider
+    ) : BaseService(authStateProvider) {
     public async Task<BulletinItem> GetBulletin(string id) {
         return await _items.GetById(id);
     }
@@ -24,14 +29,17 @@ public class BulletinService(EntityRepository<BulletinItem> _items ) {
     }
 
     public async Task CreateBulletin(BulletinItem bulletin) {
+        if (!await AuthorizeAsync(UserRole.Admin)) return;
         await _items.Create(bulletin);
     }
 
     public async Task UpdateBulletin(string id, BulletinItem updated) {
+        if (!await AuthorizeAsync(UserRole.Admin)) return;
         await _items.Update(id, updated);
     }
 
     public async Task DeleteBulletin(string id) {
+        if (!await AuthorizeAsync(UserRole.Admin)) return;
         await _items.Delete(id);
     }
 }

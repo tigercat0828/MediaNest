@@ -1,13 +1,17 @@
 ﻿using MediaNest.Shared.Entities;
 using MediaNest.Shared.Services.Background;
+using Microsoft.AspNetCore.Components.Authorization;
 using System.Diagnostics;
 
 namespace MediaNest.Shared.Services;
 
-public class VideoService(EntityRepository<Video> _videoRepo,
+public class VideoService(
+    EntityRepository<Video> _videoRepo,
                           EntityRepository<VideoList> _listRepo,
                           FileService _fileService,
-                          IBackgroundTaskQueue _taskQueue) {
+    IBackgroundTaskQueue _taskQueue,
+    AuthenticationStateProvider authStateProvider
+    ) : BaseService(authStateProvider) {
     public async Task<int> GetCount() => await _videoRepo.GetCount();
     public async Task<List<Video>> GetAllVideos() => await _videoRepo.GetAll();
     public async Task<List<Video>> Search(string term) => await _videoRepo.Search(term);
@@ -15,6 +19,7 @@ public class VideoService(EntityRepository<Video> _videoRepo,
     public async Task<List<Video>> GetRandomVideos(int count) => await _videoRepo.GetRandom(count);
     public async Task<Video> GetById(string id) => await _videoRepo.GetById(id);
     public async Task CreateVideo(string srcFile) {
+        if (!await AuthorizeAsync(UserRole.User)) return;
         Video video = new() {
             Title = Path.GetFileNameWithoutExtension(srcFile)
         };
@@ -39,6 +44,7 @@ public class VideoService(EntityRepository<Video> _videoRepo,
 
     }
     public async Task DeleteVideo(string id) {
+        if (!await AuthorizeAsync(UserRole.User)) return;
         Video video = await _videoRepo.GetById(id);
         var path = Path.Combine(_fileService.VideoFolder, video.Folder);
         if (Directory.Exists(path))
@@ -46,6 +52,7 @@ public class VideoService(EntityRepository<Video> _videoRepo,
         await _videoRepo.Delete(id);
     }
     public async Task UpdateVideo(string id, Video updated, string oldTitle) {
+        if (!await AuthorizeAsync(UserRole.User)) return;
         if (oldTitle == updated.Title) {
             await _videoRepo.Update(id, updated);
             return;

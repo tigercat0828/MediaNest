@@ -1,12 +1,19 @@
 ﻿using MediaNest.Shared.Entities;
+using Microsoft.AspNetCore.Components.Authorization;
 
 namespace MediaNest.Shared.Services;
 
-public class MusicService(EntityRepository<Music> _musicRepo, EntityRepository<MusicList> _listRepo, FileService _fileService) {
+public class MusicService(
+    EntityRepository<Music> _musicRepo,
+    EntityRepository<MusicList> _listRepo,
+    FileService _fileService,
+    AuthenticationStateProvider authStateProvider
+    ) : BaseService(authStateProvider) {
     public async Task<List<Music>> GetAllMusic() => await _musicRepo.GetAll();
     public async Task<List<Music>> Search(string term) => await _musicRepo.Search(term);
     public async Task<List<Music>> GetPage(int page, int count) => await _musicRepo.GetByPage(page, count);
     public async Task CreateMusic(string srcFile) {
+        if (!await AuthorizeAsync(UserRole.User)) return;
         Music music = new() {
             Title = Path.GetFileNameWithoutExtension(srcFile)
         };
@@ -19,12 +26,14 @@ public class MusicService(EntityRepository<Music> _musicRepo, EntityRepository<M
         await _musicRepo.Create(music);
     }
     public async Task DeleteMusic(string id) {
+        if (!await AuthorizeAsync(UserRole.User)) return;
         Music music = await _musicRepo.GetById(id);
         var path = Path.Combine(_fileService.MusicFolder, music.Filename);
         File.Delete(path);
         await _musicRepo.Delete(id);
     }
     public async Task UpdateMusic(string id, Music updated, string oldTitle) {
+        if (!await AuthorizeAsync(UserRole.User)) return;
         await _musicRepo.Update(id, updated);
         if (oldTitle == updated.Title) return;
         var srcPath = Path.Combine(_fileService.MusicFolder, oldTitle);

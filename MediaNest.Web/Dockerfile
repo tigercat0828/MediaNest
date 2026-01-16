@@ -6,9 +6,6 @@ USER $APP_UID
 WORKDIR /app
 EXPOSE 8080
 
-# 安裝完畢後回到原本使用者
-USER $APP_UID
-
 # 此階段是用來組建服務專案
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 ARG BUILD_CONFIGURATION=Release

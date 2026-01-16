@@ -14,5 +14,8 @@
         navigator.clipboard.writeText(text);
         alert('Text copied to clipboard');
     },
+    confirmNavigate: function () {
+        return confirm("檔案正在上傳中，確定要離開嗎？");
+    }
 };
 

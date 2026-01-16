@@ -1,5 +1,6 @@
 ﻿using MediaNest.Shared.Entities;
 using MediaNest.Shared.Models;
+using Microsoft.AspNetCore.Components.Authorization;
 
 namespace MediaNest.Shared.Services;
 
@@ -7,7 +8,8 @@ namespace MediaNest.Shared.Services;
 public class ComicService(
     EntityRepository<Comic> _comicRepo,
     EntityRepository<ComicList> _listRepo,
-    FileService _fileService) {
+    FileService _fileService,
+    AuthenticationStateProvider authStateProvider) : BaseService(authStateProvider) {
     // entitiy
     public async Task<List<Comic>> SearchComic(string term) => await _comicRepo.Search(term);
     public async Task<int> GetComicCount() => await _comicRepo.GetCount();
@@ -15,6 +17,7 @@ public class ComicService(
     public async Task<List<Comic>> GetComics(int page, int count) => await _comicRepo.GetByPage(page, count);
     public async Task<List<Comic>> GetRandomComics(int count) => await _comicRepo.GetRandom(count);
     public async Task UpdateComic(string id, Comic updated, string oldTitle) {
+        if (!await AuthorizeAsync(UserRole.User)) return;
         string newImgPath = Path.Combine(_fileService.ComicFolder, updated.Folder);
         string oldImgPath = Path.Combine(_fileService.ComicFolder, $"{updated.Code[..3]}", $"[{updated.Code}]{oldTitle}");
 
@@ -25,8 +28,12 @@ public class ComicService(
         await _comicRepo.Update(id, updated);
 
     }
-    public async Task UpdateComicWithoutFileOperation(string id, Comic updated) => await _comicRepo.Update(id, updated);
+    public async Task UpdateComicWithoutFileOperation(string id, Comic updated) {
+        if (!await AuthorizeAsync(UserRole.User)) return;
+        await _comicRepo.Update(id, updated);
+    }
     public async Task DeleteComic(string id) {
+        if (!await AuthorizeAsync(UserRole.User)) return;
         var comic = await GetComicById(id);
         var sourcefolder = Path.Combine(_fileService.ComicFolder, comic.Folder);
         var thumbsFolder = Path.Combine(_fileService.ComicFolder, "Thumbs", comic.Folder);
@@ -35,6 +42,7 @@ public class ComicService(
         await _comicRepo.Delete(id);
     }
     public async Task CreateComic(Comic comic, bool fileOp = true) {
+        if (!await AuthorizeAsync(UserRole.User)) return;
         await _comicRepo.Create(comic);
         if (fileOp) {
             var resizer = new ImageResizer();
@@ -44,6 +52,7 @@ public class ComicService(
         }
     }
     public async Task SplitComic(Comic comic) {
+        if (!await AuthorizeAsync(UserRole.User)) return;
         if (comic.Bookmarks.Count < 2) return;
 
         List<string> comicIds = [];
@@ -135,7 +144,16 @@ public class ComicService(
     public async Task<int> GetListCount() => await _listRepo.GetCount();
     public async Task<ComicList> GetListById(string id) => await _listRepo.GetById(id);
     public async Task<List<ComicList>> GetRandomLists(int count) => await _listRepo.GetRandom(count);
-    public async Task DeleteList(string id) => await _listRepo.Delete(id);
-    public async Task UpdateList(string id, ComicList updated) => await _listRepo.Update(id, updated);
-    public async Task CreateList(ComicList list) => await _listRepo.Create(list);
+    public async Task DeleteList(string id) {
+        if (!await AuthorizeAsync(UserRole.User)) return;
+        await _listRepo.Delete(id);
+    }
+    public async Task UpdateList(string id, ComicList updated) {
+        if (!await AuthorizeAsync(UserRole.User)) return;
+        await _listRepo.Update(id, updated);
+    }
+    public async Task CreateList(ComicList list) {
+        if (!await AuthorizeAsync(UserRole.User)) return;
+        await _listRepo.Create(list);
+    }
 }

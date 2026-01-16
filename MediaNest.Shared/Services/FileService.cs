@@ -87,4 +87,24 @@ public class FileService {
         var paths = Directory.EnumerateFileSystemEntries(path);
         return [.. paths.Select(Path.GetFileName)];
     }
+    public async Task SaveStreamAsync(Stream srcStream, string destPath, long totalSize, Func<int, Task>? onProgress = null) {
+        byte[] buffer = new byte[81920]; // 80KB
+        long totalRead = 0;
+        int bytesRead;
+
+        await using FileStream fs = new(destPath, FileMode.Create);
+        while ((bytesRead = await srcStream.ReadAsync(buffer)) > 0) {
+            await fs.WriteAsync(buffer.AsMemory(0, bytesRead));
+            totalRead += bytesRead;
+
+            if (onProgress != null && totalSize > 0) {
+                int progress = (int)((double)totalRead / totalSize * 100);
+                await onProgress(progress);
+            }
+        }
+        
+        if (onProgress != null) {
+            await onProgress(100);
+        }
+    }
 }
