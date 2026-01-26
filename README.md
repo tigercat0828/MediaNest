@@ -76,3 +76,27 @@ Before running the project, make sure you have:
 ## 🛳️ Roadmap
 - Video service (upload & stream videos)
 - Musci service
+
+
+## Jenkins CI/CD
+(not finished)
+Ctrl+R secpol.msc 設定本機 以服務登入
+通過Jenkins Credential Test
+
+```sh
+@echo off
+:: 1. 設定變數
+set ASSETS_PATH=<your_assets_folder_path>
+
+:: 2. 停止並移除舊的容器、網路（但保留 Volume 數據）
+:: --remove-orphans 可以順便清理不再使用的容器
+echo "Cleaning up old containers..."
+docker compose down --remove-orphans
+
+:: 3. 重新啟動並編譯
+echo "Starting Docker Compose..."
+docker compose up -d --build
+```
+
+- setup workdir
+- mongodb restore program
