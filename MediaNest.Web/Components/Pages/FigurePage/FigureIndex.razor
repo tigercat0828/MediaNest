@@ -1,0 +1,12 @@
+﻿@page "/figure"
+@inject FigureService FigureService;
+<h3>FigureIndex</h3>
+
+@code {
+    List<Figure> _figures = [];
+    int _currentPage;
+    protected override async Task OnInitializedAsync()
+    {
+        _figures = await FigureService.GetFiguresByPage(0, 10);
+    }
+}

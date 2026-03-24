@@ -1,6 +1,6 @@
 ﻿using System.Text.RegularExpressions;
 
-namespace MediaNest.Shared;
+namespace MediaNest.Shared.Utils;
 
 public static class Utility {
     public static string GenerateSixDigitCode() {

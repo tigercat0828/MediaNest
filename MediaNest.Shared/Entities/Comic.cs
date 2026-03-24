@@ -1,4 +1,5 @@
 ﻿using MediaNest.Shared.Entities.Interfaces;
+using MediaNest.Shared.Utils;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 using System.ComponentModel.DataAnnotations;

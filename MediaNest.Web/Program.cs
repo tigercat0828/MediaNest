@@ -119,10 +119,10 @@ app.UseAntiforgery();
 app.MapStaticAssets();
 app.MapRazorComponents<App>().AddInteractiveServerRenderMode();
 
-app.MapGet("/logout", async (HttpContext context) =>
-{
+app.MapGet("/logout", async (HttpContext context) => {
     await context.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
     return Results.Redirect("/login");
 });
 
 app.Run();
+

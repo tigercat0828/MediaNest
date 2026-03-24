@@ -1,8 +1,8 @@
 using MediaNest.Shared.Entities;
 using Microsoft.AspNetCore.Components.Authorization;
 using MongoDB.Driver;
-using System.Threading.Tasks;
 namespace MediaNest.Shared.Services;
+
 public class UserConfigService(
     IMongoCollection<UserConfig> _userConfigs,
     FileService _fileService,
@@ -12,15 +12,14 @@ public class UserConfigService(
     private UserConfig _currentUserConfig = null;
 
     private FilterDefinition<UserConfig> UserFilter(string username) => Builders<UserConfig>.Filter.Eq(c => c.Username, username);
-    public async Task<UserConfig> GetCurrentUserConfig(){
+    public async Task<UserConfig> GetCurrentUserConfig() {
         string username = await GetCurrentUsernameAsync();
         if (username == null) return null;
         var config = await _userConfigs.Find(UserFilter(username)).FirstOrDefaultAsync();
-        if (config == null)
-        {
+        if (config == null) {
             _currentUserConfig = await CreateConfig(username);
         }
-         return config;
+        return config;
     }
     public async Task UpdateConfig(UserConfig updatedConfig) {
         string username = await GetCurrentUsernameAsync();
@@ -30,18 +29,16 @@ public class UserConfigService(
         await _userConfigs.ReplaceOneAsync(filter, updatedConfig);
     }
     public async Task<List<EntityCollection>> GetMenuPinnedCollection() {
-        
-        if(_currentUserConfig == null) await GetCurrentUserConfig();
+
+        if (_currentUserConfig == null) await GetCurrentUserConfig();
         return _currentUserConfig.MenuPinnedCollections;
     }
-    public async Task<List<EntityCollection>> GetHomePinnedCollection(string username)
-    {
+    public async Task<List<EntityCollection>> GetHomePinnedCollection(string username) {
         if (_currentUserConfig == null) await GetCurrentUserConfig();
         return _currentUserConfig.HomePinnedCollections;
     }
     // ===================================================================================
-    public async Task UploadBackgroundImage(string fileName)
-    {
+    public async Task UploadBackgroundImage(string fileName) {
         // 1. 處理檔案移動
         string username = await GetCurrentUsernameAsync();
         if (username == null) return;
@@ -54,13 +51,11 @@ public class UserConfigService(
         if (File.Exists(sourcePath))
             File.Move(sourcePath, destinationPath, overwrite: true);
 
-        try
-        {
+        try {
             var update = Builders<UserConfig>.Update.AddToSet(c => c.BackgroundImageUrls, fileName);
             await _userConfigs.UpdateOneAsync(UserFilter(username), update, new UpdateOptions { IsUpsert = true });
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             if (File.Exists(destinationPath)) File.Delete(destinationPath);
             throw;
         }
@@ -82,11 +77,9 @@ public class UserConfigService(
             // Log error or ignore
         }
     }
-    private async Task<UserConfig> CreateConfig(string username)
-    {
+    private async Task<UserConfig> CreateConfig(string username) {
 
-        var newConfig = new UserConfig
-        {
+        var newConfig = new UserConfig {
             Username = username,
             HomeTitle = "Welcome to MediaNest",
             BackgroundImageUrls = [],

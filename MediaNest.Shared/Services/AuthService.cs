@@ -9,7 +9,7 @@ namespace MediaNest.Shared.Services;
 
 // TODO cache the user 
 public class AuthService(
-    IMongoCollection<Account> _accounts, 
+    IMongoCollection<Account> _accounts,
     AuthenticationStateProvider _authStateProvider) : BaseService(_authStateProvider) {
     private readonly PasswordHasher<Account> _passwordHasher = new();
     public async Task<List<AccountDto>> GetAllUserAsync() {

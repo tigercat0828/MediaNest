@@ -102,7 +102,7 @@ public class FileService {
                 await onProgress(progress);
             }
         }
-        
+
         if (onProgress != null) {
             await onProgress(100);
         }

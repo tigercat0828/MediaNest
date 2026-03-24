@@ -6,8 +6,7 @@ namespace MediaNest.Shared.Services;
 public class FigureService(
     EntityRepository<Figure> _figures,
     FileService _fileService,
-    AuthenticationStateProvider authStateProvider
-    ) : BaseService(authStateProvider) {
+    AuthenticationStateProvider authStateProvider) : BaseService(authStateProvider) {
     public async Task<Figure> GetFigure(string id) {
         return await _figures.GetById(id);
     }

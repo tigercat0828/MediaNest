@@ -1,5 +1,6 @@
 ﻿using MediaNest.Shared.Entities;
 using MediaNest.Shared.Models;
+using MediaNest.Shared.Utils;
 using Microsoft.AspNetCore.Components.Authorization;
 
 namespace MediaNest.Shared.Services;
