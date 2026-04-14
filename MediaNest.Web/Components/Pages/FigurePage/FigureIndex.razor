@@ -1,12 +1,76 @@
 ﻿@page "/figure"
-@inject FigureService FigureService;
-<h3>FigureIndex</h3>
+@inject FigureService FigureService
+
+<h3 class="mb-4">Figure Collection</h3>
+
+<div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
+    @foreach (var fig in _figures)
+    {
+        <div class="col">
+            <div class="card h-100 shadow-sm figure-card">
+                <img src="@GetImageUrl(fig)" 
+                    class="card-img-top figure-img" 
+                    alt="@fig.Name">
+
+                <div class="card-body">
+                    <h6 class="card-title mb-1">@fig.Name</h6>
+                    <small class="text-muted">@fig.Series</small>
+                </div>
+
+                <div class="card-footer bg-transparent border-0">
+                    <button class="btn btn-sm btn-outline-primary w-100">
+                        View More
+                    </button>
+                </div>
+            </div>
+        </div>
+    }
+</div>
 
 @code {
     List<Figure> _figures = [];
-    int _currentPage;
-    protected override async Task OnInitializedAsync()
+
+    protected override async Task OnInitializedAsync() {
+        //_figures = await FigureService.GetFiguresByPage(0, 10);
+        _figures = [
+            new Figure { Id="1", Name="Rem", Series="Re:Zero", Code="RZ001" },
+            new Figure { Id="2", Name="Asuna", Series="SAO", Code="SA001" },
+            new Figure { Id="3", Name="ZeroTwo", Series="Darling in the Franxx", Code="DTF001" },
+            new Figure { Id="4", Name="Mikasa", Series="Attack on Titan", Code="AOT001" },
+            new Figure { Id="5", Name="Gojo", Series="Jujutsu Kaisen", Code="JJK001" },
+            new Figure { Id="6", Name="Makima", Series="Chainsaw Man", Code="CSM001" },
+            new Figure { Id="7", Name="Anya", Series="Spy x Family", Code="SPY001" },
+            new Figure { Id="8", Name="Raiden", Series="Genshin Impact", Code="GI001" },
+            new Figure { Id="9", Name="2B", Series="NieR:Automata", Code="NIE001" },
+            new Figure { Id="10", Name="Albedo", Series="Overlord", Code="OVL001" }
+        ];
+    }
+
+    string GetImageUrl(Figure fig)
     {
-        _figures = await FigureService.GetFiguresByPage(0, 10);
+        return $"Assets/Figures/{fig.PurikuraUrl}.jpg";
     }
 }
+<style>
+    .figure-card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.figure-card:hover {
+    transform: translateY(-5px) scale(1.02);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+}
+
+.figure-img {
+    height: 220px;
+    object-fit: cover;
+}
+
+/* 讓卡片資訊更精緻 */
+.card-title {
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+</style>

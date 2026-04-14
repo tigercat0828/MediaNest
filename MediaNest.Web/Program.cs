@@ -52,7 +52,6 @@ builder.Services.AddMongoCollection<Video>("Videos");
 builder.Services.AddMongoCollection<VideoList>("VideoLists");
 builder.Services.AddMongoCollection<Figure>("Figures");
 builder.Services.AddMongoCollection<BulletinItem>("Bulletins");
-
 // ========================================================================================
 // Main MediaNest Service
 // ========================================================================================

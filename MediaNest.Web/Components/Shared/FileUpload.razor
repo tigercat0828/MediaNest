@@ -27,6 +27,7 @@
     [Parameter] public string SaveDirectory { get; set; } = string.Empty;
     [Parameter] public string SaveSubFolder { get; set; } = string.Empty;
     [Parameter] public EventCallback<bool> OnUploadButtonPressed { get; set; }
+    [Parameter] public string? TargetFileName { get; set; }
     protected bool isUploadFinish = false;
     protected bool isReadyToUpload = false;
     protected string message = "";
@@ -52,7 +53,12 @@
         Directory.CreateDirectory(saveFolder);
 
         foreach (var file in browserFiles) {
-            var filePath = Path.Combine(saveFolder, file.Name);
+            string fileName = file.Name;
+            if (!string.IsNullOrEmpty(TargetFileName)) {
+                var extension = Path.GetExtension(file.Name);
+                fileName = TargetFileName;
+            }
+            var filePath = Path.Combine(saveFolder, fileName);
             await using FileStream fs = new(filePath, FileMode.Create);
             await file.OpenReadStream(maxAllowedSize: (long)(5 * 1024) * (long)(1024 * 1024)).CopyToAsync(fs); // 1 GB
         }

@@ -65,8 +65,6 @@ public class ComicService(
         var allFiles = Directory.GetFiles(sourceFolder).OrderBy(ExtractPageNumber).ToList();
         var allThumbs = Directory.GetFiles(thumbFolder).OrderBy(ExtractPageNumber).ToList();
 
-
-
         // bookmark = [1, 9, 27, 36]
         for (int i = 0; i < comic.Bookmarks.Count; i++) {
             int start = comic.Bookmarks[i];

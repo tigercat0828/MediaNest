@@ -10,11 +10,9 @@ public class FigureService(
     public async Task<Figure> GetFigure(string id) {
         return await _figures.GetById(id);
     }
-
     public async Task<List<Figure>> GetFiguresByPage(int page, int count) {
         return await _figures.GetByPage(page, count);
     }
-
     public async Task<List<Figure>> SearchFigures(string term) {
         return await _figures.Search(term);
     }
@@ -31,9 +29,9 @@ public class FigureService(
         var figure = await _figures.GetById(id);
         if (figure != null) {
             await _figures.Delete(id);
-            string filePath = Path.Combine(_fileService.FigureFolder, figure.Title, figure.Name);
-            if (File.Exists(filePath)) {
-                File.Delete(filePath);
+            var folderPath = Path.Combine(_fileService.FigureFolder, figure.Folder);
+            if (Directory.Exists(folderPath)) {
+                Directory.Delete(folderPath, recursive: true);
             }
         }
     }

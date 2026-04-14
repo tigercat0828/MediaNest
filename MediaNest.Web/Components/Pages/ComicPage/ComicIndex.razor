@@ -87,9 +87,10 @@
         _totalPage = (int)Math.Ceiling(total / (double)_elementPerPage);
     }
     private async Task GetComicsByPage(int page) {
+        if(page > _totalPage) return;
+        
         page = Math.Clamp(page, 1, _totalPage);
         _currentPage = page;
-
         _comics = await ComicService.GetComics(page, _elementPerPage);
     }
     private async Task GetRandomComics() {

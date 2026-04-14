@@ -1,0 +1,68 @@
+@page "/figure/create"
+@using MediaNest.Shared.Entities
+@using MediaNest.Shared.Utils
+@inject FigureService FigureService
+@inject FileService FileService
+@inject NavigationManager NavigationManager
+
+
+<div class="container">
+
+    <h3 class="mb-4">Create Figure</h3>
+
+    <EditForm Model="_figure" OnValidSubmit="HandleValidSubmit" FormName="FigureForm">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="mb-3">
+            <label class="form-label">Name</label>
+            <InputText class="form-control" @bind-Value="_figure.Name" />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Series</label>
+            <InputText class="form-control" @bind-Value="_figure.Series" />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Images</label>
+            <FileUpload SaveDirectory="@FileService.FigureFolder" SaveSubFolder="@_figure.Folder" TargetFileName="@($"[{_figure.Code}][{_figure.Name}]")" OnUploadButtonPressed="OnUploadFinished" />
+            @if (!string.IsNullOrEmpty(uploadMessage)) {
+                <div class="form-text">@uploadMessage</div>
+            }
+        </div>
+
+        <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary">Create</button>
+            <button type="button" class="btn btn-secondary" @onclick="Cancel">Cancel</button>
+        </div>
+    </EditForm>
+</div>
+@code {
+    Figure _figure = new Figure { Code = Utility.GenerateSixDigitCode() };
+    string uploadMessage = string.Empty;
+
+    async Task HandleValidSubmit()
+    {
+        // ensure figure folder exists before creating entity
+        var saveFolder = Path.Combine(FileService.FigureFolder, _figure.Folder);
+        Directory.CreateDirectory(saveFolder);
+        await FigureService.CreateFigure(_figure);
+        NavigationManager.NavigateTo("/figure");
+    }
+
+    void Cancel()
+    {
+        NavigationManager.NavigateTo("/figure");
+    }
+
+    async Task OnUploadFinished(bool ok) {
+        if (ok) {
+            uploadMessage = "Images uploaded.";
+        }
+        else {
+            uploadMessage = "Upload failed.";
+        }
+        await InvokeAsync(StateHasChanged);
+    }
+}
