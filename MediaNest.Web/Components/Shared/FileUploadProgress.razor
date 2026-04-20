@@ -1,148 +1,176 @@
 ﻿@using System.Text
 @using System.Threading.Tasks
+@using MediaNest.Shared.Services
 @implements IAsyncDisposable
+
 <div class="input-group">
-    <InputFile OnChange="SelectFiles" class="form-control" multiple accept="@Extension" />
-    <button class="btn btn-primary" @onclick="UploadFile" disabled="@(browserFiles.Count == 0)">
-        上傳
-    </button>
+	<InputFile OnChange="SelectFiles" class="form-control" multiple accept="@Extension" />
+	<button class="btn btn-primary" @onclick="UploadFile" disabled="@(browserFiles.Count == 0)">
+		上傳
+	</button>
 </div>
 
 <div class="card card-body mt-3">
-    <div style="color:@(isUploadFinish ? "green" : "cadetblue")">
-        @message
-    </div>
+	<div style="color:@(isUploadFinish ? "green" : "cadetblue")">
+		@message
+	</div>
 
-    @if (browserFiles.Count > 0) {
-        <ol class="mb-1">
-            @foreach (var info in uploadInfos) {
-                <li>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <span>@info.File.Name</span>
-                        <span>@info.Progress% </span>
-                    </div>
-                    <div class="progress my-1" style="height: 12px;">
-                        <div class="progress-bar" role="progressbar"
-                             style="width:@info.Progress%"
-                             aria-valuenow="@info.Progress"
-                             aria-valuemin="0" aria-valuemax="100">
-                        </div>
-                    </div>
-                </li>
-            }
-        </ol>
-        @if (skippedFile.Count > 0) { 
-            <p class="text-danger mt-2">檔案名稱過長(>200 bytes)</p>
-            <ol>
-            @foreach (var name in skippedFile) {
-                <li>@name</li>
-            }
-        </ol>
-        }
-    }
+	@if (browserFiles.Count > 0) {
+		<ol class="mb-1">
+			@foreach (var info in uploadInfos) {
+				<li>
+					<div class="d-flex justify-content-between align-items-center">
+						<span>@info.File.Name</span>
+						<span>@info.Progress%</span>
+					</div>
+					@if (ShowProgressBar) {
+						<div class="progress my-1" style="height: 12px;">
+							<div class="progress-bar" role="progressbar"
+								 style="width:@info.Progress%"
+								 aria-valuenow="@info.Progress"
+								 aria-valuemin="0" aria-valuemax="100">
+							</div>
+						</div>
+					}
+				</li>
+			}
+		</ol>
+		@if (skippedFiles.Count > 0) {
+			<p class="text-danger mt-2">檔案名稱過長 (>200 bytes)</p>
+			<ol>
+				@foreach (var name in skippedFiles) {
+					<li>@name</li>
+				}
+			</ol>
+		}
+	}
 </div>
 
 @code {
-    // TODO : 內部頁面跳轉提示
-    [Parameter] public string SaveDirectory { get; set; } = string.Empty;
-    [Parameter] public string SaveSubFolder { get; set; } = string.Empty;
-    [Parameter] public string Extension { get; set; } = string.Empty;
-    [Parameter] public EventCallback<bool> OnUploadFinished { get; set; }
-    [Parameter] public EventCallback<bool> OnUploadBtnPressed { get; set; }
-	@inject IJSRuntime JS
-	@inject NavigationManager NavigationManager
-    @using MediaNest.Shared.Services
-    @inject FileService FileService
-    private bool isUploadFinish;
-    private bool isUploading;
-    private string message = "";
+	[Parameter] public string SaveDirectory { get; set; } = string.Empty;
 
-    private List<IBrowserFile> browserFiles = new();
-    private List<FileUploadInfo> uploadInfos = new();
-    private List<string> skippedFile = [];
-    private IDisposable? registration;
+	[Parameter] public string SaveSubFolder { get; set; } = string.Empty;
 
-    private class FileUploadInfo {
-        public IBrowserFile File { get; set; } = default!;
-        public int Progress { get; set; } = 0;
-    }
-    protected override void OnAfterRender(bool firstRender) {
-        if (firstRender)
-            registration = NavigationManager.RegisterLocationChangingHandler(OnLocationChanging);
-    }
+	[Parameter] public string? Extension { get; set; }
 
-    public async ValueTask DisposeAsync() {
-        registration?.Dispose();
-    }
+	[Parameter] public string? TargetFileName { get; set; }
 
-    private async ValueTask OnLocationChanging(LocationChangingContext context) {
-        if (isUploading) {
-            bool confirm = await JS.InvokeAsync<bool>("Utils.confirmNavigate");
-            if (!confirm)
-                context.PreventNavigation(); // 🟢 新增：阻止導頁
-        }
-    }
+	[Parameter] public bool ShowProgressBar { get; set; } = true;
 
-    protected void SelectFiles(InputFileChangeEventArgs e) {
-        message = "";
-        browserFiles.Clear();
-        uploadInfos.Clear();
-        skippedFile.Clear();
-        var allFiles = e.GetMultipleFiles(maximumFileCount: 1000);
-        const int MaxNameLength = 200; // 🟢 新增：檔名長度上限
+	[Parameter] public EventCallback<bool> OnUploadFinished { get; set; }
 
-        var validFiles = new List<IBrowserFile>();
+	[Parameter] public EventCallback<bool> OnUploadBtnPressed { get; set; }
 
-        foreach (var file in allFiles) {
-            // 🟢 改為 UTF8 bytes 檢查
-            byte[] nameBytes = Encoding.UTF8.GetBytes(file.Name);
-            if (nameBytes.Length > 200) {
-                skippedFile.Add($"{file.Name} ({nameBytes.Length} bytes)");
-                continue;
-            }
-            validFiles.Add(file);
-        }
+	[Inject] protected IJSRuntime JS { get; set; } = default!;
 
-        browserFiles = validFiles;
-        uploadInfos = validFiles.Select(f => new FileUploadInfo { File = f }).ToList();
-    }
+	[Inject] protected NavigationManager NavigationManager { get; set; } = default!;
 
-    protected async Task UploadFile() {
-        await OnUploadBtnPressed.InvokeAsync(true);
-        if (string.IsNullOrEmpty(SaveDirectory))
-            return;
+	[Inject] protected FileService FileService { get; set; } = default!;
 
-        isUploading = true;
-        isUploadFinish = false;
-        message = "檔案上傳中...";
-        StateHasChanged();
+	protected bool isUploadFinish;
+	protected bool isUploading;
+	protected string message = "";
 
-        try {
-            var saveFolder = Path.Combine(SaveDirectory, SaveSubFolder);
-            Directory.CreateDirectory(saveFolder);
+	protected List<IBrowserFile> browserFiles = [];
+	protected List<FileUploadInfo> uploadInfos = [];
+	protected List<string> skippedFiles = [];
+	protected IDisposable? navigationRegistration;
 
-            foreach (var info in uploadInfos) {
-                var file = info.File;
-                var filePath = Path.Combine(saveFolder, file.Name);
+	protected const int MAX_FILE_NAME_BYTES = 200;
+	protected const long MAX_FILE_SIZE = 5L * 1024 * 1024 * 1024; // 5GB
 
-                await using Stream readStream = file.OpenReadStream(maxAllowedSize: (long)(5 * 1024) * (long)(1024 * 1024)); // 5GB
+	protected class FileUploadInfo {
+		public IBrowserFile File { get; set; } = default!;
+		public int Progress { get; set; }
+	}
 
-                await FileService.SaveStreamAsync(readStream, filePath, file.Size, async (progress) => {
-                    info.Progress = progress;
-                    await InvokeAsync(StateHasChanged);
-                });
-            }
-            isUploadFinish = true;
-            message = "✅ 上傳完成!!";
-            await OnUploadFinished.InvokeAsync(true);
-        }
-        catch (Exception ex) {
-            message = $"❌ 上傳失敗: {ex.Message}";
-            await JS.InvokeVoidAsync("Utils.ShowAlert", $"上傳發生錯誤: {ex.Message}");
-        }
-        finally {
-            isUploading = false;
-            StateHasChanged();
-        }
-    }
+	protected override void OnAfterRender(bool firstRender){
+		if (firstRender)
+			navigationRegistration = NavigationManager.RegisterLocationChangingHandler(OnLocationChanging);
+	}
+
+	public async ValueTask DisposeAsync() {
+		navigationRegistration?.Dispose();
+	}
+
+	private async ValueTask OnLocationChanging(LocationChangingContext context) {
+		if (isUploading) {
+			bool confirm = await JS.InvokeAsync<bool>("Utils.confirmNavigate");
+			if (!confirm)
+				context.PreventNavigation();
+		}
+	}
+
+	protected void SelectFiles(InputFileChangeEventArgs e) {
+		message = "";
+		browserFiles.Clear();
+		uploadInfos.Clear();
+		skippedFiles.Clear();
+
+		var allFiles = e.GetMultipleFiles(maximumFileCount: 1000);
+
+		foreach (var file in allFiles) {
+			byte[] nameBytes = Encoding.UTF8.GetBytes(file.Name);
+			if (nameBytes.Length > MAX_FILE_NAME_BYTES) {
+				skippedFiles.Add($"{file.Name} ({nameBytes.Length} bytes)");
+				continue;
+			}
+			browserFiles.Add(file);
+		}
+
+		uploadInfos = browserFiles
+			.Select(f => new FileUploadInfo { File = f, Progress = 0 })
+			.ToList();
+	}
+
+	protected virtual async Task UploadFile() {
+		await OnUploadBtnPressed.InvokeAsync(true);
+
+		if (string.IsNullOrEmpty(SaveDirectory)) return;
+
+		isUploading = true;
+		isUploadFinish = false;
+		message = "檔案上傳中...";
+		StateHasChanged();
+
+		try {
+			var saveFolder = Path.Combine(SaveDirectory, SaveSubFolder);
+			Directory.CreateDirectory(saveFolder);
+
+			foreach (var info in uploadInfos) {
+				var file = info.File;
+				var fileName = GetTargetFileName(file);
+				var filePath = Path.Combine(saveFolder, fileName);
+
+				await using Stream readStream = file.OpenReadStream(maxAllowedSize: MAX_FILE_SIZE);
+
+				await FileService.SaveStreamAsync(readStream, filePath, file.Size, async (progress) => {
+					info.Progress = progress;
+					await InvokeAsync(StateHasChanged);
+				});
+			}
+
+			isUploadFinish = true;
+			message = "✅ 上傳完成!!";
+			await OnUploadFinished.InvokeAsync(true);
+		}
+		catch (Exception ex) {
+			message = $"❌ 上傳失敗: {ex.Message}";
+			await JS.InvokeVoidAsync("Utils.ShowAlert", $"上傳發生錯誤: {ex.Message}");
+			await OnUploadFinished.InvokeAsync(false);
+		}
+		finally {
+			isUploading = false;
+			StateHasChanged();
+		}
+	}
+
+	private string GetTargetFileName(IBrowserFile file) {
+		
+		if (string.IsNullOrEmpty(TargetFileName)) 
+			return file.Name;
+
+		var extension = Path.GetExtension(file.Name);
+		return $"{TargetFileName}{extension}";
+	}
 }
